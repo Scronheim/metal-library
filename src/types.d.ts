@@ -3,7 +3,7 @@ export interface Task {
   name: string
   normalizedName: string
   trader: TaskTrader
-  map: Map
+  map: GameMap
   experience: number
   taskImageLink: string
   minPlayerLevel: number
@@ -18,18 +18,28 @@ export interface TaskTrader {
   normalizedName: string
 }
 
-export interface Map {
+export interface GameMap {
   name: string
   normalizedName: string
 }
 
-type ObjectiveType = 'visit' | 'findItem' | 'findQuestItem' | 'giveQuestItem' | 'giveItem' | 'extract' | 'mark' | 'skill' | 'shoot' | 'traderLevel'
+type ObjectiveType =
+  | 'visit'
+  | 'findItem'
+  | 'findQuestItem'
+  | 'giveQuestItem'
+  | 'giveItem'
+  | 'extract'
+  | 'mark'
+  | 'skill'
+  | 'shoot'
+  | 'traderLevel'
 
 export interface Objective {
   type: ObjectiveType
   description: string
   optional: boolean
-  maps: Map[]
+  maps: GameMap[]
   count?: number
   targetNames?: string[]
   trader?: Trader
@@ -57,9 +67,26 @@ export interface Trader {
   trade: Item[]
 }
 
+type Fraction = 'BEAR' | 'USEC'
+type GameEdition = 'Standart' | 'Left Behind' | 'Prepare for Escape' | 'The Unheard'
+
 export interface User {
+  nickname: string
   level: number
+  fraction: Fraction
+  gameEdition: GameEdition
   completedTasks: {
-    [key: string]: number[]
+    id: string
+    objectives: {
+      index: number
+      completed: boolean
+      itemsNumber?: number
+    }[]
+    complete: boolean
+  }[]
+  trackingTasks: {
+    [key: string]: {
+      name: string
+    }
   }
 }

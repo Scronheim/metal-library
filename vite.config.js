@@ -1,5 +1,4 @@
 import { resolve } from 'node:path'
-
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import AutoImport from 'unplugin-auto-import/vite'
@@ -7,14 +6,14 @@ import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import tailwindcss from '@tailwindcss/vite'
 import vueDevTools from 'vite-plugin-vue-devtools'
-
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/eft/',
   plugins: [
     vue(),
     tailwindcss(),
-    AutoImport({resolvers: ElementPlusResolver()}),
-    Components({resolvers: ElementPlusResolver()}),
+    AutoImport({ resolvers: ElementPlusResolver() }),
+    Components({ resolvers: ElementPlusResolver() }),
     vueDevTools(),
   ],
   resolve: {
@@ -23,4 +22,12 @@ export default defineConfig({
       '@': resolve(__dirname, './src'),
     },
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://dark-corner.ru/eft',
+        changeOrigin: true
+      }
+    }
+  }
 })

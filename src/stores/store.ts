@@ -1,4 +1,4 @@
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
 import axios from 'axios'
 import { groupBy } from 'lodash-es'
@@ -44,39 +44,51 @@ export const useStore = defineStore('store', () => {
       tasks: [],
     },
   })
+  const tasks = ref<Task[]>([])
 
   const user = ref<User>({
+    nickname: '',
     level: 1,
-    completedTasks: {},
+    fraction: 'BEAR',
+    gameEdition: 'The Unheard',
+    completedTasks: [],
+    trackingTasks: {},
   })
 
-  async function apiQuery(query: string): Promise<void> {
-    const { data } = await axios.post(
-      'https://api.tarkov.dev/graphql',
-      { query },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-      }
-    )
+  const queryIsLoading = ref(false)
 
-    const groupedQuests = groupBy(data.data.tasks, function (task: Task) {
-      return task.trader.normalizedName
-    })
-    Object.keys(groupedQuests).map((trader: string) => {
-      traders.value[trader].tasks = groupedQuests[trader]
-    })
+  async function apiQuery(): Promise<void> {
+    try {
+      queryIsLoading.value = true
+      const { data } = await axios.get('/api/tasks')
+      console.log(data.data)
+
+      tasks.value = data.data
+    } catch (e) {
+      console.log(e)
+    } finally {
+      queryIsLoading.value = false
+    }
   }
 
-  watch(user, (value) => {
-    localStorage.setItem('user', JSON.stringify(value))
-  }, {deep: true})
+  const checkTrackingTaskExit = (taskId: string): boolean => {
+    return !!user.value.trackingTasks[taskId]
+  }
+
+  watch(
+    user,
+    (value) => {
+      localStorage.setItem('user', JSON.stringify(value))
+    },
+    { deep: true }
+  )
 
   return {
     user,
     traders,
+    tasks,
+    queryIsLoading,
     apiQuery,
+    checkTrackingTaskExit,
   }
 })

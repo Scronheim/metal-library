@@ -1,0 +1,4 @@
+@forward 'element-plus/theme-chalk/src/common/var.scss';
+
+@use 'element-plus/theme-chalk/dark/css-vars.css';
+@use 'element-plus/theme-chalk/src/index.scss' as *;
