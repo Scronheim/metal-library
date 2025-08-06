@@ -4,8 +4,6 @@ import { Plus, Delete, Check, CircleCheck } from '@element-plus/icons-vue'
 
 import { useStore } from '@/stores/store'
 
-import { TASKS } from '@/graphqlRequests'
-
 import type { Objective, Task } from '@/types'
 
 const store = useStore()
@@ -190,7 +188,8 @@ onMounted(async () => {
             size="15px"
             color="#67c23a"
             class="m-2"
-          ><CircleCheck /></el-icon>{{ getCheckboxLabel(obj) }}
+          ><CircleCheck /></el-icon>
+          <el-text>{{ getCheckboxLabel(obj) }}</el-text>
         </span>
       </div>
     </el-card>
