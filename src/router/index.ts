@@ -1,4 +1,5 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
+import { useStore } from '@/stores/store'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -16,6 +17,13 @@ const routes: RouteRecordRaw[] = [
 const router = createRouter({
   history: createWebHashHistory(),
   routes,
+})
+
+router.beforeEach(async (to, from, next) => {
+  const store = useStore()
+
+  await store.checkUserLoggedIn()
+  next()
 })
 
 export default router

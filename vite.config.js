@@ -24,8 +24,8 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': {
-        target: 'https://dark-corner.ru/eft',
+      '/eft/api': {
+        target: 'https://dark-corner.ru/',
         changeOrigin: true
       }
     }

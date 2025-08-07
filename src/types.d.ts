@@ -1,5 +1,6 @@
 export interface Task {
-  id: string
+  _id: string
+  tarkovDevId: string
   name: string
   normalizedName: string
   trader: TaskTrader
@@ -71,22 +72,31 @@ type Fraction = 'BEAR' | 'USEC'
 type GameEdition = 'Standart' | 'Left Behind' | 'Prepare for Escape' | 'The Unheard'
 
 export interface User {
+  _id?: string
+  username: string
   nickname: string
   level: number
   fraction: Fraction
   gameEdition: GameEdition
   completedTasks: {
-    id: string
+    task: Pick<Task, '_id'>
+    completedDate: Date
+  }[]
+  trackingTasks: {
+    task: Pick<Task, '_id'>
     objectives: {
       index: number
       completed: boolean
-      itemsNumber?: number
+      itemsNumber: number
     }[]
-    complete: boolean
   }[]
-  trackingTasks: {
-    [key: string]: {
-      name: string
-    }
-  }
+}
+
+export interface AuthData {
+  username: string
+  password: string
+}
+
+export interface RegisterData extends User {
+  password: string
 }

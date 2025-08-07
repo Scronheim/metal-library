@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { Plus, Delete, Check, CircleCheck } from '@element-plus/icons-vue'
+import { Plus, Delete, Check, CircleCheck, Close } from '@element-plus/icons-vue'
 
 import { useStore } from '@/stores/store'
 
@@ -15,12 +15,17 @@ const tasks = computed((): Task[] => {
   if (selectedTrader.value === 'active') {
     const result: Task[] = []
     Object.entries(store.user.trackingTasks).forEach((value) => {
-      const task = store.tasks.find((task) => task.id === value[0]) as Task
+      const task = store.tasks.find((task) => task._id === value[0]) as Task
       if (task) result.push(task)
     })
     return result
   } else if (selectedTrader.value === 'completed') {
-    console.log(1)
+    const result: Task[] = []
+    store.user.completedTasks.forEach((t) => {
+      const task = store.tasks.find((task) => task._id === t.task._id) as Task
+      if (task) result.push(task)
+    })
+    return result
   }
   return store.tasks
     .filter((task: Task) => task.trader.normalizedName === selectedTrader.value)
@@ -45,14 +50,29 @@ const getCheckboxLabel = (obj: Objective): string => {
 }
 
 const toggleTaskToTrack = (task: Task): void => {
-  const taskExist = store.user.trackingTasks[task.id]
+  const taskExist = store.user.trackingTasks[task._id]
 
-  if (taskExist) delete store.user.trackingTasks[task.id]
-  else store.user.trackingTasks[task.id] = { name: task.name }
+  if (taskExist) delete store.user.trackingTasks[task._id]
+  else store.user.trackingTasks[task._id] = { name: task.name }
 }
 
 const toggleCompleteTask = (task: Task): void => {
-  store.user.completedTasks[task.id] = Array.from(Array(task.objectives.length).keys())
+  const taskIndex = store.user.completedTasks.findIndex((t) => t.task._id === task._id)
+  if (taskIndex === -1) {
+    store.user.completedTasks.push({
+      task: { _id: task._id },
+      objectives: task.objectives.map((obj, index) => {
+        return {
+          index,
+          completed: true,
+          itemsNumber: obj.count,
+        }
+      }),
+      complete: true,
+    })
+  } else {
+    store.user.completedTasks.splice(taskIndex, 1)
+  }
 }
 
 onMounted(async () => {
@@ -142,21 +162,19 @@ onMounted(async () => {
   >
     <el-card
       v-for="task in tasks"
-      :key="task.id"
+      :key="task._id"
     >
       <template #header>
         <div class="flex justify-between">
           <div>{{ task.name }}</div>
-          <el-tag type="success">
-            {{ task.experience }} EXP
-          </el-tag>
+          <el-tag type="success"> {{ task.experience }} EXP </el-tag>
           <el-tooltip
-            :content="store.checkTrackingTaskExit(task.id) ? 'Удалить из активных' : 'Добавить в активные'"
+            :content="store.checkTrackingTaskExit(task._id) ? 'Удалить из активных' : 'Добавить в активные'"
             placement="top"
           >
             <el-button
-              :icon="store.checkTrackingTaskExit(task.id) ? Delete : Plus"
-              :type="store.checkTrackingTaskExit(task.id) ? 'danger' : 'primary'"
+              :icon="store.checkTrackingTaskExit(task._id) ? Delete : Plus"
+              :type="store.checkTrackingTaskExit(task._id) ? 'danger' : 'primary'"
               size="small"
               circle
               @click="toggleTaskToTrack(task)"
@@ -167,8 +185,8 @@ onMounted(async () => {
             placement="top"
           >
             <el-button
-              :icon="Check"
-              type="success"
+              :icon="store.checkCompletedTaskExit(task._id) ? Close : Check"
+              :type="store.checkCompletedTaskExit(task._id) ? 'danger' : 'success'"
               size="small"
               circle
               @click="toggleCompleteTask(task)"
@@ -177,7 +195,7 @@ onMounted(async () => {
         </div>
       </template>
       <div class="flex justify-center">
-        <img :src="task.taskImageLink">
+        <img :src="task.taskImageLink" />
       </div>
       <div class="flex flex-col">
         <span
@@ -188,7 +206,8 @@ onMounted(async () => {
             size="15px"
             color="#67c23a"
             class="m-2"
-          ><CircleCheck /></el-icon>
+            ><CircleCheck
+          /></el-icon>
           <el-text>{{ getCheckboxLabel(obj) }}</el-text>
         </span>
       </div>

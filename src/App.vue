@@ -1,29 +1,38 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { Delete } from '@element-plus/icons-vue'
 
 import { useStore } from '@/stores/store'
 
-import type { Task } from './types'
+import type { AuthData, RegisterData } from './types'
 
 const store = useStore()
+
+const showLoginForm = ref<boolean>(false)
+const authData = ref<AuthData>({
+  username: '',
+  password: '',
+})
+const registerData = ref<RegisterData>({
+  username: '',
+  password: '',
+  completedTasks: [],
+  fraction: 'BEAR',
+  gameEdition: 'Standart',
+  level: 1,
+  nickname: '',
+  trackingTasks: {},
+})
 
 const levelImageSrc = computed((): string => {
   const levelGroup = Math.ceil(store.user.level / 5)
   return `/eft/images/levelgroups/${levelGroup}.png`
 })
 
-const removeTrackingTask = (taskId: string) => {
-  delete store.user.trackingTasks[taskId]
-}
-
-onMounted(() => {
-  store.user = { ...store.user, ...JSON.parse(localStorage.getItem('user') as string) }
-})
+onMounted(() => {})
 </script>
 
 <template>
-  <div class="flex items-center dark:bg-slate-600 font-bold p-2">
+  <div class="flex items-center p-2 font-bold dark:bg-slate-600">
     <el-button
       tag="router-link"
       to="/"
@@ -48,14 +57,14 @@ onMounted(() => {
       width="240px"
       class="mt-6"
     >
-      <el-card>
+      <el-card v-if="store.userIsAuth">
         <template #header>
           <div class="flex flex-col items-center">
             <el-input
               v-model="store.user.nickname"
               placeholder="Ник персонажа"
             />
-            <img :src="levelImageSrc">
+            <img :src="levelImageSrc" />
           </div>
         </template>
         <div class="flex flex-col">
@@ -69,7 +78,7 @@ onMounted(() => {
               <img
                 :src="`/eft/images/${store.user.fraction}.webp`"
                 width="20"
-              >
+              />
             </template>
             <el-option
               label="BEAR"
@@ -87,10 +96,10 @@ onMounted(() => {
             v-model.number="store.user.level"
             :min="1"
             :max="100"
-            style="width: 200px;"
+            style="width: 200px"
           />
         </div>
-        <div class="flex flex-col">
+        <div class="mb-5 flex flex-col">
           <p>Издание</p>
           <el-select
             v-model="store.user.gameEdition"
@@ -114,6 +123,45 @@ onMounted(() => {
               value="The Unheard"
             />
           </el-select>
+        </div>
+        <el-button
+          type="danger"
+          style="width: 100%"
+          @click="store.logout"
+          >Выход</el-button
+        >
+      </el-card>
+      <el-card
+        v-else
+        header="Авторизация"
+      >
+        <div class="mb-3 flex flex-col gap-2">
+          <el-input
+            v-model="authData.username"
+            placeholder="Логин"
+          />
+          <el-input
+            v-model="authData.password"
+            placeholder="Пароль"
+            type="password"
+            @keypress.enter="store.login(authData)"
+          />
+        </div>
+        <div class="flex gap-1">
+          <el-button
+            type="success"
+            text
+            bg
+            @click="store.login(authData)"
+            >Войти</el-button
+          >
+          <el-button
+            type="primary"
+            text
+            bg
+            @click="store.register(authData)"
+            >Регистрация</el-button
+          >
         </div>
       </el-card>
     </el-aside>
