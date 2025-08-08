@@ -5,18 +5,23 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'Main page',
-    component: () => import('@/pages/MainPage.vue'),
+    component: () => import('@/pages/MainPage.vue')
   },
   {
     path: '/quests',
     name: 'Quests page',
-    component: () => import('@/pages/QuestsPage.vue'),
+    component: () => import('@/pages/QuestsPage.vue')
   },
+  {
+    path: '/items',
+    name: 'Items page',
+    component: () => import('@/pages/ItemsPage.vue')
+  }
 ]
 
 const router = createRouter({
   history: createWebHashHistory(),
-  routes,
+  routes
 })
 
 router.beforeEach(async (to, from, next) => {

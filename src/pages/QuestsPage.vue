@@ -9,7 +9,7 @@ import type { Task, ActiveTask } from '@/types'
 const store = useStore()
 
 const filter = ref('')
-const selectedTrader = ref('active')
+const selectedTrader = ref('prapor')
 
 const tasks = computed((): Task[] => {
   if (selectedTrader.value === 'active') {
@@ -92,19 +92,23 @@ const toggleObjectiveAreCompleted = (task: Task, objectiveIndex: number): void =
 }
 
 const checkObjectiveIsComplete = (task: Task, objectiveIndex: number): boolean => {
+  if (!store.userIsAuth) return false
   const activeTask = store.user.activeTasks.find(t => t.task._id === task._id) as ActiveTask
+  if (!activeTask) return false
   return activeTask.objectives[objectiveIndex].completed
 }
 
 onMounted(async () => {
-  await store.apiQuery()
+  await store.getTasks()
 })
 </script>
 
 <template>
   <div class="mb-5 flex items-center justify-center">
     <el-button-group size="large">
-      <el-button :type="selectedTrader === 'active' ? 'primary' : ''" @click="setSelectedTrader('active')">Активные квесты</el-button>
+      <el-button v-if="store.userIsAuth" :type="selectedTrader === 'active' ? 'primary' : ''" @click="setSelectedTrader('active')">
+        Активные квесты
+      </el-button>
       <el-button :type="selectedTrader === 'prapor' ? 'primary' : ''" @click="setSelectedTrader('prapor')">Прапор</el-button>
       <el-button :type="selectedTrader === 'therapist' ? 'primary' : ''" @click="setSelectedTrader('therapist')">Терапевт</el-button>
       <el-button :type="selectedTrader === 'fence' ? 'primary' : ''" @click="setSelectedTrader('fence')">Скупщик</el-button>
@@ -114,7 +118,7 @@ onMounted(async () => {
       <el-button :type="selectedTrader === 'ragman' ? 'primary' : ''" @click="setSelectedTrader('ragman')">Барахольщик</el-button>
       <el-button :type="selectedTrader === 'jaeger' ? 'primary' : ''" @click="setSelectedTrader('jaeger')">Егерь</el-button>
       <el-button :type="selectedTrader === 'lightkeeper' ? 'primary' : ''" @click="setSelectedTrader('lightkeeper')">Смотритель</el-button>
-      <el-button :type="selectedTrader === 'completed' ? 'primary' : ''" @click="setSelectedTrader('completed')">
+      <el-button v-if="store.userIsAuth" :type="selectedTrader === 'completed' ? 'primary' : ''" @click="setSelectedTrader('completed')">
         Выполненные квесты
       </el-button>
     </el-button-group>
@@ -125,7 +129,7 @@ onMounted(async () => {
       <template #header>
         <div class="flex justify-between">
           <div>{{ task.name }}</div>
-          <div>
+          <div v-if="store.userIsAuth">
             <el-tooltip :content="store.checkTrackingTaskExit(task._id) ? 'Удалить из активных' : 'Добавить в активные'" placement="top">
               <el-button
                 :icon="store.checkTrackingTaskExit(task._id) ? Delete : Plus"
@@ -159,7 +163,7 @@ onMounted(async () => {
           <el-icon size="15px" color="#67c23a" class="m-2">
             <CircleCheck />
           </el-icon>
-          <template v-if="['extract', 'findItem', 'mark', 'shoot'].includes(obj.type)">
+          <template v-if="['extract', 'findItem', 'giveItem', 'mark', 'shoot'].includes(obj.type)">
             <el-text
               :tag="checkObjectiveIsComplete(task, index) ? 'del' : 'span'"
               class="cursor-pointer"

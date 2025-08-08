@@ -1,3 +1,14 @@
+export interface Item {
+  _id: string
+  name: string
+  normalizedName: string
+  shortName: string
+  iconLink: string
+  gridImageLink: string
+  baseImageLink: string
+  inspectImageLink: string
+}
+
 export interface Task {
   _id: string
   tarkovDevId: string

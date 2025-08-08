@@ -5,7 +5,7 @@ import axios from 'axios'
 import { ElNotification } from 'element-plus'
 import { debounce } from 'lodash-es'
 
-import type { Trader, Task, User, AuthData } from '@/types'
+import type { Trader, Task, User, AuthData, Item } from '@/types'
 
 export const useStore = defineStore('store', () => {
   const router = useRouter()
@@ -48,6 +48,7 @@ export const useStore = defineStore('store', () => {
     }
   })
   const tasks = ref<Task[]>([])
+  const items = ref<Item[]>([])
 
   const user = ref<User>({
     username: '',
@@ -66,13 +67,21 @@ export const useStore = defineStore('store', () => {
     return !!token.value
   })
 
-  async function apiQuery(): Promise<void> {
+  async function getItems(): Promise<void> {
+    try {
+      queryIsLoading.value = true
+      const { data } = await axios.get('/eft/api/items')
+      items.value = data.data
+    } finally {
+      queryIsLoading.value = false
+    }
+  }
+
+  async function getTasks(): Promise<void> {
     try {
       queryIsLoading.value = true
       const { data } = await axios.get('/eft/api/tasks')
       tasks.value = data.data
-    } catch (e) {
-      console.log(e)
     } finally {
       queryIsLoading.value = false
     }
@@ -167,10 +176,12 @@ export const useStore = defineStore('store', () => {
     user,
     traders,
     tasks,
+    items,
     queryIsLoading,
     userIsAuth,
     token,
-    apiQuery,
+    getTasks,
+    getItems,
     checkTrackingTaskExit,
     checkCompletedTaskExit,
     checkUserLoggedIn,
