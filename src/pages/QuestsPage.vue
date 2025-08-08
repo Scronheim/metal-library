@@ -4,25 +4,25 @@ import { Plus, Delete, Check, CircleCheck, Close } from '@element-plus/icons-vue
 
 import { useStore } from '@/stores/store'
 
-import type { Objective, Task } from '@/types'
+import type { Task, ActiveTask } from '@/types'
 
 const store = useStore()
 
 const filter = ref('')
-const selectedTrader = ref('prapor')
+const selectedTrader = ref('active')
 
 const tasks = computed((): Task[] => {
   if (selectedTrader.value === 'active') {
     const result: Task[] = []
-    Object.entries(store.user.trackingTasks).forEach((value) => {
-      const task = store.tasks.find((task) => task._id === value[0]) as Task
+    store.user.activeTasks.forEach(t => {
+      const task = store.tasks.find(task => task._id === t.task._id) as Task
       if (task) result.push(task)
     })
     return result
   } else if (selectedTrader.value === 'completed') {
     const result: Task[] = []
-    store.user.completedTasks.forEach((t) => {
-      const task = store.tasks.find((task) => task._id === t.task._id) as Task
+    store.user.completedTasks.forEach(t => {
+      const task = store.tasks.find(task => task._id === t.task._id) as Task
       if (task) result.push(task)
     })
     return result
@@ -37,42 +37,63 @@ const setSelectedTrader = (trader: string) => {
   selectedTrader.value = trader
 }
 
-const getCheckboxLabel = (obj: Objective): string => {
-  switch (obj.type) {
-    case 'extract':
-    case 'findItem':
-    case 'mark':
-    case 'shoot':
-      return `${obj.description} (${obj.count} шт.)`
-    default:
-      return obj.description
-  }
-}
-
-const toggleTaskToTrack = (task: Task): void => {
-  const taskExist = store.user.trackingTasks[task._id]
-
-  if (taskExist) delete store.user.trackingTasks[task._id]
-  else store.user.trackingTasks[task._id] = { name: task.name }
-}
-
-const toggleCompleteTask = (task: Task): void => {
-  const taskIndex = store.user.completedTasks.findIndex((t) => t.task._id === task._id)
+const toggleTrackingTask = (task: Task): void => {
+  const taskIndex = store.user.activeTasks.findIndex(t => t.task._id === task._id)
   if (taskIndex === -1) {
-    store.user.completedTasks.push({
+    store.user.activeTasks.push({
       task: { _id: task._id },
-      objectives: task.objectives.map((obj, index) => {
+      objectives: task.objectives.flatMap((obj, index) => {
         return {
           index,
           completed: true,
-          itemsNumber: obj.count,
+          itemsNumber: obj.itemsNumber as number
         }
-      }),
-      complete: true,
+      })
     })
+  } else {
+    store.user.activeTasks.splice(taskIndex, 1)
+  }
+}
+
+const toggleCompleteTask = (task: Task): void => {
+  const taskIndex = store.user.completedTasks.findIndex(t => t.task._id === task._id)
+  if (taskIndex === -1) {
+    store.user.completedTasks.push({
+      task: { _id: task._id },
+      completedDate: new Date()
+    })
+    const activeTaskIndex = store.user.activeTasks.findIndex(t => t.task._id === task._id)
+    if (activeTaskIndex > -1) store.user.activeTasks.splice(activeTaskIndex, 1)
   } else {
     store.user.completedTasks.splice(taskIndex, 1)
   }
+}
+
+const getUserTaskItemCount = (task: Task, objectiveIndex: number): number | undefined => {
+  const t = store.user.activeTasks.find(t => t.task._id === task._id) as ActiveTask
+  return t?.objectives[objectiveIndex].itemsNumber
+}
+
+const setUserObjectiveItemCount = (task: Task, objectiveIndex: number, value: number): void => {
+  const activeTask = store.user.activeTasks.find(t => t.task._id === task._id) as ActiveTask
+  activeTask.objectives[objectiveIndex].itemsNumber = value
+
+  if (task.objectives[objectiveIndex].count === value) activeTask.objectives[objectiveIndex].completed = true
+  else activeTask.objectives[objectiveIndex].completed = false
+}
+
+const toggleObjectiveAreCompleted = (task: Task, objectiveIndex: number): void => {
+  const activeTask = store.user.activeTasks.find(t => t.task._id === task._id) as ActiveTask
+  activeTask.objectives[objectiveIndex].completed = !activeTask.objectives[objectiveIndex].completed
+
+  if (activeTask.objectives[objectiveIndex].completed && task.objectives[objectiveIndex].count) {
+    activeTask.objectives[objectiveIndex].itemsNumber = task.objectives[objectiveIndex].count
+  }
+}
+
+const checkObjectiveIsComplete = (task: Task, objectiveIndex: number): boolean => {
+  const activeTask = store.user.activeTasks.find(t => t.task._id === task._id) as ActiveTask
+  return activeTask.objectives[objectiveIndex].completed
 }
 
 onMounted(async () => {
@@ -83,132 +104,88 @@ onMounted(async () => {
 <template>
   <div class="mb-5 flex items-center justify-center">
     <el-button-group size="large">
-      <el-button
-        :type="selectedTrader === 'active' ? 'primary' : ''"
-        @click="setSelectedTrader('active')"
-      >
-        Активные квесты
-      </el-button>
-      <el-button
-        :type="selectedTrader === 'prapor' ? 'primary' : ''"
-        @click="setSelectedTrader('prapor')"
-      >
-        Прапор
-      </el-button>
-      <el-button
-        :type="selectedTrader === 'therapist' ? 'primary' : ''"
-        @click="setSelectedTrader('therapist')"
-      >
-        Терапевт
-      </el-button>
-      <el-button
-        :type="selectedTrader === 'fence' ? 'primary' : ''"
-        @click="setSelectedTrader('fence')"
-      >
-        Скупщик
-      </el-button>
-      <el-button
-        :type="selectedTrader === 'skier' ? 'primary' : ''"
-        @click="setSelectedTrader('skier')"
-      >
-        Лыжник
-      </el-button>
-      <el-button
-        :type="selectedTrader === 'peacekeeper' ? 'primary' : ''"
-        @click="setSelectedTrader('peacekeeper')"
-      >
-        Миротворец
-      </el-button>
-      <el-button
-        :type="selectedTrader === 'mechanic' ? 'primary' : ''"
-        @click="setSelectedTrader('mechanic')"
-      >
-        Механик
-      </el-button>
-      <el-button
-        :type="selectedTrader === 'ragman' ? 'primary' : ''"
-        @click="setSelectedTrader('ragman')"
-      >
-        Барахольщик
-      </el-button>
-      <el-button
-        :type="selectedTrader === 'jaeger' ? 'primary' : ''"
-        @click="setSelectedTrader('jaeger')"
-      >
-        Егерь
-      </el-button>
-      <el-button
-        :type="selectedTrader === 'lightkeeper' ? 'primary' : ''"
-        @click="setSelectedTrader('lightkeeper')"
-      >
-        Смотритель
-      </el-button>
-      <el-button
-        :type="selectedTrader === 'completed' ? 'primary' : ''"
-        @click="setSelectedTrader('completed')"
-      >
+      <el-button :type="selectedTrader === 'active' ? 'primary' : ''" @click="setSelectedTrader('active')">Активные квесты</el-button>
+      <el-button :type="selectedTrader === 'prapor' ? 'primary' : ''" @click="setSelectedTrader('prapor')">Прапор</el-button>
+      <el-button :type="selectedTrader === 'therapist' ? 'primary' : ''" @click="setSelectedTrader('therapist')">Терапевт</el-button>
+      <el-button :type="selectedTrader === 'fence' ? 'primary' : ''" @click="setSelectedTrader('fence')">Скупщик</el-button>
+      <el-button :type="selectedTrader === 'skier' ? 'primary' : ''" @click="setSelectedTrader('skier')">Лыжник</el-button>
+      <el-button :type="selectedTrader === 'peacekeeper' ? 'primary' : ''" @click="setSelectedTrader('peacekeeper')">Миротворец</el-button>
+      <el-button :type="selectedTrader === 'mechanic' ? 'primary' : ''" @click="setSelectedTrader('mechanic')">Механик</el-button>
+      <el-button :type="selectedTrader === 'ragman' ? 'primary' : ''" @click="setSelectedTrader('ragman')">Барахольщик</el-button>
+      <el-button :type="selectedTrader === 'jaeger' ? 'primary' : ''" @click="setSelectedTrader('jaeger')">Егерь</el-button>
+      <el-button :type="selectedTrader === 'lightkeeper' ? 'primary' : ''" @click="setSelectedTrader('lightkeeper')">Смотритель</el-button>
+      <el-button :type="selectedTrader === 'completed' ? 'primary' : ''" @click="setSelectedTrader('completed')">
         Выполненные квесты
       </el-button>
     </el-button-group>
   </div>
-  <el-input
-    v-model="filter"
-    placeholder="Поиск..."
-    class="mb-3"
-  />
-  <div
-    v-loading="store.queryIsLoading"
-    class="grid grid-cols-4 gap-3"
-  >
-    <el-card
-      v-for="task in tasks"
-      :key="task._id"
-    >
+  <el-input v-model="filter" placeholder="Поиск..." class="mb-3" />
+  <div v-loading="store.queryIsLoading" class="grid grid-cols-4 gap-3">
+    <el-card v-for="task in tasks" :key="task._id">
       <template #header>
         <div class="flex justify-between">
           <div>{{ task.name }}</div>
-          <el-tag type="success"> {{ task.experience }} EXP </el-tag>
-          <el-tooltip
-            :content="store.checkTrackingTaskExit(task._id) ? 'Удалить из активных' : 'Добавить в активные'"
-            placement="top"
-          >
-            <el-button
-              :icon="store.checkTrackingTaskExit(task._id) ? Delete : Plus"
-              :type="store.checkTrackingTaskExit(task._id) ? 'danger' : 'primary'"
-              size="small"
-              circle
-              @click="toggleTaskToTrack(task)"
-            />
-          </el-tooltip>
-          <el-tooltip
-            content="Отметить завершённым"
-            placement="top"
-          >
-            <el-button
-              :icon="store.checkCompletedTaskExit(task._id) ? Close : Check"
-              :type="store.checkCompletedTaskExit(task._id) ? 'danger' : 'success'"
-              size="small"
-              circle
-              @click="toggleCompleteTask(task)"
-            />
-          </el-tooltip>
+          <div>
+            <el-tooltip :content="store.checkTrackingTaskExit(task._id) ? 'Удалить из активных' : 'Добавить в активные'" placement="top">
+              <el-button
+                :icon="store.checkTrackingTaskExit(task._id) ? Delete : Plus"
+                :type="store.checkTrackingTaskExit(task._id) ? 'danger' : 'primary'"
+                :disabled="store.checkCompletedTaskExit(task._id)"
+                size="small"
+                circle
+                @click="toggleTrackingTask(task)"
+              />
+            </el-tooltip>
+            <el-tooltip
+              :content="store.checkCompletedTaskExit(task._id) ? 'Удалить из завершённых' : 'Отметить завершённым'"
+              placement="top"
+            >
+              <el-button
+                :icon="store.checkCompletedTaskExit(task._id) ? Close : Check"
+                :type="store.checkCompletedTaskExit(task._id) ? 'danger' : 'success'"
+                size="small"
+                circle
+                @click="toggleCompleteTask(task)"
+              />
+            </el-tooltip>
+          </div>
         </div>
       </template>
       <div class="flex justify-center">
         <img :src="task.taskImageLink" />
       </div>
       <div class="flex flex-col">
-        <span
-          v-for="(obj, index) in task.objectives"
-          :key="obj.description"
-        >
-          <el-icon
-            size="15px"
-            color="#67c23a"
-            class="m-2"
-            ><CircleCheck
-          /></el-icon>
-          <el-text>{{ getCheckboxLabel(obj) }}</el-text>
+        <span v-for="(obj, index) in task.objectives" :key="obj.description">
+          <el-icon size="15px" color="#67c23a" class="m-2">
+            <CircleCheck />
+          </el-icon>
+          <template v-if="['extract', 'findItem', 'mark', 'shoot'].includes(obj.type)">
+            <el-text
+              :tag="checkObjectiveIsComplete(task, index) ? 'del' : 'span'"
+              class="cursor-pointer"
+              @click="toggleObjectiveAreCompleted(task, index)"
+            >
+              {{ obj.description }} ({{ obj.count }}шт.)
+            </el-text>
+            <el-input-number
+              v-if="selectedTrader === 'active'"
+              :model-value="getUserTaskItemCount(task, index)"
+              :min="0"
+              :max="obj.count"
+              @change="setUserObjectiveItemCount(task, index, $event)"
+            >
+              <template #suffix>/{{ obj.count }}</template>
+            </el-input-number>
+          </template>
+          <template v-else>
+            <el-text
+              :tag="checkObjectiveIsComplete(task, index) ? 'del' : 'span'"
+              class="cursor-pointer"
+              @click="toggleObjectiveAreCompleted(task, index)"
+            >
+              {{ obj.description }}
+            </el-text>
+          </template>
         </span>
       </div>
     </el-card>

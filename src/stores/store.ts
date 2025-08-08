@@ -14,38 +14,38 @@ export const useStore = defineStore('store', () => {
       name: 'Прапор',
       normalizedName: 'prapor',
       tasks: [],
-      trade: [],
+      trade: []
     },
     therapist: {
-      tasks: [],
+      tasks: []
     },
     jaeger: {
-      tasks: [],
+      tasks: []
     },
     skier: {
-      tasks: [],
+      tasks: []
     },
     peacekeeper: {
-      tasks: [],
+      tasks: []
     },
     mechanic: {
-      tasks: [],
+      tasks: []
     },
     ragman: {
-      tasks: [],
+      tasks: []
     },
     fence: {
-      tasks: [],
+      tasks: []
     },
     ref: {
-      tasks: [],
+      tasks: []
     },
     lightkeeper: {
-      tasks: [],
+      tasks: []
     },
     'btr-driver': {
-      tasks: [],
-    },
+      tasks: []
+    }
   })
   const tasks = ref<Task[]>([])
 
@@ -56,7 +56,7 @@ export const useStore = defineStore('store', () => {
     fraction: 'BEAR',
     gameEdition: 'The Unheard',
     completedTasks: [],
-    trackingTasks: {},
+    activeTasks: []
   })
   const token = ref<string | null>(localStorage.getItem('token'))
 
@@ -94,13 +94,13 @@ export const useStore = defineStore('store', () => {
       ElNotification({
         title: 'Успешно',
         message: 'Вы успешно зарегистрированы',
-        type: 'success',
+        type: 'success'
       })
     } else {
       ElNotification({
         title: 'Ошибка',
         message: data.data.message,
-        type: 'error',
+        type: 'error'
       })
     }
   }
@@ -118,7 +118,7 @@ export const useStore = defineStore('store', () => {
         ElNotification({
           title: 'Ошибка',
           message: 'Вы ввели не правильный email или пароль',
-          type: 'error',
+          type: 'error'
         })
       }
     } catch {
@@ -132,7 +132,7 @@ export const useStore = defineStore('store', () => {
       ElNotification({
         title: 'Успешно',
         message: 'Пользователь сохранён',
-        type: 'success',
+        type: 'success'
       })
     }
   }
@@ -148,11 +148,11 @@ export const useStore = defineStore('store', () => {
   }
 
   const checkTrackingTaskExit = (taskId: string): boolean => {
-    return !!user.value.trackingTasks[taskId]
+    return !!user.value.activeTasks.find(t => t.task._id === taskId)
   }
 
   const checkCompletedTaskExit = (taskId: string): boolean => {
-    return !!user.value.completedTasks.find((t) => t.task._id === taskId)
+    return !!user.value.completedTasks.find(t => t.task._id === taskId)
   }
 
   watch(
@@ -177,6 +177,6 @@ export const useStore = defineStore('store', () => {
     register,
     login,
     logout,
-    aboutMe,
+    aboutMe
   }
 })

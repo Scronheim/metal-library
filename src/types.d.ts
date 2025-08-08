@@ -42,6 +42,7 @@ export interface Objective {
   optional: boolean
   maps: GameMap[]
   count?: number
+  itemsNumber?: number
   targetNames?: string[]
   trader?: Trader
   level?: number
@@ -82,13 +83,14 @@ export interface User {
     task: Pick<Task, '_id'>
     completedDate: Date
   }[]
-  trackingTasks: {
-    task: Pick<Task, '_id'>
-    objectives: {
-      index: number
-      completed: boolean
-      itemsNumber: number
-    }[]
+  activeTasks: ActiveTask[]
+}
+
+export interface ActiveTask {
+  task: Pick<Task, '_id'>
+  objectives: {
+    completed: boolean
+    itemsNumber: number
   }[]
 }
 
