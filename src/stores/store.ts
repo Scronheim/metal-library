@@ -49,6 +49,7 @@ export const useStore = defineStore('store', () => {
   })
   const tasks = ref<Task[]>([])
   const items = ref<Item[]>([])
+  const itemFilter = ref<string>('')
 
   const user = ref<User>({
     username: '',
@@ -66,6 +67,16 @@ export const useStore = defineStore('store', () => {
   const userIsAuth = computed(() => {
     return !!token.value
   })
+
+  async function searchItem(): Promise<void> {
+    try {
+      queryIsLoading.value = true
+      const { data } = await axios.get(`/eft/api/items?q=${itemFilter.value}`)
+      items.value = data.data
+    } finally {
+      queryIsLoading.value = false
+    }
+  }
 
   async function getItems(): Promise<void> {
     try {
@@ -180,8 +191,10 @@ export const useStore = defineStore('store', () => {
     queryIsLoading,
     userIsAuth,
     token,
+    itemFilter,
     getTasks,
     getItems,
+    searchItem,
     checkTrackingTaskExit,
     checkCompletedTaskExit,
     checkUserLoggedIn,
