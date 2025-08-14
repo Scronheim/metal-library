@@ -58,7 +58,8 @@ export const useStore = defineStore('store', () => {
     fraction: 'BEAR',
     gameEdition: 'The Unheard',
     completedTasks: [],
-    activeTasks: []
+    activeTasks: [],
+    necessaryItems: []
   })
   const token = ref<string | null>(localStorage.getItem('token'))
 
@@ -67,6 +68,12 @@ export const useStore = defineStore('store', () => {
   const userIsAuth = computed(() => {
     return !!token.value
   })
+
+  function toggleNecessaryItem(item: Item): void {
+    const itemIndex = user.value.necessaryItems.findIndex(i => i.item._id === item._id)
+    if (itemIndex === -1) user.value.necessaryItems.push({ item, count: 1, itemCount: 0 })
+    else user.value.necessaryItems.splice(itemIndex, 1)
+  }
 
   async function searchItem(): Promise<void> {
     try {
@@ -175,12 +182,23 @@ export const useStore = defineStore('store', () => {
     return !!user.value.completedTasks.find(t => t.task._id === taskId)
   }
 
+  const checkItemIsNecessary = (item: Item): boolean => {
+    return !!user.value.necessaryItems.find(t => t.item._id === item._id)
+  }
+
   watch(
     user,
     debounce(async () => {
       if (user.value._id) await updateCurrentUser()
     }, 500),
     { deep: true }
+  )
+
+  watch(
+    itemFilter,
+    debounce(async () => {
+      await searchItem()
+    }, 500)
   )
 
   return {
@@ -197,10 +215,12 @@ export const useStore = defineStore('store', () => {
     searchItem,
     checkTrackingTaskExit,
     checkCompletedTaskExit,
+    checkItemIsNecessary,
     checkUserLoggedIn,
     register,
     login,
     logout,
-    aboutMe
+    aboutMe,
+    toggleNecessaryItem
   }
 })

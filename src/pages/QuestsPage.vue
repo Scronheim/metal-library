@@ -46,7 +46,7 @@ const toggleTrackingTask = (task: Task): void => {
         return {
           index,
           completed: true,
-          itemsNumber: obj.itemsNumber as number
+          itemCount: obj.itemCount as number
         }
       })
     })
@@ -71,12 +71,12 @@ const toggleCompleteTask = (task: Task): void => {
 
 const getUserTaskItemCount = (task: Task, objectiveIndex: number): number | undefined => {
   const t = store.user.activeTasks.find(t => t.task._id === task._id) as ActiveTask
-  return t?.objectives[objectiveIndex].itemsNumber
+  return t?.objectives[objectiveIndex].itemCount
 }
 
 const setUserObjectiveItemCount = (task: Task, objectiveIndex: number, value: number): void => {
   const activeTask = store.user.activeTasks.find(t => t.task._id === task._id) as ActiveTask
-  activeTask.objectives[objectiveIndex].itemsNumber = value
+  activeTask.objectives[objectiveIndex].itemCount = value
 
   if (task.objectives[objectiveIndex].count === value) activeTask.objectives[objectiveIndex].completed = true
   else activeTask.objectives[objectiveIndex].completed = false
@@ -87,7 +87,7 @@ const toggleObjectiveAreCompleted = (task: Task, objectiveIndex: number): void =
   activeTask.objectives[objectiveIndex].completed = !activeTask.objectives[objectiveIndex].completed
 
   if (activeTask.objectives[objectiveIndex].completed && task.objectives[objectiveIndex].count) {
-    activeTask.objectives[objectiveIndex].itemsNumber = task.objectives[objectiveIndex].count
+    activeTask.objectives[objectiveIndex].itemCount = task.objectives[objectiveIndex].count
   }
 }
 
@@ -123,7 +123,7 @@ onMounted(async () => {
       </el-button>
     </el-button-group>
   </div>
-  <el-input v-model="filter" placeholder="Поиск..." class="mb-3" />
+  <el-input v-model="filter" placeholder="Поиск..." class="mb-3" autofocus />
   <div v-loading="store.queryIsLoading" class="grid grid-cols-4 gap-3">
     <el-card v-for="task in tasks" :key="task._id">
       <template #header>
