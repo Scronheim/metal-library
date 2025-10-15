@@ -4,7 +4,7 @@
   "singleQuote": true,
   "htmlWhitespaceSensitivity": "ignore",
   "vueIndentScriptAndStyle": false,
-  "printWidth": 140,
+  "printWidth": 120,
   "trailingComma": "none",
   "arrowParens": "avoid",
   "bracketSpacing": true,

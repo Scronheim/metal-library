@@ -1,113 +1,29 @@
-export interface Item {
-  _id: string
-  name: string
-  normalizedName: string
-  shortName: string
-  iconLink: string
-  gridImageLink: string
-  baseImageLink: string
-  inspectImageLink: string
-}
-
-export interface Task {
-  _id: string
-  tarkovDevId: string
-  name: string
-  normalizedName: string
-  trader: TaskTrader
-  map: GameMap
-  experience: number
-  taskImageLink: string
-  minPlayerLevel: number
-  objectives: Objective[]
-  startRewards: TaskReward[]
-  finishRewards: TaskReward[]
-  kappaRequired: boolean
-}
-
-export interface TaskTrader {
-  name: string
-  normalizedName: string
-}
-
-export interface GameMap {
-  name: string
-  normalizedName: string
-}
-
-type ObjectiveType =
-  | 'visit'
-  | 'findItem'
-  | 'findQuestItem'
-  | 'giveQuestItem'
-  | 'giveItem'
-  | 'extract'
-  | 'mark'
-  | 'skill'
-  | 'shoot'
-  | 'traderLevel'
-
-export interface Objective {
-  type: ObjectiveType
-  description: string
-  optional: boolean
-  maps: GameMap[]
-  count?: number
-  itemCount?: number
-  targetNames?: string[]
-  trader?: Trader
-  level?: number
-}
-
-export interface TaskReward {
-  items: TaskItem[]
-}
-
-export interface TaskItem {
-  count: number
-  item: Item
-}
-
-export interface Item {
-  name: string
-  normalizedName: string
-}
-
-export interface Trader {
-  name: string
-  normalizedName: string
-  tasks: Task[]
-  trade: Item[]
-}
-
-type Fraction = 'BEAR' | 'USEC'
-type GameEdition = 'Standart' | 'Left Behind' | 'Prepare for Escape' | 'The Unheard'
-
 export interface User {
-  _id?: string
+  id: string
   username: string
-  nickname: string
-  level: number
-  fraction: Fraction
-  gameEdition: GameEdition
-  completedTasks: {
-    task: Pick<Task, '_id'>
-    completedDate: Date
-  }[]
-  activeTasks: ActiveTask[]
-  necessaryItems: {
-    item: Item
-    count: number
-    itemCount: number
-  }[]
-}
-
-export interface ActiveTask {
-  task: Pick<Task, '_id'>
-  objectives: {
-    completed: boolean
-    itemCount: number
-  }[]
+  email: string
+  role: string
+  profile: {
+    bio: string
+    location: string
+    favoriteGenres: Genre[]
+    favoriteGroups: Group[]
+    favoriteAlbums: Albums[]
+    website: string
+  }
+  stats: {
+    contributions: number
+    groupsAdded: number
+    albumsAdded: number
+    reviewsWritten: number
+  }
+  isVerified: boolean
+  lastLogin: Date
+  preferences: {
+    emailNotifications: boolean
+    language: string
+    theme: string
+  }
 }
 
 export interface AuthData {
@@ -115,6 +31,120 @@ export interface AuthData {
   password: string
 }
 
-export interface RegisterData extends User {
-  password: string
+export interface RegisterData extends AuthData {
+  email: string
+  passwordConfirm?: string
+}
+
+export interface Album {
+  _id: string
+  title: string
+  description: string
+  group: Group
+  releaseDate: string
+  releaseYear: number
+  genres: Genre[]
+  type: 'full-length' | 'ep' | 'single' | 'demo' | 'live' | 'compilation' | 'split'
+  cover: string
+  label: string
+  catalogId: string
+  format: string
+  tracks: TrackInfo[]
+  totalDuration: number
+  stats: {
+    views: number
+    likes: {
+      _id: string
+      username: string
+    }[]
+  }
+  createdAt: string
+}
+
+export interface TrackInfo {
+  number: number
+  title: string
+  discNumber: number
+  duration: string
+  lyrics: string
+}
+
+export interface Group {
+  _id: string
+  name: string
+  description: string
+  country: string
+  city: string
+  formedYear: number
+  status: 'active' | 'split-up' | 'on-hold' | 'unknown'
+  genres: Genre[]
+  themes: string[]
+  logo: string
+  banner: string
+  socialLinks: SocialNetwork[]
+  currentMembers: [
+    {
+      member: Member
+      role: string
+    }
+  ]
+  pastMembers: [
+    {
+      member: Member
+      role: string
+      years: string[]
+    }
+  ]
+  stats: {
+    views: number
+    likes: {
+      _id: string
+      username: string
+    }[]
+    albumsCount: number
+  }
+}
+
+export interface Genre {
+  _id: string
+  name: string
+  description: string
+  characteristics: string[]
+}
+
+export interface SocialNetwork {
+  platform: 'website' | 'youtube' | 'bandcamp' | 'spotify' | 'facebook' | 'instagram' | 'twitter'
+  url: string
+}
+
+export interface Member {
+  name: string
+  birthName: string // настоящее имя, если отличается
+  birthDate: Date
+  birthPlace: string
+  country: string
+  bio: string
+  photo: string // путь к фото
+  instruments: string[]
+  socialLinks: SocialNetwork[]
+  status: 'active' | 'retired' | 'deceased'
+  groups: [
+    {
+      group: Group
+      role: string
+      years: string[] // годы участия в группе
+      isCurrent: boolean
+    }
+  ]
+  discography: [
+    {
+      album: Album
+      group: Group
+      year: number
+    }
+  ]
+  stats: {
+    groupsCount: number
+    albumsCount: number
+  }
 }

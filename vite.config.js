@@ -14,13 +14,13 @@ export default defineConfig({
     tailwindcss(),
     AutoImport({ resolvers: ElementPlusResolver() }),
     Components({ resolvers: ElementPlusResolver() }),
-    vueDevTools(),
+    vueDevTools()
   ],
   resolve: {
     extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue'],
     alias: {
-      '@': resolve(__dirname, './src'),
-    },
+      '@': resolve(__dirname, './src')
+    }
   },
   build: {
     rollupOptions: {

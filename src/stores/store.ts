@@ -5,118 +5,108 @@ import axios from 'axios'
 import { ElNotification } from 'element-plus'
 import { debounce } from 'lodash-es'
 
-import type { Trader, Task, User, AuthData, Item } from '@/types'
+import type { User, AuthData, Group, Album, Genre, TrackInfo } from '@/types'
 
 export const useStore = defineStore('store', () => {
   const router = useRouter()
-  const traders = ref({
-    prapor: <Trader>{
-      name: 'Прапор',
-      normalizedName: 'prapor',
-      tasks: [],
-      trade: []
-    },
-    therapist: {
-      tasks: []
-    },
-    jaeger: {
-      tasks: []
-    },
-    skier: {
-      tasks: []
-    },
-    peacekeeper: {
-      tasks: []
-    },
-    mechanic: {
-      tasks: []
-    },
-    ragman: {
-      tasks: []
-    },
-    fence: {
-      tasks: []
-    },
-    ref: {
-      tasks: []
-    },
-    lightkeeper: {
-      tasks: []
-    },
-    'btr-driver': {
-      tasks: []
-    }
-  })
-  const tasks = ref<Task[]>([])
-  const items = ref<Item[]>([])
-  const itemFilter = ref<string>('')
 
   const user = ref<User>({
+    id: '',
     username: '',
-    nickname: '',
-    level: 1,
-    fraction: 'BEAR',
-    gameEdition: 'The Unheard',
-    completedTasks: [],
-    activeTasks: [],
-    necessaryItems: []
+    email: '',
+    profile: {
+      bio: '',
+      location: '',
+      favoriteBands: [],
+      favoriteGenres: [],
+      website: ''
+    },
+    role: '',
+    stats: {
+      groupsAdded: 0,
+      albumsAdded: 0,
+      contributions: 0,
+      reviewsWritten: 0
+    },
+    isVerified: false,
+    lastLogin: new Date(),
+    preferences: {
+      emailNotifications: false,
+      language: 'ru',
+      theme: 'dark'
+    }
   })
   const token = ref<string | null>(localStorage.getItem('token'))
-
   const queryIsLoading = ref(false)
-
-  const userIsAuth = computed(() => {
-    return !!token.value
+  const albumTypesMap = ref({
+    'full-length': 'Студийный альбом',
+    ep: 'EP',
+    single: 'Сингл',
+    demo: 'Демо',
+    live: 'Концертный альбом',
+    compilation: 'Сборник',
+    split: 'Сплит'
   })
 
-  function toggleNecessaryItem(item: Item): void {
-    const itemIndex = user.value.necessaryItems.findIndex(i => i.item._id === item._id)
-    if (itemIndex === -1) user.value.necessaryItems.push({ item, count: 1, itemCount: 0 })
-    else user.value.necessaryItems.splice(itemIndex, 1)
+  const userIsAuth = computed(() => !!token.value)
+  const userIsAdmin = computed(() => user.value.role === 'admin')
+
+  async function updateLyrics(album: Album, track: TrackInfo, showNotification: boolean = false): Promise<void> {
+    await axios.patch(`/eft/api/albums/${album._id}/tracks/${track.number}/lyrics`, { track })
+    if (showNotification)
+      ElNotification({
+        type: 'success',
+        message: 'Текст трека успешно обновлен'
+      })
+  }
+  async function updateAlbum(album: Album, showNotification: boolean = false): Promise<void> {
+    await axios.put(`/eft/api/albums/${album._id}`, album)
+    if (showNotification)
+      ElNotification({
+        type: 'success',
+        message: 'Альбом успешно обновлен'
+      })
   }
 
-  async function searchItem(): Promise<void> {
-    try {
-      queryIsLoading.value = true
-      const { data } = await axios.get(`/eft/api/items?q=${itemFilter.value}`)
-      items.value = data.data
-    } finally {
-      queryIsLoading.value = false
-    }
+  async function updateGroup(group: Group, showNotification: boolean = false): Promise<void> {
+    await axios.put(`/eft/api/groups/${group._id}`, group)
+    if (showNotification)
+      ElNotification({
+        type: 'success',
+        message: 'Группа успешно обновлена'
+      })
   }
 
-  async function getItems(): Promise<void> {
-    try {
-      queryIsLoading.value = true
-      const { data } = await axios.get('/eft/api/items')
-      items.value = data.data
-    } finally {
-      queryIsLoading.value = false
-    }
+  async function searchGroup(searchQuery: string): Promise<{ data: { groups: Group[] } }> {
+    return await axios.get(`/eft/api/groups?search=${searchQuery}&limit=5`)
   }
 
-  async function getTasks(): Promise<void> {
-    try {
-      queryIsLoading.value = true
-      const { data } = await axios.get('/eft/api/tasks')
-      tasks.value = data.data
-    } finally {
-      queryIsLoading.value = false
+  async function getGenres(): Promise<{ data: Genre[] }> {
+    return await axios.get('/eft/api/genres')
+  }
+
+  async function toggleLike(album: Album): Promise<{ newAlbum: Album; message: string }> {
+    const { data } = await axios.patch(`/eft/api/albums/${album._id}/like`)
+
+    return {
+      newAlbum: data.album,
+      message: data.message
     }
   }
 
   async function aboutMe(): Promise<void> {
-    const { data } = await axios.get('/eft/api/me', { headers: { 'x-access-token': token.value } })
-    user.value = { ...data.data }
+    const { data } = await axios.get('/eft/api/auth/me')
+    user.value = { ...data }
   }
 
   async function register(registerData: AuthData): Promise<void> {
-    const { data } = await axios.post('/eft/api/register', { ...user.value, ...registerData })
-    if (data.data.auth) {
-      user.value = data.data.user
-      axios.defaults.headers.common['Authorization'] = data.data.token
-      localStorage.setItem('token', data.data.token)
-      token.value = data.data.token
+    const { data } = await axios.post('/eft/api/auth/register', { ...user.value, ...registerData })
+
+    if (data) {
+      user.value = data.user
+      axios.defaults.headers.common['Authorization'] = data.token
+      localStorage.setItem('token', data.token)
+      token.value = data.token
       router.push('/')
       ElNotification({
         title: 'Успешно',
@@ -126,7 +116,7 @@ export const useStore = defineStore('store', () => {
     } else {
       ElNotification({
         title: 'Ошибка',
-        message: data.data.message,
+        message: data.message,
         type: 'error'
       })
     }
@@ -134,12 +124,12 @@ export const useStore = defineStore('store', () => {
 
   async function login(authData: AuthData): Promise<void> {
     try {
-      const { data } = await axios.post('/eft/api/login', authData)
-      if (data.data.auth) {
-        user.value = { ...user.value, ...data.data.user }
-        axios.defaults.headers.common['Authorization'] = data.data.token
-        localStorage.setItem('token', data.data.token)
-        token.value = data.data.token
+      const { data } = await axios.post('/eft/api/auth/login', authData)
+      if (data) {
+        user.value = { ...user.value, ...data.user }
+        axios.defaults.headers.common['Authorization'] = data.token
+        localStorage.setItem('token', data.token)
+        token.value = data.token
         router.push('/')
       } else {
         ElNotification({
@@ -174,18 +164,6 @@ export const useStore = defineStore('store', () => {
     if (token.value && !user.value._id) await aboutMe()
   }
 
-  const checkTrackingTaskExit = (taskId: string): boolean => {
-    return !!user.value.activeTasks.find(t => t.task._id === taskId)
-  }
-
-  const checkCompletedTaskExit = (taskId: string): boolean => {
-    return !!user.value.completedTasks.find(t => t.task._id === taskId)
-  }
-
-  const checkItemIsNecessary = (item: Item): boolean => {
-    return !!user.value.necessaryItems.find(t => t.item._id === item._id)
-  }
-
   watch(
     user,
     debounce(async () => {
@@ -194,33 +172,23 @@ export const useStore = defineStore('store', () => {
     { deep: true }
   )
 
-  watch(
-    itemFilter,
-    debounce(async () => {
-      await searchItem()
-    }, 500)
-  )
-
   return {
     user,
-    traders,
-    tasks,
-    items,
     queryIsLoading,
     userIsAuth,
+    userIsAdmin,
     token,
-    itemFilter,
-    getTasks,
-    getItems,
-    searchItem,
-    checkTrackingTaskExit,
-    checkCompletedTaskExit,
-    checkItemIsNecessary,
+    albumTypesMap,
     checkUserLoggedIn,
     register,
     login,
     logout,
     aboutMe,
-    toggleNecessaryItem
+    searchGroup,
+    updateAlbum,
+    updateGroup,
+    getGenres,
+    toggleLike,
+    updateLyrics
   }
 })
