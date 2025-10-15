@@ -138,13 +138,7 @@
                     @click="$router.push(`/albums/${album._id}`)"
                   >
                     <div class="album-cover">
-                      <el-image :src="album.cover" :alt="album.title" fit="cover" class="cover-image">
-                        <template #error>
-                          <div class="cover-placeholder">
-                            <i class="el-icon-disc"></i>
-                          </div>
-                        </template>
-                      </el-image>
+                      <el-image :src="album.cover" :alt="album.title" fit="cover" class="cover-image" />
                       <el-tag v-if="album.type" :type="getAlbumTypeTagType(album.type)" class="album-type-tag">
                         {{ getAlbumTypeLabel(album.type) }}
                       </el-tag>
@@ -155,22 +149,30 @@
                       <p class="album-label" v-if="album.label">{{ album.label }}</p>
                       <div class="album-meta">
                         <span class="tracks-count" v-if="album.tracks">
-                          <i class="el-icon-headset"></i>
+                          <el-icon>
+                            <Headset />
+                          </el-icon>
                           {{ album.tracks.length }} треков
                         </span>
                         <span class="duration" v-if="album.totalDuration">
-                          <i class="el-icon-time"></i>
+                          <el-icon>
+                            <Clock />
+                          </el-icon>
                           {{ formatDuration(album.totalDuration) }}
                         </span>
                       </div>
                       <div class="album-stats">
                         <span class="stat">
-                          <i class="el-icon-view"></i>
+                          <el-icon>
+                            <View />
+                          </el-icon>
                           {{ album.stats.views }}
                         </span>
                         <span class="stat">
-                          <i class="el-icon-star"></i>
-                          {{ album.stats.likes }}
+                          <el-icon>
+                            <Star />
+                          </el-icon>
+                          {{ album.stats.likes.length }}
                         </span>
                       </div>
                     </div>
