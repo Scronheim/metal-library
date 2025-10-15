@@ -43,7 +43,6 @@
                   :key="genre._id"
                   type="danger"
                   effect="dark"
-                  size="medium"
                   class="genre-tag"
                   @click="$router.push(`/genres/${genre._id}`)"
                 >
@@ -52,7 +51,7 @@
               </div>
               <div class="group-actions">
                 <el-button type="danger" :icon="ElIconStar" @click="toggleLike">
-                  {{ group.stats.likes }}
+                  {{ group.stats.likes.length }}
                 </el-button>
                 <el-button type="primary" :icon="ElIconShare" @click="shareGroup">Поделиться</el-button>
                 <el-button v-if="isAuthenticated" type="success" :icon="ElIconPlus" @click="addToFavorites">
@@ -328,7 +327,7 @@
                   </el-icon>
                 </div>
                 <div class="stat-info">
-                  <div class="stat-number">{{ group.stats.likes }}</div>
+                  <div class="stat-number">{{ group.stats.likes.length }}</div>
                   <div class="stat-label">Лайков</div>
                 </div>
               </div>
@@ -701,7 +700,7 @@ onMounted(() => {
 
 /* Hero Section */
 .group-hero {
-  margin-bottom: 40px;
+  margin-bottom: 20px;
 }
 
 .hero-banner {

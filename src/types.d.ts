@@ -70,7 +70,7 @@ export interface TrackInfo {
 }
 
 export interface Group {
-  _id: string
+  _id?: string
   name: string
   description: string
   country: string
@@ -82,20 +82,16 @@ export interface Group {
   logo: string
   banner: string
   socialLinks: SocialNetwork[]
-  currentMembers: [
-    {
-      member: Member
-      role: string
-    }
-  ]
-  pastMembers: [
-    {
-      member: Member
-      role: string
-      years: string[]
-    }
-  ]
-  stats: {
+  currentMembers: {
+    member: Member
+    role: string
+  }[]
+  pastMembers: {
+    member: Member
+    role: string
+    years: string[]
+  }[]
+  stats?: {
     views: number
     likes: {
       _id: string
@@ -147,4 +143,10 @@ export interface Member {
     groupsCount: number
     albumsCount: number
   }
+}
+
+export interface Country {
+  name: string
+  alpha2: string
+  alpha3: string
 }

@@ -40,6 +40,8 @@ const doRegister = async () => {
         <el-descriptions-item label="Альбомов">{{ store.user.stats.albumsAdded }}</el-descriptions-item>
         <el-descriptions-item label="Обзоров">{{ store.user.stats.reviewsWritten }}</el-descriptions-item>
       </el-descriptions>
+      <el-divider />
+      <el-button tag="router-link" to="/groups/add">Добавить группу</el-button>
     </div>
     <div v-else>
       <el-form v-if="isRegister" ref="formRef" :model="registerData" label-position="top" label-width="auto">

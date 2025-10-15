@@ -8,6 +8,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/pages/MainPage.vue')
   },
   {
+    path: '/groups/add',
+    name: 'Groups add page',
+    component: () => import('@/pages/GroupAddPage.vue')
+  },
+  {
     path: '/groups/:id',
     name: 'Groups page',
     component: () => import('@/pages/GroupPage.vue')
