@@ -4,8 +4,8 @@ import axios from 'axios'
 
 import router from './router'
 
-import '@/styles/style.css'
 import '@/styles/index.scss'
+import '@/styles/style.css'
 
 import App from './App.vue'
 

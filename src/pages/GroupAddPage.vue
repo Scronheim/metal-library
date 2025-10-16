@@ -154,7 +154,7 @@
                 value-key="name"
                 style="width: 300px; margin-bottom: 10px"
               >
-                <el-option v-for="genre in availableGenres" :key="genre._id" :label="genre.name" :value="genre" />
+                <el-option v-for="genre in store.availableGenres" :key="genre._id" :label="genre.name" :value="genre" />
               </el-select>
             </el-form-item>
           </div>
@@ -205,10 +205,10 @@
               <div class="link-row">
                 <el-select v-model="link.platform" placeholder="Платформа" style="width: 180px">
                   <el-option
-                    v-for="platform in socialPlatforms"
-                    :key="platform.value"
-                    :label="platform.label"
-                    :value="platform.value"
+                    v-for="(value, key) in store.socialPlatformNamesMap"
+                    :key="value"
+                    :label="value"
+                    :value="key"
                   />
                 </el-select>
 
@@ -315,8 +315,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Remove, Picture } from '@element-plus/icons-vue'
 
@@ -324,7 +323,6 @@ import { useStore } from '@/stores/store'
 
 import type { Genre, Group } from '@/types'
 
-const router = useRouter()
 const store = useStore()
 
 // Refs
@@ -350,19 +348,6 @@ const form = ref<Group>({
   currentMembers: [],
   pastMembers: []
 })
-
-const availableGenres = ref<Genre[]>([])
-
-const socialPlatforms = ref([
-  { value: 'website', label: 'Официальный сайт' },
-  { value: 'youtube', label: 'YouTube' },
-  { value: 'bandcamp', label: 'Bandcamp' },
-  { value: 'spotify', label: 'Spotify' },
-  { value: 'facebook', label: 'Facebook' },
-  { value: 'instagram', label: 'Instagram' },
-  { value: 'twitter', label: 'Twitter' },
-  { value: 'vkontakte', label: 'VKontakte' }
-])
 
 // Validation rules
 const rules = reactive({
@@ -488,8 +473,7 @@ const resetForm = async () => {
 }
 
 onMounted(async () => {
-  const { data } = await store.getGenres()
-  availableGenres.value = data
+  await store.getGenres()
   addSocialLink()
   addCurrentMember()
 })

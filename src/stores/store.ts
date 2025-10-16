@@ -1,9 +1,10 @@
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, markRaw } from 'vue'
 import { useRouter } from 'vue-router'
 import { defineStore } from 'pinia'
 import axios from 'axios'
 import { ElNotification } from 'element-plus'
 import { debounce } from 'lodash-es'
+import { Link, VideoPlay, Headset, Camera, ChatLineRound, ChatLineSquare } from '@element-plus/icons-vue'
 
 import type { User, AuthData, Group, Album, Genre, TrackInfo, Country } from '@/types'
 
@@ -40,7 +41,7 @@ export const useStore = defineStore('store', () => {
   })
   const token = ref<string | null>(localStorage.getItem('token'))
   const queryIsLoading = ref(false)
-  const albumTypesMap = ref({
+  const albumTypesMap = {
     'full-length': 'Студийный альбом',
     ep: 'EP',
     single: 'Сингл',
@@ -48,7 +49,49 @@ export const useStore = defineStore('store', () => {
     live: 'Концертный альбом',
     compilation: 'Сборник',
     split: 'Сплит'
+  }
+  const statusTypesMap = {
+    active: 'Активна',
+    'split-up': 'Распалась',
+    'on-hold': 'На паузе',
+    unknown: 'Неизвестно'
+  }
+  const albumTypeColorMap = {
+    'full-length': 'danger',
+    ep: 'warning',
+    single: 'success',
+    demo: 'info',
+    live: 'primary',
+    compilation: '',
+    split: 'warning'
+  }
+  const socialLinkColorMap = {
+    website: 'primary',
+    youtube: 'danger',
+    bandcamp: 'success',
+    spotify: 'success',
+    facebook: 'info',
+    instagram: 'warning',
+    twitter: 'info'
+  }
+  const socialLinkIconsMap = markRaw({
+    website: Link,
+    youtube: VideoPlay,
+    bandcamp: Headset,
+    spotify: Headset,
+    facebook: ChatLineSquare,
+    instagram: Camera,
+    twitter: ChatLineRound
   })
+  const socialPlatformNamesMap = {
+    website: 'Сайт',
+    youtube: 'YouTube',
+    bandcamp: 'Bandcamp',
+    spotify: 'Spotify',
+    facebook: 'Facebook',
+    instagram: 'Instagram',
+    twitter: 'Twitter'
+  }
   const countries: Country[] = [
     { name: 'Российская Федерация', alpha2: 'RU', alpha3: 'RUS' },
     { name: 'Киргизстан', alpha2: 'KG', alpha3: 'KGZ' },
@@ -268,10 +311,12 @@ export const useStore = defineStore('store', () => {
     if (a.name < b.name) return -1
     else return 1
   })
+  const availableGenres = ref<Genre[]>([])
 
   // Computed
   const userIsAuth = computed(() => !!token.value)
   const userIsAdmin = computed(() => user.value.role === 'admin')
+  const availableYears = computed(() => Array.from({ length: 51 }, (_, i) => new Date().getFullYear() - i))
 
   // Methods
   async function updateLyrics(album: Album, track: TrackInfo, showNotification: boolean = false): Promise<void> {
@@ -313,8 +358,9 @@ export const useStore = defineStore('store', () => {
     return await axios.get(`/eft/api/groups?search=${searchQuery}&limit=5`)
   }
 
-  async function getGenres(): Promise<{ data: Genre[] }> {
-    return await axios.get('/eft/api/genres')
+  async function getGenres(): Promise<void> {
+    const { data } = await axios.get('/eft/api/genres')
+    availableGenres.value = data
   }
 
   async function toggleLike(album: Album): Promise<{ newAlbum: Album; message: string }> {
@@ -411,7 +457,14 @@ export const useStore = defineStore('store', () => {
     userIsAdmin,
     token,
     albumTypesMap,
+    albumTypeColorMap,
+    statusTypesMap,
+    socialLinkColorMap,
+    socialLinkIconsMap,
+    socialPlatformNamesMap,
     countries,
+    availableGenres,
+    availableYears,
     checkUserLoggedIn,
     register,
     login,

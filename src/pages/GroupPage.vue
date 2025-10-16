@@ -34,7 +34,7 @@
                   <span>Основана в {{ group.formedYear }}</span>
                 </div>
                 <div class="meta-item">
-                  <span>{{ getStatusLabel(group.status) }}</span>
+                  <span>{{ store.statusTypesMap[group.status] }}</span>
                 </div>
               </div>
               <div class="group-genres">
@@ -50,12 +50,15 @@
                 </el-tag>
               </div>
               <div class="group-actions">
-                <el-button type="danger" :icon="ElIconStar" @click="toggleLike">
+                <el-button type="danger" :icon="Star" @click="toggleLike">
                   {{ group.stats.likes.length }}
                 </el-button>
-                <el-button type="primary" :icon="ElIconShare" @click="shareGroup">Поделиться</el-button>
-                <el-button v-if="isAuthenticated" type="success" :icon="ElIconPlus" @click="addToFavorites">
+                <el-button type="primary" :icon="Share" @click="shareGroup">Поделиться</el-button>
+                <el-button v-if="store.userIsAuth" type="success" :icon="Plus" @click="addToFavorites">
                   В избранное
+                </el-button>
+                <el-button v-if="store.userIsAdmin" type="info" :icon="Edit" @click="openGroupInfoDialog">
+                  Редактировать
                 </el-button>
               </div>
             </div>
@@ -74,7 +77,10 @@
           <el-tab-pane label="Биография" name="biography">
             <el-card class="tab-content-card">
               <div class="biography-content">
-                <h3>О группе</h3>
+                <div class="flex items-center gap-3 mb-3">
+                  <h3>О группе</h3>
+                  <EditIconButton @click="showGroupBioDialog = true" />
+                </div>
                 <div class="description-text" v-html="formatDescription(group.description)"></div>
 
                 <!-- Themes -->
@@ -94,14 +100,14 @@
                     <el-button
                       v-for="link in group.socialLinks"
                       :key="link.platform"
-                      :type="getSocialButtonType(link.platform)"
-                      :icon="getSocialIcon(link.platform)"
+                      :type="store.socialLinkColorMap[link.platform]"
+                      :icon="store.socialLinkIconsMap[link.platform]"
                       tag="a"
                       :href="link.url"
                       target="_blank"
                       class="social-button"
                     >
-                      {{ getSocialPlatformName(link.platform) }}
+                      {{ store.socialPlatformNamesMap[link.platform] }}
                     </el-button>
                   </div>
                 </div>
@@ -139,8 +145,8 @@
                   >
                     <div class="album-cover">
                       <el-image :src="album.cover" :alt="album.title" fit="cover" class="cover-image" />
-                      <el-tag v-if="album.type" :type="getAlbumTypeTagType(album.type)" class="album-type-tag">
-                        {{ getAlbumTypeLabel(album.type) }}
+                      <el-tag v-if="album.type" :type="store.albumTypeColorMap[album.type]" class="album-type-tag">
+                        {{ store.albumTypesMap[album.type] }}
                       </el-tag>
                     </div>
                     <div class="album-info">
@@ -387,10 +393,10 @@
                 <el-tag
                   v-if="album.type"
                   size="small"
-                  :type="getAlbumTypeTagType(album.type)"
+                  :type="store.albumTypeColorMap[album.type]"
                   class="album-type-mini-tag"
                 >
-                  {{ getAlbumTypeShortLabel(album.type) }}
+                  {{ store.albumTypesMap[album.type] }}
                 </el-tag>
               </div>
               <div class="album-info">
@@ -430,7 +436,9 @@
                 <el-image :src="news.featuredImage" :alt="news.title" fit="cover" class="image">
                   <template #error>
                     <div class="image-slot">
-                      <i class="el-icon-picture-outline"></i>
+                      <el-icon>
+                        <Picture />
+                      </el-icon>
                     </div>
                   </template>
                 </el-image>
@@ -450,44 +458,145 @@
   <div v-else class="loading-container">
     <el-skeleton :rows="10" animated />
   </div>
+
+  <el-dialog v-model="showGroupInfoDialog" title="Редактирование информации о группе" top="10px" width="600px">
+    <el-form :model="group" :rules="groupInfoRules" label-position="top">
+      <el-form-item label="Страна" prop="country">
+        <el-select v-model="group.country" placeholder="Выберите страну" filterable value-key="name">
+          <el-option v-for="country in store.countries" :key="country.alpha2" :label="country.name" :value="country" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="Город" prop="city">
+        <el-input v-model="group.city" placeholder="Введите название города" />
+      </el-form-item>
+      <el-form-item label="Год образования" prop="formedYear">
+        <el-select v-model.number="group.formedYear" placeholder="Выберите год" filterable>
+          <el-option v-for="year in store.availableYears" :key="year" :label="year" :value="year" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="Статус" prop="status">
+        <el-select v-model.number="group.status" placeholder="Выберите статус">
+          <el-option v-for="(value, key) in store.statusTypesMap" :key="key" :label="value" :value="key" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="Жанры" prop="genres">
+        <el-select v-model="group.genres" placeholder="Выберите жанр" filterable multiple value-key="name">
+          <el-option v-for="genre in store.availableGenres" :key="genre._id" :label="genre.name" :value="genre" />
+        </el-select>
+      </el-form-item>
+      <el-form-item prop="logo">
+        <template #label>
+          Ссылка на логотип
+          <el-tooltip class="box-item" effect="dark" content="Найти в Яндексе" placement="top">
+            <el-button :icon="Search" size="small" circle @click="openYandexSearch" />
+          </el-tooltip>
+        </template>
+        <el-input v-model="group.logo" placeholder="Введите ссылку на логотип" />
+        <el-image :src="group.logo">
+          <template #error>
+            <div class="cover-placeholder">
+              <SvgIcon type="mdi" :path="mdiAlbum" :size="18" />
+            </div>
+          </template>
+        </el-image>
+      </el-form-item>
+      <el-form-item prop="banner">
+        <template #label>
+          Ссылка на баннер
+          <el-tooltip class="box-item" effect="dark" content="Найти в Яндексе" placement="top">
+            <el-button :icon="Search" size="small" circle @click="openYandexSearch(false)" />
+          </el-tooltip>
+        </template>
+        <el-input v-model="group.banner" placeholder="Введите ссылку на баннер" />
+        <el-image :src="group.banner">
+          <template #error>
+            <div class="cover-placeholder">
+              <SvgIcon type="mdi" :path="mdiAlbum" :size="18" />
+            </div>
+          </template>
+        </el-image>
+      </el-form-item>
+    </el-form>
+
+    <template #footer>
+      <el-button @click="showGroupInfoDialog = false">Отмена</el-button>
+      <el-button type="success" @click="saveGroupInfo">Сохранить</el-button>
+    </template>
+  </el-dialog>
+
+  <el-dialog v-model="showGroupBioDialog" title="Редактирование биографии группы" width="600px">
+    <el-form :model="group" :rules="groupInfoRules" label-position="top">
+      <el-form-item label="О группе" prop="description">
+        <el-input type="textarea" :rows="10" v-model="group.description" placeholder="Введите описание" />
+      </el-form-item>
+      <!-- Social Links Section -->
+      <el-form-item label="Соц. сети" prop="socialLinks">
+        <template #label>
+          <div class="flex gap-2">
+            Соц. сети
+            <AddIconButton @click="addSocialLink" />
+          </div>
+        </template>
+        <div v-for="(link, index) in group.socialLinks" :key="link.url" class="flex items-center gap-3 mb-2">
+          <el-select v-model="link.platform" placeholder="Платформа" style="width: 200px">
+            <el-option v-for="(value, key) in store.socialPlatformNamesMap" :key="value" :label="value" :value="key" />
+          </el-select>
+          <el-input v-model="link.url" placeholder="Введите URL" />
+          <DeleteIconButton @confirm="removeSocialLink(index)" />
+        </div>
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="showGroupBioDialog = false">Закрыть</el-button>
+        <el-button type="success" @click="saveGroupInfo">Сохранить</el-button>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { useRoute } from 'vue-router'
+import { ElMessage, type FormRules } from 'element-plus'
 import {
   Star,
   Share,
   Plus,
-  Link,
-  VideoPlay,
   Headset,
-  Camera,
-  ChatLineRound,
-  ChatSquare,
-  ChatLineSquare,
   View,
   Microphone,
   User,
   Location,
-  Clock
+  Clock,
+  Edit,
+  Search,
+  Picture
 } from '@element-plus/icons-vue'
+import SvgIcon from '@jamescoyle/vue-icon'
+import { mdiAlbum } from '@mdi/js'
+
+import { useStore } from '@/stores/store'
+
+import type { Album, Group, News } from '@/types'
+import EditIconButton from '@/components/buttons/EditIconButton.vue'
+import AddIconButton from '@/components/buttons/AddIconButton.vue'
+import DeleteIconButton from '@/components/buttons/DeleteIconButton.vue'
 
 const route = useRoute()
-const router = useRouter()
+const store = useStore()
 
 // Refs
-const group = ref(null)
-const albums = ref([])
-const similarGroups = ref([])
-const relatedNews = ref([])
-const activeTab = ref('biography')
-
-// Icons
-const ElIconStar = Star
-const ElIconShare = Share
-const ElIconPlus = Plus
+const group = ref<Group>(null)
+const albums = ref<Album[]>([])
+const similarGroups = ref<Group[]>([])
+const relatedNews = ref<News[]>([])
+const activeTab = ref<string>('biography')
+const showGroupInfoDialog = ref<boolean>(false)
+const showGroupBioDialog = ref<boolean>(false)
+const groupInfoRules = ref<FormRules<Group>>({
+  cover: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }]
+})
 
 // Computed
 const totalMembers = computed(() => {
@@ -513,98 +622,29 @@ const getDiscographyPeriod = computed(() => {
   return minYear === maxYear ? `${minYear}` : `${minYear} - ${maxYear}`
 })
 
-const isAuthenticated = computed(() => {
-  // Здесь должна быть логика проверки аутентификации
-  return false
-})
-
 // Methods
-const getStatusLabel = status => {
-  const statusMap = {
-    active: 'Активна',
-    'split-up': 'Распалась',
-    'on-hold': 'На паузе',
-    unknown: 'Неизвестно'
-  }
-  return statusMap[status] || status
+const addSocialLink = () => {
+  group.value.socialLinks.push({
+    platform: 'website',
+    url: ''
+  })
 }
-
-const getAlbumTypeLabel = type => {
-  const typeMap = {
-    'full-length': 'Студийный альбом',
-    ep: 'EP',
-    single: 'Сингл',
-    demo: 'Демо',
-    live: 'Концертный альбом',
-    compilation: 'Сборник',
-    split: 'Сплит'
-  }
-  return typeMap[type] || type
+const removeSocialLink = (index: number): void => {
+  group.value.socialLinks.splice(index, 1)
 }
-
-const getAlbumTypeShortLabel = type => {
-  const typeMap = {
-    'full-length': 'Альбом',
-    ep: 'EP',
-    single: 'Сингл',
-    demo: 'Демо',
-    live: 'Live',
-    compilation: 'Сборник',
-    split: 'Сплит'
-  }
-  return typeMap[type] || type
+const openYandexSearch = (isLogo: boolean = true) => {
+  window.open(
+    `https://yandex.ru/images/search?text=${group.value.name} ${isLogo ? 'логотип' : 'фото группы'}`,
+    '_blank'
+  )
 }
-
-const getAlbumTypeTagType = type => {
-  const typeMap = {
-    'full-length': 'danger',
-    ep: 'warning',
-    single: 'success',
-    demo: 'info',
-    live: 'primary',
-    compilation: '',
-    split: 'warning'
-  }
-  return typeMap[type] || 'info'
+const openGroupInfoDialog = async () => {
+  await store.getGenres()
+  showGroupInfoDialog.value = true
 }
-
-const getSocialButtonType = platform => {
-  const types = {
-    website: 'primary',
-    youtube: 'danger',
-    bandcamp: 'success',
-    spotify: 'success',
-    facebook: 'info',
-    instagram: 'warning',
-    twitter: 'info'
-  }
-  return types[platform] || 'default'
-}
-
-const getSocialIcon = platform => {
-  const icons = {
-    website: Link,
-    youtube: VideoPlay,
-    bandcamp: Headset,
-    spotify: Headset,
-    facebook: ChatLineSquare,
-    instagram: Camera,
-    twitter: ChatLineRound
-  }
-  return icons[platform]
-}
-
-const getSocialPlatformName = platform => {
-  const names = {
-    website: 'Сайт',
-    youtube: 'YouTube',
-    bandcamp: 'Bandcamp',
-    spotify: 'Spotify',
-    facebook: 'Facebook',
-    instagram: 'Instagram',
-    twitter: 'Twitter'
-  }
-  return names[platform] || platform
+const saveGroupInfo = async (): Promise<void> => {
+  await store.updateGroup(group.value, true)
+  showGroupInfoDialog.value = false
 }
 
 const formatDescription = text => {
@@ -646,11 +686,6 @@ const shareGroup = async () => {
 }
 
 const addToFavorites = () => {
-  if (!isAuthenticated.value) {
-    ElMessage.warning('Для добавления в избранное необходимо войти в систему')
-    router.push('/login')
-    return
-  }
   // API call to add to favorites
   ElMessage.success('Группа добавлена в избранное')
 }
@@ -837,7 +872,6 @@ onMounted(() => {
 
 .biography-content h3 {
   color: #f5f5f5;
-  margin-bottom: 16px;
   font-size: 1.5rem;
 }
 

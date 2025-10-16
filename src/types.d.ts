@@ -114,6 +114,7 @@ export interface SocialNetwork {
 }
 
 export interface Member {
+  _id: string
   name: string
   birthName: string // настоящее имя, если отличается
   birthDate: Date
@@ -149,4 +150,19 @@ export interface Country {
   name: string
   alpha2: string
   alpha3: string
+}
+
+export interface News {
+  _id: string
+  title: string
+  content: string
+  author: User
+  category: 'news' | 'review' | 'interview' | 'release'
+  tags: string[]
+  featuredImage: string
+  relatedGroups: Group[]
+  relatedAlbums: Album[]
+  isPublished: boolean
+  publishedAt: string
+  views: number
 }

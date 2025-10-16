@@ -14,7 +14,7 @@ import UserBar from './components/UserBar.vue'
     </div>
   </div>
   <el-container>
-    <el-main>
+    <el-main style="padding: 0">
       <RouterView />
     </el-main>
   </el-container>
