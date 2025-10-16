@@ -5,7 +5,7 @@
       <div
         class="hero-banner"
         :style="{
-          backgroundImage: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(${group.banner || '/images/banner-placeholder.jpg'})`
+          backgroundImage: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(${group.banner})`
         }"
       >
         <div class="hero-content">
@@ -117,11 +117,14 @@
 
           <!-- Discography Tab -->
           <el-tab-pane label="Дискография" name="discography">
-            <el-card class="tab-content-card">
+            <el-card>
               <div class="discography-content">
                 <!-- Discography Header with Stats -->
                 <div class="discography-header">
-                  <h3>Дискография</h3>
+                  <div class="flex items-center gap-3">
+                    <h3>Дискография</h3>
+                    <AddIconButton @click="openAlbumAddDialog" />
+                  </div>
                   <div class="discography-stats">
                     <span class="stat">
                       <i class="el-icon-disc"></i>
@@ -553,6 +556,57 @@
       </div>
     </template>
   </el-dialog>
+
+  <!-- <el-dialog v-model="showEditableAlbumDialog" title="Редактирование альбома" width="600px">
+    <el-form ref="formRef" :model="editableAlbum" label-position="top">
+      <el-form-item label="Название" prop="name">
+        <el-input v-model="editableAlbum.title" placeholder="Введите название альбома" />
+      </el-form-item>
+      <el-form-item label="Дата релиза" prop="releaseDate">
+        <el-input type="date" v-model="editableAlbum.releaseDate" placeholder="Выберите дату релиза" />
+      </el-form-item>
+      <el-form-item label="Тип" prop="type">
+        <el-select v-model="editableAlbum.type">
+          <el-option v-for="(value, key) in store.albumTypesMap" :key="key" :label="value" :value="key" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="Жанры" prop="genres">
+        <el-select multiple filterable value-key="name" v-model="editableAlbum.genres">
+          <el-option v-for="genre in store.availableGenres" :key="genre._id" :label="genre.name" :value="genre" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="Ссылка на обложку" prop="cover">
+        <el-input v-model="editableAlbum.cover" placeholder="Введите URL обложки" />
+      </el-form-item>
+      <el-form-item label="Лейбл" prop="label">
+        <el-input v-model="editableAlbum.label" placeholder="Введите название лейбла" />
+      </el-form-item>
+      <div class="flex gap-3">
+        <h3>Треклист</h3>
+        <AddIconButton title="Добавить трек" @click="addTrack" />
+      </div>
+      <div v-for="track in editableAlbum.tracks" :key="track.title" class="flex items-center gap-2">
+        <el-form-item label="№ трека" prop="number">
+          <el-input-number v-model.number="track.number" :min="1" />
+        </el-form-item>
+        <div class="flex flex-col">
+          <el-form-item label="Название" prop="title">
+            <el-input v-model="track.title" placeholder="Введите название трека" />
+          </el-form-item>
+          <el-input type="textarea" :rows="10" v-model="track.lyrics" placeholder="Введите текст трека" />
+        </div>
+
+        <DeleteIconButton />
+      </div>
+    </el-form>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="showEditableAlbumDialog = false">Закрыть</el-button>
+        <el-button type="success" @click="addAlbum">Сохранить</el-button>
+      </div>
+    </template>
+  </el-dialog> -->
+  <EditAlbumDialog v-model="showEditableAlbumDialog" />
 </template>
 
 <script setup lang="ts">
@@ -578,25 +632,31 @@ import { mdiAlbum } from '@mdi/js'
 
 import { useStore } from '@/stores/store'
 
-import type { Album, Group, News } from '@/types'
+import { getDefaultAlbum, getDefaultGroup } from '@/consts'
+
 import EditIconButton from '@/components/buttons/EditIconButton.vue'
 import AddIconButton from '@/components/buttons/AddIconButton.vue'
 import DeleteIconButton from '@/components/buttons/DeleteIconButton.vue'
+import EditAlbumDialog from '@/components/dialogs/EditAlbumDialog.vue'
+
+import type { Album, Group, News } from '@/types'
 
 const route = useRoute()
 const store = useStore()
 
 // Refs
-const group = ref<Group>(null)
+const group = ref<Group>(getDefaultGroup())
 const albums = ref<Album[]>([])
 const similarGroups = ref<Group[]>([])
 const relatedNews = ref<News[]>([])
-const activeTab = ref<string>('biography')
+const activeTab = ref<string>('discography')
 const showGroupInfoDialog = ref<boolean>(false)
 const showGroupBioDialog = ref<boolean>(false)
+const showEditableAlbumDialog = ref<boolean>(false)
 const groupInfoRules = ref<FormRules<Group>>({
   cover: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }]
 })
+const editableAlbum = ref<Album>(getDefaultAlbum())
 
 // Computed
 const totalMembers = computed(() => {
@@ -623,6 +683,22 @@ const getDiscographyPeriod = computed(() => {
 })
 
 // Methods
+const addTrack = () => {
+  editableAlbum.value.tracks.push({
+    number: editableAlbum.value.tracks.length + 1,
+    title: '',
+    discNumber: 1,
+    duration: '00:00:01',
+    lyrics: ''
+  })
+}
+const addAlbum = async (): Promise<void> => {
+  await store.addAlbum(editableAlbum.value, true)
+}
+const openAlbumAddDialog = async () => {
+  await store.getGenres()
+  showEditableAlbumDialog.value = true
+}
 const addSocialLink = () => {
   group.value.socialLinks.push({
     platform: 'website',
@@ -695,25 +771,25 @@ const fetchGroupData = async () => {
   const groupId = route.params.id
   try {
     // Fetch group data
-    const groupResponse = await fetch(`/eft/api/groups/${groupId}`)
+    const groupResponse = await fetch(`/library/api/groups/${groupId}`)
     if (groupResponse.ok) {
       group.value = await groupResponse.json()
     }
 
     // Fetch group albums
-    const albumsResponse = await fetch(`/eft/api/groups/${groupId}/albums`)
+    const albumsResponse = await fetch(`/library/api/groups/${groupId}/albums`)
     if (albumsResponse.ok) {
       albums.value = await albumsResponse.json()
     }
 
     // Fetch similar groups
-    const similarResponse = await fetch(`/eft/api/groups/${groupId}/similar`)
+    const similarResponse = await fetch(`/library/api/groups/${groupId}/similar`)
     if (similarResponse.ok) {
       similarGroups.value = await similarResponse.json()
     }
 
     // Fetch related news
-    const newsResponse = await fetch(`/eft/api/news/group/${groupId}`)
+    const newsResponse = await fetch(`/library/api/news/group/${groupId}`)
     if (newsResponse.ok) {
       relatedNews.value = await newsResponse.json()
     }
@@ -857,12 +933,6 @@ onMounted(() => {
 
 :deep(.group-tabs .el-tabs__content) {
   padding: 0;
-}
-
-.tab-content-card {
-  background: #1e1e1e;
-  border: 1px solid #333;
-  border-radius: 0 0 8px 8px;
 }
 
 /* Biography Tab */

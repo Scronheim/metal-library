@@ -115,8 +115,8 @@ const performQuickSearch = async () => {
 
     // Search groups and albums simultaneously
     const [groupsResponse, albumsResponse] = await Promise.all([
-      fetch(`/eft/api/groups?search=${encodeURIComponent(query)}&limit=3`),
-      fetch(`/eft/api/albums?search=${encodeURIComponent(query)}&limit=3`)
+      fetch(`/library/api/groups?search=${encodeURIComponent(query)}&limit=3`),
+      fetch(`/library/api/albums?search=${encodeURIComponent(query)}&limit=3`)
     ])
 
     const groupsData = groupsResponse.ok ? await groupsResponse.json() : { groups: [] }

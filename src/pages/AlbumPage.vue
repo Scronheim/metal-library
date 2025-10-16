@@ -114,7 +114,7 @@
               v-for="(track, index) in album.tracks"
               :key="track.number"
               class="track-item"
-              :class="{ 'has-lyrics': trackHasLyrics(track) }"
+              :class="{ 'has-lyrics': track.lyrics }"
             >
               <div class="track-main" @click="toggleTrackLyrics(track)">
                 <div class="track-number">
@@ -125,7 +125,7 @@
                   <h4 class="track-title">{{ track.title }}</h4>
                   <div class="track-meta">
                     <span class="track-duration">{{ track.duration }}</span>
-                    <el-tag v-if="trackHasLyrics(track)" size="small" type="info" class="lyrics-tag">есть текст</el-tag>
+                    <el-tag v-if="track.lyrics" size="small" type="info" class="lyrics-tag">есть текст</el-tag>
                   </div>
                 </div>
 
@@ -223,7 +223,12 @@
               <span class="detail-value">
                 <template v-if="isDetailsEdit">
                   <el-select multiple filterable value-key="name" v-model="album.genres">
-                    <el-option v-for="genre in foundedGenres" :key="genre._id" :label="genre.name" :value="genre" />
+                    <el-option
+                      v-for="genre in store.availableGenres"
+                      :key="genre._id"
+                      :label="genre.name"
+                      :value="genre"
+                    />
                   </el-select>
                 </template>
                 <template v-else>{{ albumGenres }}</template>
@@ -335,25 +340,7 @@
 
   <!-- Lyrics Edit Dialog -->
   <el-dialog v-model="showLyricsEdit" title="Редактирование текста" width="600px" :before-close="handleEditClose">
-    <el-form :model="editingTrack" :rules="lyricsRules" label-position="top">
-      <el-form-item label="Название трека" prop="title">
-        <el-input v-model="editingTrack.title" placeholder="Введите название трека" />
-      </el-form-item>
-      <el-form-item label="№ трека" prop="number">
-        <el-input-number :min="1" v-model.number="editingTrack.number" />
-      </el-form-item>
-      <el-form-item label="№ диска" prop="discNumber">
-        <el-input-number :min="1" v-model.number="editingTrack.discNumber" />
-      </el-form-item>
-      <el-form-item label="Текст" prop="lyrics">
-        <el-input v-model="editingTrack.lyrics" type="textarea" :rows="10" placeholder="Введите текст песни" />
-      </el-form-item>
-      <el-form-item label="Длительность" prop="duration">
-        <el-input type="time" step="1" required v-model="editingTrack.duration">
-          <template #suffix>сек.</template>
-        </el-input>
-      </el-form-item>
-    </el-form>
+    <TrackForm :track="editingTrack" />
 
     <template #footer>
       <el-button @click="handleEditClose">Отмена</el-button>
@@ -402,7 +389,8 @@ import EditIconButton from '@/components/buttons/EditIconButton.vue'
 import AddIconButton from '@/components/buttons/AddIconButton.vue'
 import DeleteIconButton from '@/components/buttons/DeleteIconButton.vue'
 
-import type { Album, Genre, Group, TrackInfo } from '@/types'
+import type { Album, Group, TrackInfo } from '@/types'
+import TrackForm from '@/components/forms/TrackForm.vue'
 
 dayjs.extend(durationPlugin)
 
@@ -421,16 +409,8 @@ const isGroupEdit = ref(false)
 const isDetailsEdit = ref(false)
 const searchQuery = ref('')
 const foundedGroups = ref<Group[]>([])
-const foundedGenres = ref<Genre[]>([])
 const albumRules = ref<FormRules<Album>>({
   cover: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }]
-})
-const lyricsRules = ref<FormRules<TrackInfo>>({
-  title: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }],
-  number: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }],
-  discNumber: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }],
-  lyrics: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }],
-  duration: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }]
 })
 
 // Computed
@@ -451,15 +431,14 @@ const removeTrack = (index: number): void => {
   album.value.tracks.splice(index, 1)
 }
 const showDetailsEdit = async (): Promise<void> => {
-  const { data } = await store.getGenres()
-  foundedGenres.value = data
+  await store.getGenres()
   isDetailsEdit.value = !isDetailsEdit.value
 }
 const handleSelectGroup = (group: Group): void => {
   album.value.group = group
 }
 const searchGroup = async (queryString: string, cb: any): Promise<void> => {
-  if (!queryString) return
+  if (!queryString) return cb([])
   const { data } = await store.searchGroup(queryString)
   foundedGroups.value = data.groups
   cb(data.groups)
@@ -521,12 +500,8 @@ const isTrackExpanded = (trackNumber: number): boolean => {
   return expandedTracks.value.has(trackNumber)
 }
 
-const trackHasLyrics = (track: TrackInfo) => {
-  return track.lyrics !== ''
-}
-
 const toggleTrackLyrics = (track: TrackInfo): void => {
-  if (!trackHasLyrics(track)) return
+  if (!track.lyrics) return
   if (expandedTracks.value.has(track.number)) {
     expandedTracks.value.delete(track.number)
   } else {
@@ -611,7 +586,7 @@ const fetchAlbumData = async () => {
   const albumId = route.params.id
   try {
     // Fetch album data
-    const albumResponse = await fetch(`/eft/api/albums/${albumId}`)
+    const albumResponse = await fetch(`/library/api/albums/${albumId}`)
     if (albumResponse.ok) {
       album.value = await albumResponse.json()
     } else {
@@ -620,7 +595,7 @@ const fetchAlbumData = async () => {
 
     // Fetch other albums by the same group
     if (album.value.group._id) {
-      const otherResponse = await fetch(`/eft/api/groups/${album.value.group._id}/albums`)
+      const otherResponse = await fetch(`/library/api/groups/${album.value.group._id}/albums`)
       if (otherResponse.ok) {
         const allAlbums = await otherResponse.json()
         otherAlbums.value = allAlbums.filter(a => a._id !== albumId).slice(0, 5)
@@ -628,7 +603,7 @@ const fetchAlbumData = async () => {
     }
 
     // Fetch related news
-    const newsResponse = await fetch(`/eft/api/news/album/${albumId}`)
+    const newsResponse = await fetch(`/library/api/news/album/${albumId}`)
     if (newsResponse.ok) {
       relatedNews.value = await newsResponse.json()
     }

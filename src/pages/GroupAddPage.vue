@@ -333,20 +333,24 @@ const activeMembersTab = ref('current')
 
 // Form data
 const form = ref<Group>({
-  name: 'Slaughter to Prevail',
-  description: '1',
-  country: 'Российская Федерация',
-  city: 'Екатеринбург',
-  formedYear: 2014,
+  name: '',
+  description: '',
+  country: '',
+  city: '',
+  formedYear: new Date().getFullYear(),
   status: 'active',
   genres: [],
   themes: [],
-  logo: 'https://i.ytimg.com/vi/ofAuf28SyCM/maxresdefault.jpg?sqp=-oaymwEmCIAKENAF8quKqQMa8AEB-AG8CYAC0AWKAgwIABABGGUgZShlMA8=&rs=AOn4CLBdaoZmVjH46uzIoXX54dwxIQHHkw',
-  banner:
-    'https://yandex-images.clstorage.net/URk96u390/b74258U_4P/ziaGfqRngaLh4l4ojDW1MvGCXg_3J54ehSQ3X0oEV4qXPnWYKh-yZdODKxfGt1Qnp4a3K_bZIDkUh8eYeVHgXYF0xinkLIKm6PAXNJ52pT_8wVIZpWmaUdcuNw8YaDH44B0d4Bk1wxypnH1Bl-IcPuSQ3BfuuzENS8a8nlMUhDvNNbFavlnpufbUCT6qOZId8dh8Le9lkW6AFl5felEg_8A-MtoRPeUcqIFZe5rTB1HZjOwEg7oBEFfytpVNGaUC7yO9S51OzK7x_REmrjOSMOPlZC3ZepVRjQpiWE5CBOPbLw_hAR3PEZCzZkCj1Q1c0JLiBZq9CDJL2pu_RiqeP_sho1ayY9yo9sAWAoIaqxDN43cO5XG2WaQxcGd6Ty_r1BQ23iUx_iWoilFdhs0rV9SJ-QO6uiIdS_WWjV0SlQDwA5dvkXPbmPPFOiOXEb4x5NhiG9d9nEqdMmF7aFIE-Pk8LfwoPcABsoxtSZfyBULCq9IfpqQgDXbFu4hdNLsW4gC8SYZC6rj35xkGni2-NMv9dznmbL1MmDhac39fAtrsExPtJCXiJ52mX3WpyQZo3q3nCqO2MxhkwZuNXhqIKfIDt1eBbMarz9wxBK8UnQLa2lUO4H6Pd4QtW1debxT11T4V4jI77C20t0ZEgMkyYN-k6CaJvBQWYdyghEIbhw3uDpFNk2XjiOPzFBuIAb4H6thDAtNapWSbI31TX1og4OgxOOUyKfU0oq5pTIDyAFjRs9Iwpp0FFmH-oqRPOZMA6iKidYN89o7HxyQroAGlJtvjRBLJeqZrixh8fV1SCf_xDhb7LDjAN4SHakmGyiV15ZXOHI-LCyVz1rSxWAShFO4PolaGRuWCyvs_CJUSuifQw0MS4WeReK8uelFyVQ3J9AUnwC0dzwGQkUZshd00RtiMwCW9mjcJSMCBiXw6uDrbH5FsonPFpvTZCjS_MIgW5fZCL8VukWujElt4c2I',
+  logo: '',
+  banner: '',
   socialLinks: [],
   currentMembers: [],
-  pastMembers: []
+  pastMembers: [],
+  stats: {
+    albumsCount: 0,
+    likes: [],
+    views: 0
+  }
 })
 
 // Validation rules

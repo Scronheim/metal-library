@@ -320,7 +320,7 @@ export const useStore = defineStore('store', () => {
 
   // Methods
   async function updateLyrics(album: Album, track: TrackInfo, showNotification: boolean = false): Promise<void> {
-    await axios.patch(`/eft/api/albums/${album._id}/tracks/${track.number}/lyrics`, { track })
+    await axios.patch(`/library/api/albums/${album._id}/tracks/${track.number}/lyrics`, { track })
     if (showNotification)
       ElNotification({
         type: 'success',
@@ -328,7 +328,7 @@ export const useStore = defineStore('store', () => {
       })
   }
   async function updateAlbum(album: Album, showNotification: boolean = false): Promise<void> {
-    await axios.put(`/eft/api/albums/${album._id}`, album)
+    await axios.put(`/library/api/albums/${album._id}`, album)
     if (showNotification)
       ElNotification({
         type: 'success',
@@ -337,7 +337,7 @@ export const useStore = defineStore('store', () => {
   }
 
   async function updateGroup(group: Group, showNotification: boolean = false): Promise<void> {
-    await axios.put(`/eft/api/groups/${group._id}`, group)
+    await axios.put(`/library/api/groups/${group._id}`, group)
     if (showNotification)
       ElNotification({
         type: 'success',
@@ -345,8 +345,17 @@ export const useStore = defineStore('store', () => {
       })
   }
 
+  async function addAlbum(album: Album, showNotification: boolean = false): Promise<void> {
+    await axios.post('/library/api/albums', album)
+    if (showNotification)
+      ElNotification({
+        type: 'success',
+        message: 'Альбом успешно добавлен'
+      })
+  }
+
   async function addGroup(group: Group, showNotification: boolean = false): Promise<void> {
-    await axios.post('/eft/api/groups', group)
+    await axios.post('/library/api/groups', group)
     if (showNotification)
       ElNotification({
         type: 'success',
@@ -355,16 +364,16 @@ export const useStore = defineStore('store', () => {
   }
 
   async function searchGroup(searchQuery: string): Promise<{ data: { groups: Group[] } }> {
-    return await axios.get(`/eft/api/groups?search=${searchQuery}&limit=5`)
+    return await axios.get(`/library/api/groups?search=${searchQuery}&limit=5`)
   }
 
   async function getGenres(): Promise<void> {
-    const { data } = await axios.get('/eft/api/genres')
+    const { data } = await axios.get('/library/api/genres')
     availableGenres.value = data
   }
 
   async function toggleLike(album: Album): Promise<{ newAlbum: Album; message: string }> {
-    const { data } = await axios.patch(`/eft/api/albums/${album._id}/like`)
+    const { data } = await axios.patch(`/library/api/albums/${album._id}/like`)
 
     return {
       newAlbum: data.album,
@@ -373,12 +382,12 @@ export const useStore = defineStore('store', () => {
   }
 
   async function aboutMe(): Promise<void> {
-    const { data } = await axios.get('/eft/api/auth/me')
+    const { data } = await axios.get('/library/api/auth/me')
     user.value = { ...data }
   }
 
   async function register(registerData: AuthData): Promise<void> {
-    const { data } = await axios.post('/eft/api/auth/register', { ...user.value, ...registerData })
+    const { data } = await axios.post('/library/api/auth/register', { ...user.value, ...registerData })
 
     if (data) {
       user.value = data.user
@@ -402,7 +411,7 @@ export const useStore = defineStore('store', () => {
 
   async function login(authData: AuthData): Promise<void> {
     try {
-      const { data } = await axios.post('/eft/api/auth/login', authData)
+      const { data } = await axios.post('/library/api/auth/login', authData)
       if (data) {
         user.value = { ...user.value, ...data.user }
         axios.defaults.headers.common['Authorization'] = data.token
@@ -422,7 +431,7 @@ export const useStore = defineStore('store', () => {
   }
 
   async function updateCurrentUser(showNotification: boolean = false): Promise<void> {
-    await axios.patch('/eft/api/update_user', user.value)
+    await axios.patch('/library/api/update_user', user.value)
     if (showNotification) {
       ElNotification({
         title: 'Успешно',
@@ -476,6 +485,7 @@ export const useStore = defineStore('store', () => {
     getGenres,
     toggleLike,
     updateLyrics,
-    addGroup
+    addGroup,
+    addAlbum
   }
 })

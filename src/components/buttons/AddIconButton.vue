@@ -5,7 +5,7 @@ const emits = defineEmits(['click'])
 const props = defineProps({
   title: {
     type: String,
-    default: ''
+    default: 'Добавить'
   },
   size: {
     type: String,
@@ -31,7 +31,7 @@ const props = defineProps({
 </script>
 
 <template>
-  <el-tooltip effect="dark" :content="isCloseEdit ? 'Закрыть добавление' : 'Добавить'" placement="top">
+  <el-tooltip effect="dark" :content="isCloseEdit ? 'Закрыть добавление' : title" placement="top">
     <el-button
       :icon="isCloseEdit ? Close : Plus"
       circle

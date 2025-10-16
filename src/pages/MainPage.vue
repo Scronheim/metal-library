@@ -41,9 +41,20 @@
           </div>
 
           <div class="news-grid">
-            <el-card v-for="news in latestNews" :key="news._id" class="news-card" shadow="hover" @click="$router.push(`/news/${news._id}`)">
+            <el-card
+              v-for="news in latestNews"
+              :key="news._id"
+              class="news-card"
+              shadow="hover"
+              @click="$router.push(`/news/${news._id}`)"
+            >
               <div class="news-image">
-                <el-image :src="news.featuredImage || '/images/news-placeholder.jpg'" :alt="news.title" fit="cover" class="image">
+                <el-image
+                  :src="news.featuredImage || '/images/news-placeholder.jpg'"
+                  :alt="news.title"
+                  fit="cover"
+                  class="image"
+                >
                   <template #error>
                     <div class="image-slot">
                       <i class="el-icon-picture-outline"></i>
@@ -71,7 +82,9 @@
                     </span>
                   </div>
                   <div class="meta-right">
-                    <el-button type="text" size="small" @click.stop="$router.push(`/news/${news._id}`)">Читать</el-button>
+                    <el-button type="text" size="small" @click.stop="$router.push(`/news/${news._id}`)">
+                      Читать
+                    </el-button>
                   </div>
                 </div>
               </div>
@@ -93,7 +106,12 @@
           </div>
 
           <div class="groups-list">
-            <div v-for="group in latestGroups" :key="group._id" class="group-item" @click="$router.push(`/groups/${group._id}`)">
+            <div
+              v-for="group in latestGroups"
+              :key="group._id"
+              class="group-item"
+              @click="$router.push(`/groups/${group._id}`)"
+            >
               <div class="group-logo">
                 <el-avatar :size="50" :src="group.logo" :alt="group.name" shape="square">
                   <i class="el-icon-headset" v-if="!group.logo"></i>
@@ -112,7 +130,7 @@
                   </span>
                 </div>
                 <div class="group-genres">
-                  <el-tag v-for="genre in group.genres.slice(0, 2)" :key="genre._id" size="mini" effect="plain">
+                  <el-tag v-for="genre in group.genres.slice(0, 2)" :key="genre._id" size="small" effect="plain">
                     {{ genre.name }}
                   </el-tag>
                 </div>
@@ -131,7 +149,12 @@
           </div>
 
           <div class="albums-list">
-            <div v-for="(album, index) in topAlbums" :key="album._id" class="album-item" @click="$router.push(`/albums/${album._id}`)">
+            <div
+              v-for="(album, index) in topAlbums"
+              :key="album._id"
+              class="album-item"
+              @click="$router.push(`/albums/${album._id}`)"
+            >
               <div class="album-rank">
                 <span class="rank-number">{{ index + 1 }}</span>
               </div>
@@ -144,7 +167,14 @@
                 <h5 class="album-title">{{ album.title }}</h5>
                 <p class="album-artist">{{ album.group.name }}</p>
                 <div class="album-rating">
-                  <el-rate v-model="album.rating" disabled show-score text-color="#ff9900" score-template="{value}" class="rating-stars" />
+                  <el-rate
+                    v-model="album.rating"
+                    disabled
+                    show-score
+                    text-color="#ff9900"
+                    score-template="{value}"
+                    class="rating-stars"
+                  />
                 </div>
               </div>
             </div>
@@ -243,7 +273,9 @@
                   <i class="el-icon-headset"></i>
                   {{ genre.groupsCount }} групп
                 </span>
-                <el-tag size="small" :type="genre.popularity > 70 ? 'danger' : 'info'">Популярность: {{ genre.popularity }}%</el-tag>
+                <el-tag size="small" :type="genre.popularity > 70 ? 'danger' : 'info'">
+                  Популярность: {{ genre.popularity }}%
+                </el-tag>
               </div>
             </div>
           </el-card>
@@ -341,31 +373,31 @@ const getCategoryLabel = category => {
 const fetchHomeData = async () => {
   try {
     // Fetch latest news
-    const newsResponse = await fetch('/eft/api/news/latest?limit=6')
+    const newsResponse = await fetch('/library/api/news/latest?limit=6')
     if (newsResponse.ok) {
       latestNews.value = await newsResponse.json()
     }
 
     // Fetch latest groups
-    const groupsResponse = await fetch('/eft/api/groups/latest?limit=5')
+    const groupsResponse = await fetch('/library/api/groups/latest?limit=5')
     if (groupsResponse.ok) {
       latestGroups.value = await groupsResponse.json()
     }
 
     // Fetch top albums
-    const albumsResponse = await fetch('/eft/api/albums/top?limit=5')
+    const albumsResponse = await fetch('/library/api/albums/top?limit=5')
     if (albumsResponse.ok) {
       topAlbums.value = await albumsResponse.json()
     }
 
     // Fetch featured genres
-    const genresResponse = await fetch('/eft/api/genres/popular?limit=6')
+    const genresResponse = await fetch('/library/api/genres/popular?limit=6')
     if (genresResponse.ok) {
       featuredGenres.value = await genresResponse.json()
     }
 
     // Fetch statistics
-    const statsResponse = await fetch('/eft/api/stats')
+    const statsResponse = await fetch('/library/api/stats')
     if (statsResponse.ok) {
       stats.value = await statsResponse.json()
     }

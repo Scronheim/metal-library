@@ -37,7 +37,7 @@ export interface RegisterData extends AuthData {
 }
 
 export interface Album {
-  _id: string
+  _id?: string
   title: string
   description: string
   group: Group
@@ -50,7 +50,6 @@ export interface Album {
   catalogId: string
   format: string
   tracks: TrackInfo[]
-  totalDuration: number
   stats: {
     views: number
     likes: {
@@ -58,7 +57,7 @@ export interface Album {
       username: string
     }[]
   }
-  createdAt: string
+  createdAt?: string
 }
 
 export interface TrackInfo {
@@ -91,7 +90,7 @@ export interface Group {
     role: string
     years: string[]
   }[]
-  stats?: {
+  stats: {
     views: number
     likes: {
       _id: string
