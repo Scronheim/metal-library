@@ -19,13 +19,10 @@
       <div class="form-section">
         <h3 class="section-title">Основная информация</h3>
 
-        <div class="form-row">
+        <div class="form-row columns-2">
           <el-form-item label="Название альбома" prop="title" class="form-item">
             <el-input v-model="form.title" placeholder="Введите название альбома" maxlength="100" show-word-limit />
           </el-form-item>
-        </div>
-
-        <div class="form-row columns-2">
           <el-form-item label="Группа" prop="group" class="form-item">
             <el-autocomplete
               v-model="searchQuery"
@@ -35,10 +32,17 @@
               @select="handleSelectGroup"
             />
           </el-form-item>
+        </div>
 
+        <div class="form-row columns-2">
           <el-form-item label="Тип альбома" prop="type" class="form-item">
             <el-select v-model="form.type">
               <el-option v-for="(value, key) in store.albumTypesMap" :label="value" :value="key" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="Жанры" prop="genres">
+            <el-select multiple filterable value-key="name" v-model="form.genres">
+              <el-option v-for="genre in store.availableGenres" :key="genre._id" :label="genre.name" :value="genre" />
             </el-select>
           </el-form-item>
         </div>
@@ -248,6 +252,7 @@ const rules = reactive({
   ],
   group: [{ required: true, message: 'Выберите группу', trigger: 'change' }],
   type: [{ required: true, message: 'Выберите тип альбома', trigger: 'change' }],
+  genres: [{ required: true, message: 'Выберите жанры', trigger: 'change' }],
   releaseDate: [{ required: true, message: 'Введите дату релиза', trigger: 'blur' }]
 })
 
