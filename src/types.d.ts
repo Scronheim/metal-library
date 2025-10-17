@@ -42,7 +42,6 @@ export interface Album {
   description: string
   group: Group
   releaseDate: string
-  releaseYear: number
   genres: Genre[]
   type: 'full-length' | 'ep' | 'single' | 'demo' | 'live' | 'compilation' | 'split'
   cover: string
@@ -50,6 +49,7 @@ export interface Album {
   catalogId: string
   format: string
   tracks: TrackInfo[]
+  socialLinks: SocialNetwork[]
   stats: {
     views: number
     likes: {

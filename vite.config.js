@@ -8,7 +8,7 @@ import tailwindcss from '@tailwindcss/vite'
 import vueDevTools from 'vite-plugin-vue-devtools'
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/library/',
+  base: '/metal-library/',
   plugins: [
     vue(),
     tailwindcss(),
@@ -34,7 +34,7 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/library/api': {
+      '/metal-library/api': {
         target: 'https://dark-corner.ru/',
         changeOrigin: true
       }

@@ -201,22 +201,7 @@
           </template>
 
           <div class="social-links-section">
-            <div v-for="(link, index) in form.socialLinks" :key="index" class="social-link-item">
-              <div class="link-row">
-                <el-select v-model="link.platform" placeholder="Платформа" style="width: 180px">
-                  <el-option
-                    v-for="(value, key) in store.socialPlatformNamesMap"
-                    :key="value"
-                    :label="value"
-                    :value="key"
-                  />
-                </el-select>
-
-                <el-input v-model="link.url" placeholder="URL ссылка" style="flex: 1; margin: 0 12px" />
-
-                <el-button type="danger" :icon="Remove" circle @click="removeSocialLink(index)" />
-              </div>
-            </div>
+            <SocialLinkForm v-for="(link, index) in form.socialLinks" :link="link" />
 
             <div class="add-link-section">
               <el-button type="primary" :icon="Plus" @click="addSocialLink" text>Добавить ссылку</el-button>
@@ -321,7 +306,8 @@ import { Plus, Remove, Picture } from '@element-plus/icons-vue'
 
 import { useStore } from '@/stores/store'
 
-import type { Genre, Group } from '@/types'
+import type { Group } from '@/types'
+import SocialLinkForm from '@/components/forms/SocialLinkForm.vue'
 
 const store = useStore()
 
@@ -637,40 +623,6 @@ onMounted(async () => {
   color: #666;
   font-style: italic;
   font-size: 0.9rem;
-}
-
-/* Social Links Styles */
-.social-links-section {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.social-link-item {
-  padding: 16px;
-  background: #252525;
-  border-radius: 6px;
-  border: 1px solid #333;
-}
-
-.link-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.add-link-section {
-  padding: 16px;
-  text-align: center;
-  border: 1px dashed #444;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.add-link-section:hover {
-  border-color: #9e2a2a;
-  background: #252525;
 }
 
 /* Members Styles */

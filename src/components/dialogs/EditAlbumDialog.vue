@@ -44,16 +44,6 @@
         </div>
 
         <div class="form-row columns-2">
-          <el-form-item label="Год выпуска" prop="releaseYear" class="form-item">
-            <el-input-number
-              v-model="form.releaseYear"
-              :min="1900"
-              :max="new Date().getFullYear()"
-              placeholder="Год выпуска"
-              style="width: 100%"
-            />
-          </el-form-item>
-
           <el-form-item label="Дата выхода" class="form-item">
             <el-date-picker
               v-model="form.releaseDate"
@@ -62,6 +52,9 @@
               style="width: 100%"
               value-format="YYYY-MM-DD"
             />
+          </el-form-item>
+          <el-form-item label="Формат" class="form-item">
+            <el-input v-model="form.format" placeholder="CD, Vinyl, Digital, Cassette..." />
           </el-form-item>
         </div>
 
@@ -72,12 +65,6 @@
 
           <el-form-item label="Каталожный номер" class="form-item">
             <el-input v-model="form.catalogId" placeholder="Каталожный номер" />
-          </el-form-item>
-        </div>
-
-        <div class="form-row">
-          <el-form-item label="Формат" class="form-item">
-            <el-input v-model="form.format" placeholder="CD, Vinyl, Digital, Cassette..." />
           </el-form-item>
         </div>
       </div>
@@ -102,81 +89,91 @@
       </div>
 
       <!-- Tracklist -->
-      <div class="form-section">
-        <div class="section-header">
-          <h3 class="section-title">Треклист</h3>
+      <el-collapse>
+        <el-collapse-item title="Треклист" name="tracklist">
           <el-button type="primary" :icon="Plus" @click="addTrack" size="small">Добавить трек</el-button>
-        </div>
-
-        <div class="tracklist-editor">
-          <div v-for="(track, index) in form.tracks" :key="index" class="track-item">
-            <div class="track-header">
-              <div>
-                <span class="track-number">
-                  Трек №
-                  <el-input-number v-model.number="track.number" :min="1" />
-                </span>
-                <span class="track-number">
-                  Диск №
-                  <el-input-number v-model.number="track.discNumber" :min="1" />
-                </span>
+          <div class="tracklist-editor">
+            <div v-for="(track, index) in form.tracks" :key="index" class="track-item">
+              <div class="track-header">
+                <div>
+                  <span class="track-number">
+                    Трек №
+                    <el-input-number v-model.number="track.number" :min="1" />
+                  </span>
+                  <span class="track-number">
+                    Диск №
+                    <el-input-number v-model.number="track.discNumber" :min="1" />
+                  </span>
+                </div>
+                <el-button
+                  type="danger"
+                  :icon="Delete"
+                  text
+                  @click="removeTrack(index)"
+                  v-if="form.tracks.length > 1"
+                />
               </div>
-              <el-button type="danger" :icon="Delete" text @click="removeTrack(index)" v-if="form.tracks.length > 1" />
-            </div>
 
-            <div class="track-fields">
-              <el-form-item
-                label="Название трека"
-                :prop="`tracks[${index}].title`"
-                :rules="trackRules.title"
-                class="track-field"
-              >
-                <el-input v-model="track.title" placeholder="Введите название трека" maxlength="100" />
-              </el-form-item>
-
-              <el-form-item
-                label="Длительность"
-                :prop="`tracks[${index}].duration`"
-                :rules="trackRules.duration"
-                class="track-field"
-              >
-                <el-input
-                  v-model="track.duration"
-                  placeholder="Длительность (чч:мм:сс)"
-                  maxlength="5"
-                  type="time"
-                  step="1"
+              <div class="track-fields">
+                <el-form-item
+                  label="Название трека"
+                  :prop="`tracks[${index}].title`"
+                  :rules="trackRules.title"
+                  class="track-field"
                 >
-                  <template #append>
-                    <span class="duration-hint">мм:сс</span>
-                  </template>
-                </el-input>
+                  <el-input v-model="track.title" placeholder="Введите название трека" maxlength="100" />
+                </el-form-item>
+
+                <el-form-item
+                  label="Длительность"
+                  :prop="`tracks[${index}].duration`"
+                  :rules="trackRules.duration"
+                  class="track-field"
+                >
+                  <el-input
+                    v-model="track.duration"
+                    placeholder="Длительность (чч:мм:сс)"
+                    maxlength="5"
+                    type="time"
+                    step="1"
+                  >
+                    <template #append>
+                      <span class="duration-hint">мм:сс</span>
+                    </template>
+                  </el-input>
+                </el-form-item>
+              </div>
+
+              <el-form-item label="Текст песни" class="lyrics-field">
+                <el-input
+                  v-model="track.lyrics"
+                  type="textarea"
+                  :rows="4"
+                  placeholder="Введите текст песни"
+                  maxlength="5000"
+                  show-word-limit
+                />
               </el-form-item>
             </div>
 
-            <el-form-item label="Текст песни" class="lyrics-field">
-              <el-input
-                v-model="track.lyrics"
-                type="textarea"
-                :rows="4"
-                placeholder="Введите текст песни"
-                maxlength="5000"
-                show-word-limit
-              />
-            </el-form-item>
+            <div class="empty-tracks" v-if="form.tracks.length === 0">
+              <i class="el-icon-headset"></i>
+              <p>Треки не добавлены</p>
+            </div>
           </div>
 
-          <div class="empty-tracks" v-if="form.tracks.length === 0">
-            <i class="el-icon-headset"></i>
-            <p>Треки не добавлены</p>
+          <div class="tracklist-stats" v-if="form.tracks.length > 0">
+            <span>Всего треков: {{ form.tracks.length }}</span>
+            <span>Общая длительность: {{ albumTotalDuration }}</span>
           </div>
-        </div>
-
-        <div class="tracklist-stats" v-if="form.tracks.length > 0">
-          <span>Всего треков: {{ form.tracks.length }}</span>
-          <span>Общая длительность: {{ albumTotalDuration }}</span>
-        </div>
-      </div>
+        </el-collapse-item>
+        <el-collapse-item title="Соц.сети" name="socialLinks">
+          <div class="add-link-section">
+            <el-button type="primary" :icon="Plus" @click="addSocialLink" text>Добавить ссылку</el-button>
+          </div>
+          <SocialLinkForm v-for="(link, index) in form.socialLinks" :key="link.url" :link="link" />
+        </el-collapse-item>
+      </el-collapse>
     </el-form>
 
     <template #footer>
@@ -191,7 +188,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, computed, nextTick, onMounted } from 'vue'
+import { ref, reactive, watch, computed, nextTick, onMounted, type PropType } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Plus, Delete } from '@element-plus/icons-vue'
 import SvgIcon from '@jamescoyle/vue-icon'
@@ -203,6 +200,7 @@ import { getDefaultAlbum } from '@/consts'
 import { useStore } from '@/stores/store'
 
 import type { Album, Group } from '@/types'
+import SocialLinkForm from '../forms/SocialLinkForm.vue'
 
 dayjs.extend(durationPlugin)
 
@@ -215,15 +213,15 @@ const props = defineProps({
   mode: {
     type: String,
     default: 'add', // 'add' or 'edit'
-    validator: value => ['add', 'edit'].includes(value)
+    validator: (value: string) => ['add', 'edit'].includes(value)
   },
   album: {
-    type: Object,
-    default: null
+    type: Object as PropType<Album>,
+    default: getDefaultAlbum()
   },
-  groupId: {
-    type: String,
-    default: ''
+  group: {
+    type: Object as PropType<Group>,
+    required: true
   }
 })
 
@@ -250,10 +248,7 @@ const rules = reactive({
   ],
   group: [{ required: true, message: 'Выберите группу', trigger: 'change' }],
   type: [{ required: true, message: 'Выберите тип альбома', trigger: 'change' }],
-  releaseYear: [
-    { required: true, message: 'Введите год выпуска', trigger: 'blur' },
-    { type: 'number', min: 1900, max: new Date().getFullYear(), message: 'Введите корректный год', trigger: 'blur' }
-  ]
+  releaseDate: [{ required: true, message: 'Введите дату релиза', trigger: 'blur' }]
 })
 
 const trackRules = reactive({
@@ -275,6 +270,12 @@ const visible = computed({
 })
 
 // Methods
+const addSocialLink = () => {
+  form.socialLinks.push({
+    platform: '',
+    url: ''
+  })
+}
 const handleSelectGroup = (group: Group): void => {
   form.group = group
 }
@@ -329,31 +330,10 @@ const resetForm = () => {
   }
 }
 
-const loadAlbumData = () => {
-  if (props.mode === 'edit' && props.album) {
-    Object.assign(form, {
-      title: props.album.title,
-      groupId: props.album.group?._id || props.album.group,
-      type: props.album.type,
-      releaseYear: props.album.releaseYear,
-      releaseDate: props.album.releaseDate || '',
-      label: props.album.label || '',
-      catalogId: props.album.catalogId || '',
-      format: props.album.format || '',
-      coverPreview: props.album.cover || '',
-      tracks:
-        props.album.tracks?.map(track => ({
-          number: track.number,
-          title: track.title,
-          duration: track.duration
-            ? `${track.duration.minutes}:${track.duration.seconds.toString().padStart(2, '0')}`
-            : '',
-          lyrics: track.lyrics || ''
-        })) || []
-    })
-  } else if (props.mode === 'add' && props.groupId) {
-    form.group._id = props.groupId
-  }
+const loadAlbumData = async () => {
+  searchQuery.value = props.group.name
+  if (props.mode === 'edit' && props.album) Object.assign(form, props.album)
+  else if (props.mode === 'add') form.group = props.group
 }
 
 const submitForm = async () => {
@@ -372,7 +352,8 @@ const submitForm = async () => {
 
     loading.value = true
 
-    await store.addAlbum(form, true)
+    if (props.mode === 'add') await store.addAlbum(form, true)
+    else await store.updateAlbum(form, true)
   } catch (error) {
     console.error('Error saving album:', error)
     ElMessage.error(error.message || 'Ошибка при сохранении альбома')
@@ -390,7 +371,9 @@ const handleClose = () => {
 // Watchers
 watch(visible, newVal => {
   if (newVal) {
-    nextTick(() => loadAlbumData())
+    nextTick(() => {
+      loadAlbumData()
+    })
   }
 })
 

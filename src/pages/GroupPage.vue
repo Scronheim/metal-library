@@ -105,7 +105,6 @@
                       tag="a"
                       :href="link.url"
                       target="_blank"
-                      class="social-button"
                     >
                       {{ store.socialPlatformNamesMap[link.platform] }}
                     </el-button>
@@ -393,19 +392,11 @@
                 <el-avatar :size="50" :src="album.cover" :alt="album.title" shape="square">
                   <i class="el-icon-disc" v-if="!album.cover"></i>
                 </el-avatar>
-                <el-tag
-                  v-if="album.type"
-                  size="small"
-                  :type="store.albumTypeColorMap[album.type]"
-                  class="album-type-mini-tag"
-                >
-                  {{ store.albumTypesMap[album.type] }}
-                </el-tag>
               </div>
               <div class="album-info">
                 <h5 class="album-title">{{ album.title }}</h5>
                 <p class="album-year-type">
-                  {{ album.releaseYear }}
+                  {{ new Date(album.releaseDate).getFullYear() }}
                 </p>
                 <div class="album-stats">
                   <span class="stat">
@@ -557,56 +548,7 @@
     </template>
   </el-dialog>
 
-  <!-- <el-dialog v-model="showEditableAlbumDialog" title="Редактирование альбома" width="600px">
-    <el-form ref="formRef" :model="editableAlbum" label-position="top">
-      <el-form-item label="Название" prop="name">
-        <el-input v-model="editableAlbum.title" placeholder="Введите название альбома" />
-      </el-form-item>
-      <el-form-item label="Дата релиза" prop="releaseDate">
-        <el-input type="date" v-model="editableAlbum.releaseDate" placeholder="Выберите дату релиза" />
-      </el-form-item>
-      <el-form-item label="Тип" prop="type">
-        <el-select v-model="editableAlbum.type">
-          <el-option v-for="(value, key) in store.albumTypesMap" :key="key" :label="value" :value="key" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="Жанры" prop="genres">
-        <el-select multiple filterable value-key="name" v-model="editableAlbum.genres">
-          <el-option v-for="genre in store.availableGenres" :key="genre._id" :label="genre.name" :value="genre" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="Ссылка на обложку" prop="cover">
-        <el-input v-model="editableAlbum.cover" placeholder="Введите URL обложки" />
-      </el-form-item>
-      <el-form-item label="Лейбл" prop="label">
-        <el-input v-model="editableAlbum.label" placeholder="Введите название лейбла" />
-      </el-form-item>
-      <div class="flex gap-3">
-        <h3>Треклист</h3>
-        <AddIconButton title="Добавить трек" @click="addTrack" />
-      </div>
-      <div v-for="track in editableAlbum.tracks" :key="track.title" class="flex items-center gap-2">
-        <el-form-item label="№ трека" prop="number">
-          <el-input-number v-model.number="track.number" :min="1" />
-        </el-form-item>
-        <div class="flex flex-col">
-          <el-form-item label="Название" prop="title">
-            <el-input v-model="track.title" placeholder="Введите название трека" />
-          </el-form-item>
-          <el-input type="textarea" :rows="10" v-model="track.lyrics" placeholder="Введите текст трека" />
-        </div>
-
-        <DeleteIconButton />
-      </div>
-    </el-form>
-    <template #footer>
-      <div class="dialog-footer">
-        <el-button @click="showEditableAlbumDialog = false">Закрыть</el-button>
-        <el-button type="success" @click="addAlbum">Сохранить</el-button>
-      </div>
-    </template>
-  </el-dialog> -->
-  <EditAlbumDialog v-model="showEditableAlbumDialog" />
+  <EditAlbumDialog v-model="showEditableAlbumDialog" mode="add" :group="group" @success="fetchGroupData" />
 </template>
 
 <script setup lang="ts">
@@ -632,7 +574,7 @@ import { mdiAlbum } from '@mdi/js'
 
 import { useStore } from '@/stores/store'
 
-import { getDefaultAlbum, getDefaultGroup } from '@/consts'
+import { getDefaultGroup } from '@/consts'
 
 import EditIconButton from '@/components/buttons/EditIconButton.vue'
 import AddIconButton from '@/components/buttons/AddIconButton.vue'
@@ -656,8 +598,6 @@ const showEditableAlbumDialog = ref<boolean>(false)
 const groupInfoRules = ref<FormRules<Group>>({
   cover: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }]
 })
-const editableAlbum = ref<Album>(getDefaultAlbum())
-
 // Computed
 const totalMembers = computed(() => {
   if (!group.value) return 0
@@ -675,7 +615,7 @@ const latestAlbums = computed(() => {
 const getDiscographyPeriod = computed(() => {
   if (albums.value.length === 0) return 'Нет данных'
 
-  const years = albums.value.map(album => album.releaseYear)
+  const years = albums.value.map(album => new Date(album.releaseDate).getFullYear())
   const minYear = Math.min(...years)
   const maxYear = Math.max(...years)
 
@@ -683,18 +623,6 @@ const getDiscographyPeriod = computed(() => {
 })
 
 // Methods
-const addTrack = () => {
-  editableAlbum.value.tracks.push({
-    number: editableAlbum.value.tracks.length + 1,
-    title: '',
-    discNumber: 1,
-    duration: '00:00:01',
-    lyrics: ''
-  })
-}
-const addAlbum = async (): Promise<void> => {
-  await store.addAlbum(editableAlbum.value, true)
-}
 const openAlbumAddDialog = async () => {
   await store.getGenres()
   showEditableAlbumDialog.value = true
@@ -771,25 +699,25 @@ const fetchGroupData = async () => {
   const groupId = route.params.id
   try {
     // Fetch group data
-    const groupResponse = await fetch(`/library/api/groups/${groupId}`)
+    const groupResponse = await fetch(`/metal-library/api/groups/${groupId}`)
     if (groupResponse.ok) {
       group.value = await groupResponse.json()
     }
 
     // Fetch group albums
-    const albumsResponse = await fetch(`/library/api/groups/${groupId}/albums`)
+    const albumsResponse = await fetch(`/metal-library/api/groups/${groupId}/albums`)
     if (albumsResponse.ok) {
       albums.value = await albumsResponse.json()
     }
 
     // Fetch similar groups
-    const similarResponse = await fetch(`/library/api/groups/${groupId}/similar`)
+    const similarResponse = await fetch(`/metal-library/api/groups/${groupId}/similar`)
     if (similarResponse.ok) {
       similarGroups.value = await similarResponse.json()
     }
 
     // Fetch related news
-    const newsResponse = await fetch(`/library/api/news/group/${groupId}`)
+    const newsResponse = await fetch(`/metal-library/api/news/group/${groupId}`)
     if (newsResponse.ok) {
       relatedNews.value = await newsResponse.json()
     }

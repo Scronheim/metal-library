@@ -15,8 +15,8 @@
 
         <div class="album-info-section">
           <div class="album-type-tag">
-            <el-tag :type="getAlbumTypeTagType(album.type)" size="large">
-              {{ getAlbumTypeLabel(album.type) }}
+            <el-tag :type="store.albumTypeColorMap[album.type]" size="large">
+              {{ store.albumTypesMap[album.type] }}
             </el-tag>
           </div>
 
@@ -36,7 +36,7 @@
           <div class="album-meta">
             <div class="meta-item">
               <SvgIcon type="mdi" :path="mdiCalendar" :size="18" />
-              <span>{{ album.releaseYear }}г.</span>
+              <span>{{ albumReleaseYear }}г.</span>
             </div>
             <div class="meta-item" v-if="album.genres.length">
               <SvgIcon type="mdi" :path="mdiMusic" :size="18" />
@@ -77,6 +77,20 @@
             </el-button>
             <el-button v-if="store.userIsAdmin" type="info" :icon="Edit" @click="showAlbumInfoEdit = true">
               Редактировать
+            </el-button>
+          </div>
+          <el-divider />
+          <div class="album-actions">
+            <el-button
+              v-for="link in album.socialLinks"
+              :key="link.platform"
+              :type="store.socialLinkColorMap[link.platform]"
+              :icon="store.socialLinkIconsMap[link.platform]"
+              tag="a"
+              :href="link.url"
+              target="_blank"
+            >
+              {{ store.socialPlatformNamesMap[link.platform] }}
             </el-button>
           </div>
         </div>
@@ -215,7 +229,7 @@
                     <el-option v-for="(value, key) in store.albumTypesMap" :label="value" :value="key" />
                   </el-select>
                 </template>
-                <template v-else>{{ getAlbumTypeLabel(album.type) }}</template>
+                <template v-else>{{ store.albumTypesMap[album.type] }}</template>
               </span>
             </div>
             <div class="detail-item">
@@ -283,7 +297,7 @@
               <div class="album-info">
                 <h5 class="album-title">{{ otherAlbum.title }}</h5>
                 <p class="album-year-type">
-                  {{ otherAlbum.releaseYear }} • {{ getAlbumTypeShortLabel(otherAlbum.type) }}
+                  {{ new Date(otherAlbum.releaseDate).getFullYear() }} • {{ store.albumTypesMap[otherAlbum.type] }}
                 </p>
                 <div class="album-stats">
                   <span class="stat">
@@ -348,28 +362,7 @@
     </template>
   </el-dialog>
 
-  <el-dialog v-model="showAlbumInfoEdit" title="Редактирование альбома" width="600px">
-    <el-form :model="album" :rules="albumRules" label-position="top">
-      <el-form-item label="Ссылка на обложку" prop="cover">
-        <el-input v-model="album.cover" placeholder="Введите ссылку на обложку" />
-        <el-image style="width: 300px; height: 300px" :src="album.cover">
-          <template #error>
-            <div class="cover-placeholder">
-              <SvgIcon type="mdi" :path="mdiAlbum" :size="18" />
-            </div>
-          </template>
-        </el-image>
-      </el-form-item>
-      <el-form-item label="Описание альбома" prop="description">
-        <el-input v-model="album.description" type="textarea" :rows="10" placeholder="Введите описание альбома" />
-      </el-form-item>
-    </el-form>
-
-    <template #footer>
-      <el-button @click="showAlbumInfoEdit = false">Отмена</el-button>
-      <el-button type="success" @click="saveAlbumInfo">Сохранить</el-button>
-    </template>
-  </el-dialog>
+  <EditAlbumDialog v-model="showAlbumInfoEdit" :album="album" mode="edit" :group="album.group" />
 </template>
 
 <script setup lang="ts">
@@ -378,7 +371,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { debounce } from 'lodash-es'
 import dayjs from 'dayjs'
 import durationPlugin from 'dayjs/plugin/duration'
-import { ElMessage, ElNotification, FormRules } from 'element-plus'
+import { ElMessage, ElNotification } from 'element-plus'
 import { Headset, View, Timer, InfoFilled, Star, StarFilled, Share, Plus, Edit } from '@element-plus/icons-vue'
 import SvgIcon from '@jamescoyle/vue-icon'
 import { mdiCalendar, mdiAlbum, mdiMusic } from '@mdi/js'
@@ -388,9 +381,12 @@ import { useStore } from '@/stores/store'
 import EditIconButton from '@/components/buttons/EditIconButton.vue'
 import AddIconButton from '@/components/buttons/AddIconButton.vue'
 import DeleteIconButton from '@/components/buttons/DeleteIconButton.vue'
-
-import type { Album, Group, TrackInfo } from '@/types'
 import TrackForm from '@/components/forms/TrackForm.vue'
+import EditAlbumDialog from '@/components/dialogs/EditAlbumDialog.vue'
+
+import { getDefaultAlbum } from '@/consts'
+
+import type { Album, Group, News, TrackInfo } from '@/types'
 
 dayjs.extend(durationPlugin)
 
@@ -398,9 +394,9 @@ const route = useRoute()
 const router = useRouter()
 const store = useStore()
 // Refs
-const album = ref<Album>(null)
+const album = ref<Album>(getDefaultAlbum())
 const otherAlbums = ref<Album[]>([])
-const relatedNews = ref([])
+const relatedNews = ref<News[]>([])
 const expandedTracks = ref(new Set())
 const showLyricsEdit = ref(false)
 const showAlbumInfoEdit = ref(false)
@@ -409,14 +405,12 @@ const isGroupEdit = ref(false)
 const isDetailsEdit = ref(false)
 const searchQuery = ref('')
 const foundedGroups = ref<Group[]>([])
-const albumRules = ref<FormRules<Album>>({
-  cover: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }]
-})
 
 // Computed
 const userLikedAlbum = computed((): boolean => !album.value.stats.likes.findIndex(u => u._id === store.user.id))
 const isAuthenticated = computed((): boolean => store.userIsAuth)
 const albumGenres = computed((): string => album.value.genres.map(g => g.name).join(', '))
+const albumReleaseYear = computed((): number => new Date(album.value.releaseDate).getFullYear())
 const albumTotalDuration = computed((): string => {
   const totalSeconds = album.value.tracks.reduce((total, track) => {
     const [hours, minutes, seconds] = track.duration.split(':').map(i => parseInt(i))
@@ -442,44 +436,6 @@ const searchGroup = async (queryString: string, cb: any): Promise<void> => {
   const { data } = await store.searchGroup(queryString)
   foundedGroups.value = data.groups
   cb(data.groups)
-}
-const getAlbumTypeLabel = (type: string): string => {
-  const typeMap = {
-    'full-length': 'Студийный альбом',
-    ep: 'EP',
-    single: 'Сингл',
-    demo: 'Демо',
-    live: 'Концертный альбом',
-    compilation: 'Сборник',
-    split: 'Сплит'
-  }
-  return typeMap[type] || type
-}
-
-const getAlbumTypeShortLabel = (type: string): string => {
-  const typeMap = {
-    'full-length': 'Альбом',
-    ep: 'EP',
-    single: 'Сингл',
-    demo: 'Демо',
-    live: 'Live',
-    compilation: 'Сборник',
-    split: 'Сплит'
-  }
-  return typeMap[type] || type
-}
-
-const getAlbumTypeTagType = (type: string): string => {
-  const typeMap = {
-    'full-length': 'danger',
-    ep: 'warning',
-    single: 'success',
-    demo: 'info',
-    live: 'primary',
-    compilation: '',
-    split: 'warning'
-  }
-  return typeMap[type] || 'info'
 }
 
 const formatTrackDuration = (duration: number): string => {
@@ -525,10 +481,6 @@ const handleEditClose = (): void => {
   editingTrack.value = {}
 }
 
-const saveAlbumInfo = async (): Promise<void> => {
-  await store.updateAlbum(album.value, true)
-  showAlbumInfoEdit.value = false
-}
 const saveLyrics = async (): Promise<void> => {
   try {
     await store.updateLyrics(album.value, editingTrack.value, true)
@@ -586,7 +538,7 @@ const fetchAlbumData = async () => {
   const albumId = route.params.id
   try {
     // Fetch album data
-    const albumResponse = await fetch(`/library/api/albums/${albumId}`)
+    const albumResponse = await fetch(`/metal-library/api/albums/${albumId}`)
     if (albumResponse.ok) {
       album.value = await albumResponse.json()
     } else {
@@ -595,7 +547,7 @@ const fetchAlbumData = async () => {
 
     // Fetch other albums by the same group
     if (album.value.group._id) {
-      const otherResponse = await fetch(`/library/api/groups/${album.value.group._id}/albums`)
+      const otherResponse = await fetch(`/metal-library/api/groups/${album.value.group._id}/albums`)
       if (otherResponse.ok) {
         const allAlbums = await otherResponse.json()
         otherAlbums.value = allAlbums.filter(a => a._id !== albumId).slice(0, 5)
@@ -603,7 +555,7 @@ const fetchAlbumData = async () => {
     }
 
     // Fetch related news
-    const newsResponse = await fetch(`/library/api/news/album/${albumId}`)
+    const newsResponse = await fetch(`/metal-library/api/news/album/${albumId}`)
     if (newsResponse.ok) {
       relatedNews.value = await newsResponse.json()
     }

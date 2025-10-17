@@ -115,8 +115,8 @@ const performQuickSearch = async () => {
 
     // Search groups and albums simultaneously
     const [groupsResponse, albumsResponse] = await Promise.all([
-      fetch(`/library/api/groups?search=${encodeURIComponent(query)}&limit=3`),
-      fetch(`/library/api/albums?search=${encodeURIComponent(query)}&limit=3`)
+      fetch(`/metal-library/api/groups?search=${encodeURIComponent(query)}&limit=3`),
+      fetch(`/metal-library/api/albums?search=${encodeURIComponent(query)}&limit=3`)
     ])
 
     const groupsData = groupsResponse.ok ? await groupsResponse.json() : { groups: [] }
@@ -178,8 +178,10 @@ watch(popoverVisible, newVal => {
 
 onMounted(() => {
   onKeyStroke('f', (e: KeyboardEvent) => {
-    e.preventDefault()
-    if (e.ctrlKey) popoverVisible.value = true
+    if (e.ctrlKey) {
+      e.preventDefault()
+      popoverVisible.value = true
+    }
   })
 })
 </script>

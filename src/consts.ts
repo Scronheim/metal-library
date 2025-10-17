@@ -8,10 +8,12 @@ export const getDefaultAlbum = (): Album => {
     description: '',
     format: '',
     genres: [],
-    group: {},
+    group: {
+      genres: []
+    },
+    socialLinks: [],
     label: '',
     releaseDate: '',
-    releaseYear: new Date().getFullYear(),
     stats: {
       likes: [],
       views: 0
