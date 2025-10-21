@@ -153,7 +153,7 @@
                     </div>
                     <div class="album-info">
                       <h4 class="album-title">{{ album.title }}</h4>
-                      <p class="album-year">{{ album.releaseYear }}</p>
+                      <p class="album-year">{{ new Date(album.releaseDate).getFullYear() }}</p>
                       <p class="album-label" v-if="album.label">{{ album.label }}</p>
                       <div class="album-meta">
                         <span class="tracks-count" v-if="album.tracks">
@@ -161,12 +161,6 @@
                             <Headset />
                           </el-icon>
                           {{ album.tracks.length }} треков
-                        </span>
-                        <span class="duration" v-if="album.totalDuration">
-                          <el-icon>
-                            <Clock />
-                          </el-icon>
-                          {{ formatDuration(album.totalDuration) }}
                         </span>
                       </div>
                       <div class="album-stats">
@@ -453,63 +447,102 @@
     <el-skeleton :rows="10" animated />
   </div>
 
-  <el-dialog v-model="showGroupInfoDialog" title="Редактирование информации о группе" top="10px" width="600px">
-    <el-form :model="group" :rules="groupInfoRules" label-position="top">
-      <el-form-item label="Страна" prop="country">
-        <el-select v-model="group.country" placeholder="Выберите страну" filterable value-key="name">
-          <el-option v-for="country in store.countries" :key="country.alpha2" :label="country.name" :value="country" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="Город" prop="city">
-        <el-input v-model="group.city" placeholder="Введите название города" />
-      </el-form-item>
-      <el-form-item label="Год образования" prop="formedYear">
-        <el-select v-model.number="group.formedYear" placeholder="Выберите год" filterable>
-          <el-option v-for="year in store.availableYears" :key="year" :label="year" :value="year" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="Статус" prop="status">
-        <el-select v-model.number="group.status" placeholder="Выберите статус">
-          <el-option v-for="(value, key) in store.statusTypesMap" :key="key" :label="value" :value="key" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="Жанры" prop="genres">
-        <el-select v-model="group.genres" placeholder="Выберите жанр" filterable multiple value-key="name">
-          <el-option v-for="genre in store.availableGenres" :key="genre._id" :label="genre.name" :value="genre" />
-        </el-select>
-      </el-form-item>
-      <el-form-item prop="logo">
-        <template #label>
-          Ссылка на логотип
-          <el-tooltip class="box-item" effect="dark" content="Найти в Яндексе" placement="top">
-            <el-button :icon="Search" size="small" circle @click="openYandexSearch" />
-          </el-tooltip>
-        </template>
-        <el-input v-model="group.logo" placeholder="Введите ссылку на логотип" />
-        <el-image :src="group.logo">
-          <template #error>
-            <div class="cover-placeholder">
-              <SvgIcon type="mdi" :path="mdiAlbum" :size="18" />
-            </div>
-          </template>
-        </el-image>
-      </el-form-item>
-      <el-form-item prop="banner">
-        <template #label>
-          Ссылка на баннер
-          <el-tooltip class="box-item" effect="dark" content="Найти в Яндексе" placement="top">
-            <el-button :icon="Search" size="small" circle @click="openYandexSearch(false)" />
-          </el-tooltip>
-        </template>
-        <el-input v-model="group.banner" placeholder="Введите ссылку на баннер" />
-        <el-image :src="group.banner">
-          <template #error>
-            <div class="cover-placeholder">
-              <SvgIcon type="mdi" :path="mdiAlbum" :size="18" />
-            </div>
-          </template>
-        </el-image>
-      </el-form-item>
+  <el-dialog v-model="showGroupInfoDialog" title="Редактирование информации о группе" top="10px" width="750px">
+    <el-form ref="groupRef" :model="group" :rules="groupInfoRules" label-position="top">
+      <el-card header="Основная информация" class="mb-2">
+        <div class="flex gap-2">
+          <el-form-item label="Страна" prop="country">
+            <el-select v-model="group.country" placeholder="Выберите страну" filterable value-key="name">
+              <el-option
+                v-for="country in store.countries"
+                :key="country.alpha2"
+                :label="country.name"
+                :value="country"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="Город" prop="city">
+            <el-input v-model="group.city" placeholder="Введите название города" />
+          </el-form-item>
+          <el-form-item label="Год образования" prop="formedYear">
+            <el-select v-model.number="group.formedYear" placeholder="Выберите год" filterable style="width: 130px">
+              <el-option v-for="year in store.availableYears" :key="year" :label="year" :value="year" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="Статус" prop="status">
+            <el-select v-model.number="group.status" placeholder="Выберите статус" style="width: 130px">
+              <el-option v-for="(value, key) in store.statusTypesMap" :key="key" :label="value" :value="key" />
+            </el-select>
+          </el-form-item>
+        </div>
+      </el-card>
+      <el-card header="Жанры и тематика" class="mb-2">
+        <div class="flex gap-3">
+          <el-form-item label="Жанры" prop="genres">
+            <el-select
+              v-model="group.genres"
+              placeholder="Выберите жанр"
+              filterable
+              multiple
+              collapse-tags
+              collapse-tags-tooltip
+              :max-collapse-tags="2"
+              value-key="name"
+            >
+              <el-option v-for="genre in store.availableGenres" :key="genre._id" :label="genre.name" :value="genre" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="Тематики текстов" prop="themes">
+            <el-select
+              v-model="group.themes"
+              placeholder="Введите тематику"
+              multiple
+              filterable
+              allow-create
+              default-first-option
+              :reserve-keyword="false"
+            >
+              <el-option v-for="theme in group.themes" :key="theme" :label="theme" :value="theme" />
+            </el-select>
+          </el-form-item>
+        </div>
+      </el-card>
+      <el-card header="Изображения">
+        <div class="flex gap-2">
+          <el-form-item prop="logo">
+            <template #label>
+              Ссылка на логотип
+              <el-tooltip class="box-item" effect="dark" content="Найти в Яндексе" placement="top">
+                <el-button :icon="Search" size="small" circle @click="openYandexSearch" />
+              </el-tooltip>
+            </template>
+            <el-input v-model="group.logo" placeholder="Введите ссылку на логотип" />
+            <el-image :src="group.logo">
+              <template #error>
+                <div class="cover-placeholder">
+                  <SvgIcon type="mdi" :path="mdiAlbum" :size="18" />
+                </div>
+              </template>
+            </el-image>
+          </el-form-item>
+          <el-form-item prop="banner">
+            <template #label>
+              Ссылка на баннер
+              <el-tooltip class="box-item" effect="dark" content="Найти в Яндексе" placement="top">
+                <el-button :icon="Search" size="small" circle @click="openYandexSearch(false)" />
+              </el-tooltip>
+            </template>
+            <el-input v-model="group.banner" placeholder="Введите ссылку на баннер" />
+            <el-image :src="group.banner">
+              <template #error>
+                <div class="cover-placeholder">
+                  <SvgIcon type="mdi" :path="mdiAlbum" :size="18" />
+                </div>
+              </template>
+            </el-image>
+          </el-form-item>
+        </div>
+      </el-card>
     </el-form>
 
     <template #footer>
@@ -520,25 +553,44 @@
 
   <el-dialog v-model="showGroupBioDialog" title="Редактирование биографии группы" width="600px">
     <el-form :model="group" :rules="groupInfoRules" label-position="top">
-      <el-form-item label="О группе" prop="description">
-        <el-input type="textarea" :rows="10" v-model="group.description" placeholder="Введите описание" />
-      </el-form-item>
-      <!-- Social Links Section -->
-      <el-form-item label="Соц. сети" prop="socialLinks">
-        <template #label>
-          <div class="flex gap-2">
-            Соц. сети
-            <AddIconButton @click="addSocialLink" />
-          </div>
+      <el-card header="О группе" class="mb-2">
+        <el-form-item prop="description">
+          <el-input type="textarea" :rows="10" v-model="group.description" placeholder="Введите описание" />
+        </el-form-item>
+      </el-card>
+      <el-card header="Тематики треков" class="mb-2">
+        <el-select
+          v-model="group.themes"
+          placeholder="Введите тематику"
+          multiple
+          filterable
+          allow-create
+          default-first-option
+          :reserve-keyword="false"
+        >
+          <el-option v-for="theme in group.themes" :key="theme" :label="theme" :value="theme" />
+        </el-select>
+      </el-card>
+      <el-card>
+        <template #header>
+          Соц. сети
+          <AddIconButton @click="addSocialLink" />
         </template>
-        <div v-for="(link, index) in group.socialLinks" :key="link.url" class="flex items-center gap-3 mb-2">
-          <el-select v-model="link.platform" placeholder="Платформа" style="width: 200px">
-            <el-option v-for="(value, key) in store.socialPlatformNamesMap" :key="value" :label="value" :value="key" />
-          </el-select>
-          <el-input v-model="link.url" placeholder="Введите URL" />
-          <DeleteIconButton @confirm="removeSocialLink(index)" />
-        </div>
-      </el-form-item>
+        <el-form-item prop="socialLinks">
+          <div v-for="(link, index) in group.socialLinks" :key="link.url" class="flex items-center gap-3 mb-2">
+            <el-select v-model="link.platform" placeholder="Платформа" style="width: 200px">
+              <el-option
+                v-for="(value, key) in store.socialPlatformNamesMap"
+                :key="value"
+                :label="value"
+                :value="key"
+              />
+            </el-select>
+            <el-input v-model="link.url" placeholder="Введите URL" />
+            <DeleteIconButton @confirm="removeSocialLink(index)" />
+          </div>
+        </el-form-item>
+      </el-card>
     </el-form>
     <template #footer>
       <div class="dialog-footer">
@@ -552,9 +604,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { ElMessage, type FormRules } from 'element-plus'
+import { ElMessage, ElNotification, type FormRules } from 'element-plus'
 import {
   Star,
   Share,
@@ -591,28 +643,35 @@ const group = ref<Group>(getDefaultGroup())
 const albums = ref<Album[]>([])
 const similarGroups = ref<Group[]>([])
 const relatedNews = ref<News[]>([])
-const activeTab = ref<string>('discography')
+const activeTab = ref<string>('biography')
 const showGroupInfoDialog = ref<boolean>(false)
 const showGroupBioDialog = ref<boolean>(false)
 const showEditableAlbumDialog = ref<boolean>(false)
 const groupInfoRules = ref<FormRules<Group>>({
-  cover: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }]
+  country: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }],
+  formedYear: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }],
+  status: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }],
+  genres: [{ min: 1, type: 'array', message: 'Выберите хотя бы 1 жанр', trigger: 'blur' }],
+  logo: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }],
+  banner: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }]
 })
+const groupRef = ref()
+const newTheme = ref('')
 // Computed
-const totalMembers = computed(() => {
+const totalMembers = computed((): number => {
   if (!group.value) return 0
   return (group.value.currentMembers?.length || 0) + (group.value.pastMembers?.length || 0)
 })
 
-const sortedAlbums = computed(() => {
-  return [...albums.value].sort((a, b) => b.releaseYear - a.releaseYear)
+const sortedAlbums = computed((): Album[] => {
+  return [...albums.value].sort((a, b) => b.releaseDate - a.releaseDate)
 })
 
-const latestAlbums = computed(() => {
+const latestAlbums = computed((): Album[] => {
   return sortedAlbums.value.slice(0, 5)
 })
 
-const getDiscographyPeriod = computed(() => {
+const getDiscographyPeriod = computed((): string => {
   if (albums.value.length === 0) return 'Нет данных'
 
   const years = albums.value.map(album => new Date(album.releaseDate).getFullYear())
@@ -623,11 +682,17 @@ const getDiscographyPeriod = computed(() => {
 })
 
 // Methods
-const openAlbumAddDialog = async () => {
+const addTheme = () => {
+  if (newTheme.value && !group.value.themes.includes(newTheme.value)) {
+    group.value.themes.push(newTheme.value)
+    newTheme.value = ''
+  }
+}
+const openAlbumAddDialog = async (): Promise<void> => {
   await store.getGenres()
   showEditableAlbumDialog.value = true
 }
-const addSocialLink = () => {
+const addSocialLink = (): void => {
   group.value.socialLinks.push({
     platform: 'website',
     url: ''
@@ -642,21 +707,30 @@ const openYandexSearch = (isLogo: boolean = true) => {
     '_blank'
   )
 }
-const openGroupInfoDialog = async () => {
+const openGroupInfoDialog = async (): Promise<void> => {
   await store.getGenres()
   showGroupInfoDialog.value = true
 }
-const saveGroupInfo = async (): Promise<void> => {
-  await store.updateGroup(group.value, true)
-  showGroupInfoDialog.value = false
+const saveGroupInfo = (): void => {
+  groupRef.value.validate(async (isValid: boolean) => {
+    if (!isValid) {
+      ElNotification({
+        type: 'error',
+        message: 'Ошибка! Проверьте все поля'
+      })
+    } else {
+      await store.updateGroup(group.value, true)
+      showGroupInfoDialog.value = false
+    }
+  })
 }
 
-const formatDescription = text => {
+const formatDescription = (text: string): string => {
   if (!text) return ''
   return text.replace(/\n/g, '<br>')
 }
 
-const formatDate = dateString => {
+const formatDate = (dateString: string): string => {
   const date = new Date(dateString)
   return date.toLocaleDateString('ru-RU', {
     day: 'numeric',
@@ -665,7 +739,7 @@ const formatDate = dateString => {
   })
 }
 
-const formatDuration = totalSeconds => {
+const formatDuration = (totalSeconds: number): string => {
   const minutes = Math.floor(totalSeconds / 60)
   const seconds = totalSeconds % 60
   return `${minutes}:${seconds.toString().padStart(2, '0')}`
@@ -699,25 +773,25 @@ const fetchGroupData = async () => {
   const groupId = route.params.id
   try {
     // Fetch group data
-    const groupResponse = await fetch(`/metal-library/api/groups/${groupId}`)
+    const groupResponse = await fetch(`/api/groups/${groupId}`)
     if (groupResponse.ok) {
       group.value = await groupResponse.json()
     }
 
     // Fetch group albums
-    const albumsResponse = await fetch(`/metal-library/api/groups/${groupId}/albums`)
+    const albumsResponse = await fetch(`/api/groups/${groupId}/albums`)
     if (albumsResponse.ok) {
       albums.value = await albumsResponse.json()
     }
 
     // Fetch similar groups
-    const similarResponse = await fetch(`/metal-library/api/groups/${groupId}/similar`)
+    const similarResponse = await fetch(`/api/groups/${groupId}/similar`)
     if (similarResponse.ok) {
       similarGroups.value = await similarResponse.json()
     }
 
     // Fetch related news
-    const newsResponse = await fetch(`/metal-library/api/news/group/${groupId}`)
+    const newsResponse = await fetch(`/api/news/group/${groupId}`)
     if (newsResponse.ok) {
       relatedNews.value = await newsResponse.json()
     }
@@ -726,6 +800,10 @@ const fetchGroupData = async () => {
     ElMessage.error('Ошибка загрузки данных группы')
   }
 }
+
+watch(route, () => {
+  fetchGroupData()
+})
 
 onMounted(() => {
   fetchGroupData()
@@ -1220,7 +1298,6 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px;
 }
 
 .stat-icon {
@@ -1230,7 +1307,6 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
 }
 
 .stat-icon.views {
@@ -1455,10 +1531,6 @@ onMounted(() => {
 :deep(.el-card) {
   background: #1e1e1e;
   border: 1px solid #333;
-}
-
-:deep(.el-card__body) {
-  padding: 0;
 }
 
 :deep(.el-button--danger) {

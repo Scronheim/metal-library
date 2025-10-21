@@ -2,6 +2,9 @@
   $main: (
     'padding': 10px
   ),
+  $card: (
+    'padding': 15px,
+  ),
 );
 
 @use 'element-plus/theme-chalk/dark/css-vars.css';

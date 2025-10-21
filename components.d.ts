@@ -9,6 +9,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AddIconButton: typeof import('./src/components/buttons/AddIconButton.vue')['default']
+    AlbumHero: typeof import('./src/components/albums/AlbumHero.vue')['default']
     DeleteIconButton: typeof import('./src/components/buttons/DeleteIconButton.vue')['default']
     EditAlbumDialog: typeof import('./src/components/dialogs/EditAlbumDialog.vue')['default']
     EditIconButton: typeof import('./src/components/buttons/EditIconButton.vue')['default']
@@ -51,6 +52,7 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     SearchBar: typeof import('./src/components/SearchBar.vue')['default']
     SocialLinkForm: typeof import('./src/components/forms/SocialLinkForm.vue')['default']
+    TextEditor: typeof import('./src/components/TextEditor.vue')['default']
     TrackForm: typeof import('./src/components/forms/TrackForm.vue')['default']
     UserBar: typeof import('./src/components/UserBar.vue')['default']
   }

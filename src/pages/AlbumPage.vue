@@ -1,101 +1,7 @@
 <template>
   <div class="album-page" v-if="album">
     <!-- Hero Section -->
-    <section class="album-hero">
-      <div class="hero-container">
-        <div class="album-cover-section">
-          <el-image :src="album.cover" :alt="album.title" fit="cover" class="album-cover">
-            <template #error>
-              <div class="cover-placeholder">
-                <SvgIcon type="mdi" :path="mdiAlbum" :size="18" />
-              </div>
-            </template>
-          </el-image>
-        </div>
-
-        <div class="album-info-section">
-          <div class="album-type-tag">
-            <el-tag :type="store.albumTypeColorMap[album.type]" size="large">
-              {{ store.albumTypesMap[album.type] }}
-            </el-tag>
-          </div>
-
-          <h1 class="album-title">{{ album.title }}</h1>
-
-          <div class="album-artist">
-            <el-avatar :size="40" :src="album.group.logo" :alt="album.group.name" shape="square" class="artist-logo">
-              <el-icon v-if="!album.group.logo">
-                <Headset />
-              </el-icon>
-            </el-avatar>
-            <span class="artist-name" @click="$router.push(`/groups/${album.group._id}`)">
-              {{ album.group.name }}
-            </span>
-          </div>
-
-          <div class="album-meta">
-            <div class="meta-item">
-              <SvgIcon type="mdi" :path="mdiCalendar" :size="18" />
-              <span>{{ albumReleaseYear }}г.</span>
-            </div>
-            <div class="meta-item" v-if="album.genres.length">
-              <SvgIcon type="mdi" :path="mdiMusic" :size="18" />
-              <span>{{ albumGenres }}</span>
-            </div>
-            <div class="meta-item">
-              <el-icon>
-                <Timer />
-              </el-icon>
-              <span>{{ albumTotalDuration }}</span>
-            </div>
-            <div class="meta-item">
-              <el-icon>
-                <Headset />
-              </el-icon>
-              <span>{{ album.tracks.length }} треков</span>
-            </div>
-          </div>
-
-          <div class="album-stats">
-            <div class="stat">
-              <span class="stat-number">{{ album.stats.views }}</span>
-              <span class="stat-label">просмотров</span>
-            </div>
-            <div class="stat">
-              <span class="stat-number">{{ album.stats.likes.length }}</span>
-              <span class="stat-label">лайков</span>
-            </div>
-          </div>
-
-          <div class="album-actions">
-            <el-button type="danger" :icon="userLikedAlbum ? StarFilled : Star" @click="toggleLike">
-              {{ album.stats.likes.length }}
-            </el-button>
-            <el-button type="primary" :icon="Share" @click="shareAlbum">Поделиться</el-button>
-            <el-button v-if="isAuthenticated" type="success" :icon="Plus" @click="addToCollection">
-              В коллекцию
-            </el-button>
-            <el-button v-if="store.userIsAdmin" type="info" :icon="Edit" @click="showAlbumInfoEdit = true">
-              Редактировать
-            </el-button>
-          </div>
-          <el-divider />
-          <div class="album-actions">
-            <el-button
-              v-for="link in album.socialLinks"
-              :key="link.platform"
-              :type="store.socialLinkColorMap[link.platform]"
-              :icon="store.socialLinkIconsMap[link.platform]"
-              tag="a"
-              :href="link.url"
-              target="_blank"
-            >
-              {{ store.socialPlatformNamesMap[link.platform] }}
-            </el-button>
-          </div>
-        </div>
-      </div>
-    </section>
+    <AlbumHero :album="album" @update-album="fetchAlbumData" />
 
     <!-- Main Content -->
     <el-container class="album-main-content">
@@ -110,6 +16,7 @@
             <p>{{ album.description }}</p>
           </div>
         </el-card>
+        <TextEditor @save-content="addComment" />
         <el-card class="tracklist-card">
           <template #header>
             <div class="tracklist-header">
@@ -124,42 +31,45 @@
             </div>
           </template>
           <div class="tracklist">
-            <div
-              v-for="(track, index) in album.tracks"
-              :key="track.number"
-              class="track-item"
-              :class="{ 'has-lyrics': track.lyrics }"
-            >
-              <div class="track-main" @click="toggleTrackLyrics(track)">
-                <div class="track-number">
-                  {{ track.number }}
-                </div>
-
-                <div class="track-info">
-                  <h4 class="track-title">{{ track.title }}</h4>
-                  <div class="track-meta">
-                    <span class="track-duration">{{ track.duration }}</span>
-                    <el-tag v-if="track.lyrics" size="small" type="info" class="lyrics-tag">есть текст</el-tag>
+            <div v-for="(disc, i) in tracksSortedByDiscNumber" :key="i">
+              <el-tag type="warning">CD {{ i }}</el-tag>
+              <div
+                v-for="(track, index) in disc"
+                :key="track.number"
+                class="track-item"
+                :class="{ 'has-lyrics': track.lyrics }"
+              >
+                <div class="track-main" @click="toggleTrackLyrics(track)">
+                  <div class="track-number">
+                    {{ track.number }}
                   </div>
-                </div>
 
-                <div class="track-actions">
-                  <EditIconButton v-if="store.userIsAdmin" @click="editLyrics(track)" />
-                  <DeleteIconButton @confirm="removeTrack(index)" />
-                </div>
-              </div>
-
-              <!-- Lyrics Section -->
-              <el-collapse-transition>
-                <div v-show="isTrackExpanded(track.number)" class="track-lyrics">
-                  <div class="lyrics-content">
-                    <div class="flex gap-2">
-                      <h5>Текст песни</h5>
+                  <div class="track-info">
+                    <h4 class="track-title">{{ track.title }}</h4>
+                    <div class="track-meta">
+                      <span class="track-duration">{{ track.duration }}</span>
+                      <el-tag v-if="track.lyrics" size="small" type="info" class="lyrics-tag">есть текст</el-tag>
                     </div>
-                    <pre class="lyrics-text">{{ track.lyrics }}</pre>
+                  </div>
+
+                  <div class="track-actions">
+                    <EditIconButton v-if="store.userIsAdmin" @click="editLyrics(track)" />
+                    <DeleteIconButton @confirm="removeTrack(index)" />
                   </div>
                 </div>
-              </el-collapse-transition>
+
+                <!-- Lyrics Section -->
+                <el-collapse-transition>
+                  <div v-show="isTrackExpanded(track.number)" class="track-lyrics">
+                    <div class="lyrics-content">
+                      <div class="flex gap-2">
+                        <h5>Текст песни</h5>
+                      </div>
+                      <pre class="lyrics-text">{{ track.lyrics }}</pre>
+                    </div>
+                  </div>
+                </el-collapse-transition>
+              </div>
             </div>
           </div>
         </el-card>
@@ -361,20 +271,18 @@
       <el-button type="success" @click="saveLyrics">Сохранить</el-button>
     </template>
   </el-dialog>
-
-  <EditAlbumDialog v-model="showAlbumInfoEdit" :album="album" mode="edit" :group="album.group" />
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { debounce } from 'lodash-es'
 import dayjs from 'dayjs'
 import durationPlugin from 'dayjs/plugin/duration'
-import { ElMessage, ElNotification } from 'element-plus'
-import { Headset, View, Timer, InfoFilled, Star, StarFilled, Share, Plus, Edit } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
+import { Headset, View, InfoFilled } from '@element-plus/icons-vue'
 import SvgIcon from '@jamescoyle/vue-icon'
-import { mdiCalendar, mdiAlbum, mdiMusic } from '@mdi/js'
+import { mdiAlbum } from '@mdi/js'
 
 import { useStore } from '@/stores/store'
 
@@ -382,16 +290,17 @@ import EditIconButton from '@/components/buttons/EditIconButton.vue'
 import AddIconButton from '@/components/buttons/AddIconButton.vue'
 import DeleteIconButton from '@/components/buttons/DeleteIconButton.vue'
 import TrackForm from '@/components/forms/TrackForm.vue'
-import EditAlbumDialog from '@/components/dialogs/EditAlbumDialog.vue'
+
+import TextEditor from '@/components/TextEditor.vue'
 
 import { getDefaultAlbum } from '@/consts'
 
 import type { Album, Group, News, TrackInfo } from '@/types'
+import AlbumHero from '@/components/albums/AlbumHero.vue'
 
 dayjs.extend(durationPlugin)
 
 const route = useRoute()
-const router = useRouter()
 const store = useStore()
 // Refs
 const album = ref<Album>(getDefaultAlbum())
@@ -399,7 +308,6 @@ const otherAlbums = ref<Album[]>([])
 const relatedNews = ref<News[]>([])
 const expandedTracks = ref(new Set())
 const showLyricsEdit = ref(false)
-const showAlbumInfoEdit = ref(false)
 const editingTrack = ref<TrackInfo>({})
 const isGroupEdit = ref(false)
 const isDetailsEdit = ref(false)
@@ -407,10 +315,9 @@ const searchQuery = ref('')
 const foundedGroups = ref<Group[]>([])
 
 // Computed
-const userLikedAlbum = computed((): boolean => !album.value.stats.likes.findIndex(u => u._id === store.user.id))
-const isAuthenticated = computed((): boolean => store.userIsAuth)
+
 const albumGenres = computed((): string => album.value.genres.map(g => g.name).join(', '))
-const albumReleaseYear = computed((): number => new Date(album.value.releaseDate).getFullYear())
+
 const albumTotalDuration = computed((): string => {
   const totalSeconds = album.value.tracks.reduce((total, track) => {
     const [hours, minutes, seconds] = track.duration.split(':').map(i => parseInt(i))
@@ -419,8 +326,39 @@ const albumTotalDuration = computed((): string => {
 
   return formatTrackDuration(totalSeconds)
 })
+const tracksSortedByDiscNumber = computed((): { [discNumber: number]: TrackInfo[] } => {
+  const grouped: { [discNumber: number]: TrackInfo[] } = {}
+
+  album.value.tracks.forEach(track => {
+    const disc = track.discNumber
+    if (!grouped[disc]) {
+      grouped[disc] = []
+    }
+    grouped[disc].push(track)
+  })
+
+  // Сортируем ключи объекта
+  const sorted: { [discNumber: number]: TrackInfo[] } = {}
+  Object.keys(grouped)
+    .map(Number)
+    .sort((a, b) => a - b)
+    .forEach(disc => {
+      sorted[disc] = grouped[disc]
+    })
+
+  return sorted
+})
 
 // Methods
+const addComment = (quillContent: string, quillText: string, rating: number): void => {
+  album.value.reviews.push({
+    content: quillContent,
+    text: quillText,
+    rating,
+    user: store.user.id
+  })
+}
+
 const removeTrack = (index: number): void => {
   album.value.tracks.splice(index, 1)
 }
@@ -498,47 +436,12 @@ const saveLyrics = async (): Promise<void> => {
   }
 }
 
-const toggleLike = async () => {
-  try {
-    const { newAlbum, message } = await store.toggleLike(album.value)
-    ElNotification({
-      type: 'success',
-      message
-    })
-    album.value = newAlbum
-  } catch (error) {
-    ElNotification({
-      type: 'error',
-      message: error.message
-    })
-  }
-}
-
-const shareAlbum = async () => {
-  try {
-    await navigator.clipboard.writeText(window.location.href)
-    ElMessage.success('Ссылка скопирована в буфер обмена')
-  } catch (error) {
-    ElMessage.error('Ошибка при копировании ссылки')
-  }
-}
-
-const addToCollection = () => {
-  if (!isAuthenticated.value) {
-    ElMessage.warning('Для добавления в коллекцию необходимо войти в систему')
-    router.push('/login')
-    return
-  }
-  // API call to add to collection
-  ElMessage.success('Альбом добавлен в коллекцию')
-}
-
 // Fetch data
 const fetchAlbumData = async () => {
   const albumId = route.params.id
   try {
     // Fetch album data
-    const albumResponse = await fetch(`/metal-library/api/albums/${albumId}`)
+    const albumResponse = await fetch(`/api/albums/${albumId}`)
     if (albumResponse.ok) {
       album.value = await albumResponse.json()
     } else {
@@ -547,7 +450,7 @@ const fetchAlbumData = async () => {
 
     // Fetch other albums by the same group
     if (album.value.group._id) {
-      const otherResponse = await fetch(`/metal-library/api/groups/${album.value.group._id}/albums`)
+      const otherResponse = await fetch(`/api/groups/${album.value.group._id}/albums`)
       if (otherResponse.ok) {
         const allAlbums = await otherResponse.json()
         otherAlbums.value = allAlbums.filter(a => a._id !== albumId).slice(0, 5)
@@ -555,7 +458,7 @@ const fetchAlbumData = async () => {
     }
 
     // Fetch related news
-    const newsResponse = await fetch(`/metal-library/api/news/album/${albumId}`)
+    const newsResponse = await fetch(`/api/news/album/${albumId}`)
     if (newsResponse.ok) {
       relatedNews.value = await newsResponse.json()
     }
@@ -572,7 +475,9 @@ watch(
   }, 500),
   { deep: true }
 )
-
+watch(route, () => {
+  fetchAlbumData()
+})
 onMounted(() => {
   fetchAlbumData()
 })
@@ -586,124 +491,6 @@ onMounted(() => {
 }
 
 /* Hero Section */
-.album-hero {
-  background: linear-gradient(135deg, #1a1a1a 0%, #2a1a1a 100%);
-  padding: 20px 0;
-  margin-bottom: 20px;
-}
-
-.hero-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
-  display: flex;
-  gap: 40px;
-  align-items: flex-start;
-}
-
-.album-cover-section {
-  flex-shrink: 1;
-}
-
-.cover-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  background: #252525;
-  color: #666;
-  font-size: 80px;
-  border-radius: 12px;
-}
-
-.album-info-section {
-  flex: 1;
-}
-
-.album-type-tag {
-  margin-bottom: 20px;
-}
-
-.album-title {
-  font-size: 3rem;
-  font-weight: bold;
-  margin: 0 0 16px 0;
-  color: #fff;
-  line-height: 1.1;
-}
-
-.album-artist {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-.artist-logo {
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.artist-logo:hover {
-  transform: scale(1.05);
-}
-
-.artist-name {
-  font-size: 1.3rem;
-  color: #9e2a2a;
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-
-.artist-name:hover {
-  color: #b33c3c;
-  text-decoration: underline;
-}
-
-.album-meta {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-}
-
-.meta-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #e0e0e0;
-  font-size: 1rem;
-}
-
-.album-stats {
-  display: flex;
-  gap: 30px;
-}
-
-.stat {
-  text-align: center;
-}
-
-.stat-number {
-  display: block;
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #f5f5f5;
-}
-
-.stat-label {
-  display: block;
-  font-size: 0.9rem;
-  color: #aaa;
-  text-transform: lowercase;
-}
-
-.album-actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
 
 /* Main Content */
 .album-main-content {

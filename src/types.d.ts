@@ -36,6 +36,13 @@ export interface RegisterData extends AuthData {
   passwordConfirm?: string
 }
 
+export interface Review {
+  content: string
+  text: string
+  user: string
+  rating: number
+}
+
 export interface Album {
   _id?: string
   title: string
@@ -57,6 +64,7 @@ export interface Album {
       username: string
     }[]
   }
+  reviews: Review[]
   createdAt?: string
 }
 
@@ -75,6 +83,7 @@ export interface Group {
   country: string
   city: string
   formedYear: number
+  yearsActive: string
   status: 'active' | 'split-up' | 'on-hold' | 'unknown'
   genres: Genre[]
   themes: string[]

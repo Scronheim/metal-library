@@ -373,31 +373,31 @@ const getCategoryLabel = category => {
 const fetchHomeData = async () => {
   try {
     // Fetch latest news
-    const newsResponse = await fetch('/metal-library/api/news/latest?limit=6')
+    const newsResponse = await fetch('/api/news/latest?limit=6')
     if (newsResponse.ok) {
       latestNews.value = await newsResponse.json()
     }
 
     // Fetch latest groups
-    const groupsResponse = await fetch('/metal-library/api/groups/latest?limit=5')
+    const groupsResponse = await fetch('/api/groups/latest?limit=5')
     if (groupsResponse.ok) {
       latestGroups.value = await groupsResponse.json()
     }
 
     // Fetch top albums
-    const albumsResponse = await fetch('/metal-library/api/albums/top?limit=5')
+    const albumsResponse = await fetch('/api/albums/top?limit=5')
     if (albumsResponse.ok) {
       topAlbums.value = await albumsResponse.json()
     }
 
     // Fetch featured genres
-    const genresResponse = await fetch('/metal-library/api/genres/popular?limit=6')
+    const genresResponse = await fetch('/api/genres/popular?limit=6')
     if (genresResponse.ok) {
       featuredGenres.value = await genresResponse.json()
     }
 
     // Fetch statistics
-    const statsResponse = await fetch('/metal-library/api/stats')
+    const statsResponse = await fetch('/api/stats')
     if (statsResponse.ok) {
       stats.value = await statsResponse.json()
     }

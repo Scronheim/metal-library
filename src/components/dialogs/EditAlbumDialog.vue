@@ -305,7 +305,7 @@ const addTrack = () => {
   })
 }
 
-const removeTrack = index => {
+const removeTrack = (index: number): void => {
   if (form.tracks.length <= 1) {
     ElMessage.warning('Альбом должен содержать хотя бы один трек')
     return
@@ -313,9 +313,7 @@ const removeTrack = index => {
 
   form.tracks.splice(index, 1)
   // Renumber tracks
-  form.tracks.forEach((track, idx) => {
-    track.number = idx + 1
-  })
+  form.tracks.forEach((track, idx) => (track.number = idx + 1))
 }
 
 const albumTotalDuration = computed((): string => {
@@ -359,6 +357,7 @@ const submitForm = async () => {
 
     if (props.mode === 'add') await store.addAlbum(form, true)
     else await store.updateAlbum(form, true)
+    emit('success')
   } catch (error) {
     console.error('Error saving album:', error)
     ElMessage.error(error.message || 'Ошибка при сохранении альбома')
