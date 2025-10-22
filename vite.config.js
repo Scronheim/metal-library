@@ -36,7 +36,7 @@ export default defineConfig({
     proxy: {
       '/api': {
         // target: 'http://192.168.0.13:3000',
-        target: 'http://64.188.73.107',
+        target: 'https://metal-library.ru',
         changeOrigin: true
       }
     }

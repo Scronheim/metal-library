@@ -16,7 +16,7 @@
             <p>{{ album.description }}</p>
           </div>
         </el-card>
-        <TextEditor @save-content="addComment" />
+        <!-- <TextEditor @save-content="addComment" /> -->
         <el-card class="tracklist-card">
           <template #header>
             <div class="tracklist-header">
