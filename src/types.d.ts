@@ -65,6 +65,7 @@ export interface Album {
     }[]
   }
   reviews: Review[]
+  lineup: Member[]
   createdAt?: string
 }
 
@@ -92,11 +93,11 @@ export interface Group {
   socialLinks: SocialNetwork[]
   currentMembers: {
     member: Member
-    role: string
+    roles: string[]
   }[]
   pastMembers: {
     member: Member
-    role: string
+    roles: string[]
     years: string[]
   }[]
   stats: {
@@ -133,25 +134,6 @@ export interface Member {
   instruments: string[]
   socialLinks: SocialNetwork[]
   status: 'active' | 'retired' | 'deceased'
-  groups: [
-    {
-      group: Group
-      role: string
-      years: string[] // годы участия в группе
-      isCurrent: boolean
-    }
-  ]
-  discography: [
-    {
-      album: Album
-      group: Group
-      year: number
-    }
-  ]
-  stats: {
-    groupsCount: number
-    albumsCount: number
-  }
 }
 
 export interface Country {

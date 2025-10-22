@@ -1,4 +1,4 @@
-import type { Album, Group } from './types'
+import type { Album, Group, Member } from './types'
 
 export const getDefaultAlbum = (): Album => {
   return {
@@ -19,7 +19,9 @@ export const getDefaultAlbum = (): Album => {
       views: 0
     },
     tracks: [],
-    type: 'full-length'
+    type: 'full-length',
+    lineup: [],
+    reviews: []
   }
 }
 
@@ -42,6 +44,24 @@ export const getDefaultGroup = (): Group => {
       views: 0
     },
     status: 'active',
-    themes: []
+    themes: [],
+    yearsActive: ''
+  }
+}
+
+export const getDefaultMember = (): Member => {
+  return {
+    bio: '',
+    birthDate: '',
+    birthName: '',
+    birthPlace: '',
+    country: '',
+    discography: [],
+    groups: [],
+    instruments: [],
+    name: '',
+    photo: '',
+    socialLinks: [],
+    status: 'active'
   }
 }

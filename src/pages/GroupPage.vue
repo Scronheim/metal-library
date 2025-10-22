@@ -75,7 +75,7 @@
         <el-tabs v-model="activeTab" class="group-tabs">
           <!-- Biography Tab -->
           <el-tab-pane label="Биография" name="biography">
-            <el-card class="tab-content-card">
+            <el-card>
               <div class="biography-content">
                 <div class="flex items-center gap-3 mb-3">
                   <h3>О группе</h3>
@@ -117,136 +117,125 @@
           <!-- Discography Tab -->
           <el-tab-pane label="Дискография" name="discography">
             <el-card>
-              <div class="discography-content">
-                <!-- Discography Header with Stats -->
-                <div class="discography-header">
-                  <div class="flex items-center gap-3">
-                    <h3>Дискография</h3>
-                    <AddIconButton @click="openAlbumAddDialog" />
-                  </div>
-                  <div class="discography-stats">
-                    <span class="stat">
-                      <i class="el-icon-disc"></i>
-                      Всего альбомов: {{ albums.length }}
-                    </span>
-                    <span class="stat">
-                      <i class="el-icon-time"></i>
-                      Период: {{ getDiscographyPeriod }}
-                    </span>
-                  </div>
+              <!-- Discography Header with Stats -->
+              <div class="discography-header">
+                <div class="flex items-center gap-3">
+                  <h3>Дискография</h3>
+                  <AddIconButton @click="openAlbumAddDialog" />
                 </div>
-
-                <!-- Albums Grid -->
-                <div class="albums-grid" v-if="sortedAlbums.length">
-                  <el-card
-                    v-for="album in sortedAlbums"
-                    :key="album._id"
-                    class="album-card"
-                    shadow="hover"
-                    @click="$router.push(`/albums/${album._id}`)"
-                  >
-                    <div class="album-cover">
-                      <el-image :src="album.cover" :alt="album.title" fit="cover" class="cover-image" />
-                      <el-tag v-if="album.type" :type="store.albumTypeColorMap[album.type]" class="album-type-tag">
-                        {{ store.albumTypesMap[album.type] }}
-                      </el-tag>
-                    </div>
-                    <div class="album-info">
-                      <h4 class="album-title">{{ album.title }}</h4>
-                      <p class="album-year">{{ new Date(album.releaseDate).getFullYear() }}</p>
-                      <p class="album-label" v-if="album.label">{{ album.label }}</p>
-                      <div class="album-meta">
-                        <span class="tracks-count" v-if="album.tracks">
-                          <el-icon>
-                            <Headset />
-                          </el-icon>
-                          {{ album.tracks.length }} треков
-                        </span>
-                      </div>
-                      <div class="album-stats">
-                        <span class="stat">
-                          <el-icon>
-                            <View />
-                          </el-icon>
-                          {{ album.stats.views }}
-                        </span>
-                        <span class="stat">
-                          <el-icon>
-                            <Star />
-                          </el-icon>
-                          {{ album.stats.likes.length }}
-                        </span>
-                      </div>
-                    </div>
-                  </el-card>
+                <div class="discography-stats">
+                  <span class="stat">
+                    <i class="el-icon-disc"></i>
+                    Всего альбомов: {{ albums.length }}
+                  </span>
+                  <span class="stat">
+                    <i class="el-icon-time"></i>
+                    Период: {{ getDiscographyPeriod }}
+                  </span>
                 </div>
-
-                <el-empty v-else description="Альбомы не добавлены" class="empty-albums" />
               </div>
+
+              <!-- Albums Grid -->
+              <div class="albums-grid" v-if="sortedAlbums.length">
+                <el-card
+                  v-for="album in sortedAlbums"
+                  :key="album._id"
+                  class="album-card"
+                  shadow="hover"
+                  @click="$router.push(`/albums/${album._id}`)"
+                >
+                  <div class="album-cover">
+                    <el-image :src="album.cover" :alt="album.title" fit="cover" class="cover-image" />
+                    <el-tag v-if="album.type" :type="store.albumTypeColorMap[album.type]" class="album-type-tag">
+                      {{ store.albumTypesMap[album.type] }}
+                    </el-tag>
+                  </div>
+                  <div class="album-info">
+                    <h4 class="album-title">{{ album.title }}</h4>
+                    <p class="album-year">{{ new Date(album.releaseDate).getFullYear() }}</p>
+                    <p class="album-label" v-if="album.label">{{ album.label }}</p>
+                    <div class="album-meta">
+                      <span class="tracks-count" v-if="album.tracks">
+                        <el-icon>
+                          <Headset />
+                        </el-icon>
+                        {{ album.tracks.length }} треков
+                      </span>
+                    </div>
+                    <div class="album-stats">
+                      <span class="stat">
+                        <el-icon>
+                          <View />
+                        </el-icon>
+                        {{ album.stats.views }}
+                      </span>
+                      <span class="stat">
+                        <el-icon>
+                          <Star />
+                        </el-icon>
+                        {{ album.stats.likes.length }}
+                      </span>
+                    </div>
+                  </div>
+                </el-card>
+              </div>
+
+              <el-empty v-else description="Альбомы не добавлены" class="empty-albums" />
             </el-card>
           </el-tab-pane>
 
           <!-- Members Tab -->
           <el-tab-pane label="Участники" name="members">
-            <el-card class="tab-content-card">
-              <div class="members-content">
-                <!-- Current Members -->
-                <div class="members-section">
-                  <h3>Текущий состав</h3>
-                  <div class="members-grid">
-                    <div
-                      v-for="member in group.currentMembers"
-                      :key="member.member._id"
-                      class="member-card"
-                      @click="$router.push(`/members/${member.member._id}`)"
-                    >
-                      <div class="member-avatar">
-                        <el-avatar :size="80" :src="member.member.photo" :alt="member.member.name">
-                          <i class="el-icon-user" v-if="!member.member.photo"></i>
-                        </el-avatar>
-                      </div>
-                      <div class="member-info">
-                        <h4 class="member-name">{{ member.member.name }}</h4>
-                        <p class="member-role">{{ member.role }}</p>
-                        <div class="member-instruments">
-                          <el-tag
-                            v-for="instrument in member.member.instruments.slice(0, 2)"
-                            :key="instrument"
-                            size="small"
-                            effect="plain"
-                          >
-                            {{ instrument }}
-                          </el-tag>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+            <el-card>
+              <!-- Current Members -->
+              <div class="members-section">
+                <h3>
+                  Текущий состав
+                  <AddIconButton
+                    title="Добавить участника"
+                    :is-close-edit="showNewMemberInput"
+                    @click="toggleNewMemberInput"
+                  />
+                </h3>
+                <NewMemberAddForm
+                  v-if="showNewMemberInput"
+                  :member="editableMember"
+                  @open-add-member-dialog="openAddMemberDialog"
+                  @add-member-to-group="addMemberToGroup"
+                />
+                <div class="members-grid">
+                  <MemberCard
+                    v-for="(member, index) in group.currentMembers"
+                    :member="member.member"
+                    @remove-member="removeCurrentMember(index)"
+                    @open-edit-member-dialog="openEditMemberDialog(member.member)"
+                  />
                 </div>
+              </div>
 
-                <!-- Past Members -->
-                <div class="members-section" v-if="group.pastMembers && group.pastMembers.length">
-                  <h3>Бывшие участники</h3>
-                  <div class="members-grid">
-                    <div
-                      v-for="member in group.pastMembers"
-                      :key="member.member._id"
-                      class="member-card past-member"
-                      @click="$router.push(`/members/${member.member._id}`)"
-                    >
-                      <div class="member-avatar">
-                        <el-avatar :size="80" :src="member.member.photo" :alt="member.member.name" class="past-avatar">
-                          <i class="el-icon-user" v-if="!member.member.photo"></i>
-                        </el-avatar>
-                      </div>
-                      <div class="member-info">
-                        <h4 class="member-name">{{ member.member.name }}</h4>
-                        <p class="member-role">{{ member.role }}</p>
-                        <p class="member-years" v-if="member.years">
-                          {{ member.years.join(', ') }}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+              <!-- Past Members -->
+              <div class="members-section">
+                <h3>
+                  Бывшие участники
+                  <AddIconButton
+                    title="Добавить участника"
+                    :is-close-edit="showPastMemberInput"
+                    @click="togglePastMemberInput"
+                  />
+                </h3>
+                <NewMemberAddForm
+                  v-if="showPastMemberInput"
+                  :member="editableMember"
+                  @open-add-member-dialog="openAddMemberDialog"
+                  @add-member-to-group="addMemberToGroup"
+                />
+                <div class="members-grid">
+                  <MemberCard
+                    v-for="(member, index) in group.pastMembers"
+                    :member="member.member"
+                    @remove-member="removePastMember(index)"
+                    @open-edit-member-dialog="openEditMemberDialog(member.member)"
+                  />
                 </div>
               </div>
             </el-card>
@@ -254,7 +243,7 @@
 
           <!-- Similar Groups Tab -->
           <el-tab-pane label="Похожие группы" name="similar">
-            <el-card class="tab-content-card">
+            <el-card>
               <div class="similar-groups-content">
                 <div class="similar-groups-grid" v-if="similarGroups.length">
                   <el-card
@@ -601,6 +590,13 @@
   </el-dialog>
 
   <EditAlbumDialog v-model="showEditableAlbumDialog" mode="add" :group="group" @success="fetchGroupData" />
+  <MemberFormDialog
+    v-model="showMemberDialog"
+    :mode="memberMode"
+    :member="editableMember"
+    @add="addMemberToGroup"
+    @update="updateMember"
+  />
 </template>
 
 <script setup lang="ts">
@@ -626,14 +622,17 @@ import { mdiAlbum } from '@mdi/js'
 
 import { useStore } from '@/stores/store'
 
-import { getDefaultGroup } from '@/consts'
+import { getDefaultGroup, getDefaultMember } from '@/consts'
 
 import EditIconButton from '@/components/buttons/EditIconButton.vue'
 import AddIconButton from '@/components/buttons/AddIconButton.vue'
 import DeleteIconButton from '@/components/buttons/DeleteIconButton.vue'
 import EditAlbumDialog from '@/components/dialogs/EditAlbumDialog.vue'
 
-import type { Album, Group, News } from '@/types'
+import type { Album, Group, Member, News } from '@/types'
+import MemberFormDialog from '@/components/dialogs/MemberFormDialog.vue'
+import NewMemberAddForm from '@/components/forms/NewMemberAddForm.vue'
+import MemberCard from '@/components/forms/MemberCard.vue'
 
 const route = useRoute()
 const store = useStore()
@@ -643,10 +642,15 @@ const group = ref<Group>(getDefaultGroup())
 const albums = ref<Album[]>([])
 const similarGroups = ref<Group[]>([])
 const relatedNews = ref<News[]>([])
-const activeTab = ref<string>('biography')
+const activeTab = ref<string>('members')
 const showGroupInfoDialog = ref<boolean>(false)
 const showGroupBioDialog = ref<boolean>(false)
 const showEditableAlbumDialog = ref<boolean>(false)
+const showMemberDialog = ref<boolean>(false)
+const showNewMemberInput = ref<boolean>(false)
+const showPastMemberInput = ref<boolean>(false)
+const isCurrentMember = ref<boolean>(false)
+const memberMode = ref<string>('add')
 const groupInfoRules = ref<FormRules<Group>>({
   country: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }],
   formedYear: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }],
@@ -656,20 +660,16 @@ const groupInfoRules = ref<FormRules<Group>>({
   banner: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }]
 })
 const groupRef = ref()
-const newTheme = ref('')
+const editableMember = ref<Member>(getDefaultMember())
 // Computed
 const totalMembers = computed((): number => {
   if (!group.value) return 0
   return (group.value.currentMembers?.length || 0) + (group.value.pastMembers?.length || 0)
 })
 
-const sortedAlbums = computed((): Album[] => {
-  return [...albums.value].sort((a, b) => b.releaseDate - a.releaseDate)
-})
+const sortedAlbums = computed((): Album[] => [...albums.value].sort((a, b) => b.releaseDate - a.releaseDate))
 
-const latestAlbums = computed((): Album[] => {
-  return sortedAlbums.value.slice(0, 5)
-})
+const latestAlbums = computed((): Album[] => sortedAlbums.value.slice(0, 5))
 
 const getDiscographyPeriod = computed((): string => {
   if (albums.value.length === 0) return 'Нет данных'
@@ -682,11 +682,41 @@ const getDiscographyPeriod = computed((): string => {
 })
 
 // Methods
-const addTheme = () => {
-  if (newTheme.value && !group.value.themes.includes(newTheme.value)) {
-    group.value.themes.push(newTheme.value)
-    newTheme.value = ''
-  }
+const removePastMember = async (index: number): Promise<void> => {
+  group.value.pastMembers.splice(index, 1)
+  await store.updateGroup(group.value)
+}
+const removeCurrentMember = async (index: number): Promise<void> => {
+  group.value.currentMembers.splice(index, 1)
+  await store.updateGroup(group.value)
+}
+const updateMember = async (): Promise<void> => {
+  await store.updateMember(editableMember.value, true)
+}
+const openAddMemberDialog = (): void => {
+  editableMember.value = getDefaultMember()
+  memberMode.value = 'add'
+  showMemberDialog.value = true
+}
+const openEditMemberDialog = (member: Member): void => {
+  editableMember.value = member
+  memberMode.value = 'edit'
+  showMemberDialog.value = true
+}
+const addMemberToGroup = async (): Promise<void> => {
+  await store.addMemberToGroup(group.value._id as string, editableMember.value, isCurrentMember.value, true)
+  await fetchGroupData()
+}
+
+const toggleNewMemberInput = (): void => {
+  isCurrentMember.value = true
+  showPastMemberInput.value = false
+  showNewMemberInput.value = !showNewMemberInput.value
+}
+const togglePastMemberInput = (): void => {
+  isCurrentMember.value = false
+  showNewMemberInput.value = false
+  showPastMemberInput.value = !showPastMemberInput.value
 }
 const openAlbumAddDialog = async (): Promise<void> => {
   await store.getGenres()
@@ -739,12 +769,6 @@ const formatDate = (dateString: string): string => {
   })
 }
 
-const formatDuration = (totalSeconds: number): string => {
-  const minutes = Math.floor(totalSeconds / 60)
-  const seconds = totalSeconds % 60
-  return `${minutes}:${seconds.toString().padStart(2, '0')}`
-}
-
 const toggleLike = async () => {
   try {
     // API call to like/unlike
@@ -773,25 +797,25 @@ const fetchGroupData = async () => {
   const groupId = route.params.id
   try {
     // Fetch group data
-    const groupResponse = await fetch(`/api/groups/${groupId}`)
+    const groupResponse = await fetch(`/metal-library/api/groups/${groupId}`)
     if (groupResponse.ok) {
       group.value = await groupResponse.json()
     }
 
     // Fetch group albums
-    const albumsResponse = await fetch(`/api/groups/${groupId}/albums`)
+    const albumsResponse = await fetch(`/metal-library/api/groups/${groupId}/albums`)
     if (albumsResponse.ok) {
       albums.value = await albumsResponse.json()
     }
 
     // Fetch similar groups
-    const similarResponse = await fetch(`/api/groups/${groupId}/similar`)
+    const similarResponse = await fetch(`/metal-library/api/groups/${groupId}/similar`)
     if (similarResponse.ok) {
       similarGroups.value = await similarResponse.json()
     }
 
     // Fetch related news
-    const newsResponse = await fetch(`/api/news/group/${groupId}`)
+    const newsResponse = await fetch(`/metal-library/api/news/group/${groupId}`)
     if (newsResponse.ok) {
       relatedNews.value = await newsResponse.json()
     }
@@ -914,7 +938,7 @@ onMounted(() => {
   background: #1e1e1e;
   border-radius: 8px 8px 0 0;
   padding: 0 20px;
-  margin: 0;
+  margin: 0 0 10px 0;
 }
 
 :deep(.group-tabs .el-tabs__nav-wrap) {
@@ -942,9 +966,6 @@ onMounted(() => {
 }
 
 /* Biography Tab */
-.biography-content {
-  padding: 24px;
-}
 
 .biography-content h3 {
   color: #f5f5f5;
@@ -982,9 +1003,6 @@ onMounted(() => {
 }
 
 /* Discography Tab */
-.discography-content {
-  padding: 24px;
-}
 
 .discography-header {
   display: flex;
@@ -1062,7 +1080,7 @@ onMounted(() => {
 
 .album-info {
   flex: 1;
-  padding: 16px;
+  padding: 12px;
 }
 
 .album-title {
@@ -1120,11 +1138,6 @@ onMounted(() => {
 
 .empty-albums {
   padding: 60px 0;
-}
-
-/* Members Tab */
-.members-content {
-  padding: 24px;
 }
 
 .members-section {
@@ -1348,6 +1361,7 @@ onMounted(() => {
   align-items: center;
   border-radius: 6px;
   cursor: pointer;
+  padding: 0 10px;
   transition: background-color 0.3s ease;
 }
 

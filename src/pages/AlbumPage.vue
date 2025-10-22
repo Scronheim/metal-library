@@ -162,7 +162,7 @@
               <span class="detail-label">Дата выхода:</span>
               <span class="detail-value">
                 <template v-if="isDetailsEdit">
-                  <el-input type="date" v-model="album.releaseDate" />
+                  <el-date-picker v-model="album.releaseDate" type="date" placeholder="Выберите день" />
                 </template>
                 <template v-else>{{ formatDate(album.releaseDate) }}</template>
               </span>
@@ -441,7 +441,7 @@ const fetchAlbumData = async () => {
   const albumId = route.params.id
   try {
     // Fetch album data
-    const albumResponse = await fetch(`/api/albums/${albumId}`)
+    const albumResponse = await fetch(`/metal-library/api/albums/${albumId}`)
     if (albumResponse.ok) {
       album.value = await albumResponse.json()
     } else {
@@ -450,7 +450,7 @@ const fetchAlbumData = async () => {
 
     // Fetch other albums by the same group
     if (album.value.group._id) {
-      const otherResponse = await fetch(`/api/groups/${album.value.group._id}/albums`)
+      const otherResponse = await fetch(`/metal-library/api/groups/${album.value.group._id}/albums`)
       if (otherResponse.ok) {
         const allAlbums = await otherResponse.json()
         otherAlbums.value = allAlbums.filter(a => a._id !== albumId).slice(0, 5)
@@ -458,7 +458,7 @@ const fetchAlbumData = async () => {
     }
 
     // Fetch related news
-    const newsResponse = await fetch(`/api/news/album/${albumId}`)
+    const newsResponse = await fetch(`/metal-library/api/news/album/${albumId}`)
     if (newsResponse.ok) {
       relatedNews.value = await newsResponse.json()
     }

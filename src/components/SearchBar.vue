@@ -115,8 +115,8 @@ const performQuickSearch = async () => {
 
     // Search groups and albums simultaneously
     const [groupsResponse, albumsResponse] = await Promise.all([
-      fetch(`/api/groups?search=${encodeURIComponent(query)}&limit=3`),
-      fetch(`/api/albums?search=${encodeURIComponent(query)}&limit=3`)
+      fetch(`/metal-library/api/groups?search=${encodeURIComponent(query)}&limit=3`),
+      fetch(`/metal-library/api/albums?search=${encodeURIComponent(query)}&limit=3`)
     ])
 
     const groupsData = groupsResponse.ok ? await groupsResponse.json() : { groups: [] }
