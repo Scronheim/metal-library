@@ -38,14 +38,7 @@
                 </div>
               </div>
               <div class="group-genres">
-                <el-tag
-                  v-for="genre in group.genres"
-                  :key="genre._id"
-                  type="danger"
-                  effect="dark"
-                  class="genre-tag"
-                  @click="$router.push(`/genres/${genre._id}`)"
-                >
+                <el-tag v-for="genre in group.genres" :key="genre._id" type="danger" effect="dark" class="genre-tag">
                   {{ genre.name }}
                 </el-tag>
               </div>
