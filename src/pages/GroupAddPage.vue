@@ -201,88 +201,10 @@
           </template>
 
           <div class="social-links-section">
-            <SocialLinkForm v-for="(link, index) in form.socialLinks" :link="link" />
+            <SocialLinkForm v-for="(link, index) in form.socialLinks" :link="link" @remove="removeSocialLink(index)" />
 
             <div class="add-link-section">
               <el-button type="primary" :icon="Plus" @click="addSocialLink" text>Добавить ссылку</el-button>
-            </div>
-          </div>
-        </el-card>
-
-        <!-- Members Section -->
-        <el-card class="form-section">
-          <template #header>
-            <div class="section-header">
-              <h2>Участники группы</h2>
-              <el-tag type="warning">Опционально</el-tag>
-            </div>
-          </template>
-
-          <div class="members-section">
-            <div class="members-tabs">
-              <el-tabs v-model="activeMembersTab">
-                <el-tab-pane label="Текущий состав" name="current">
-                  <div class="members-list">
-                    <div v-for="(member, index) in form.currentMembers" :key="index" class="member-item">
-                      <div class="member-row">
-                        <el-input
-                          v-model="member.name"
-                          placeholder="Имя участника"
-                          style="width: 250px; margin-right: 12px"
-                        />
-
-                        <el-input
-                          v-model="member.role"
-                          placeholder="Роль в группе"
-                          style="flex: 1; margin-right: 12px"
-                        />
-
-                        <el-button type="danger" :icon="Remove" circle @click="removeCurrentMember(index)" />
-                      </div>
-                    </div>
-
-                    <div class="add-member-section">
-                      <el-button type="primary" :icon="Plus" @click="addCurrentMember" text>
-                        Добавить участника
-                      </el-button>
-                    </div>
-                  </div>
-                </el-tab-pane>
-
-                <el-tab-pane label="Бывшие участники" name="past">
-                  <div class="members-list">
-                    <div v-for="(member, index) in form.pastMembers" :key="index" class="member-item">
-                      <div class="member-row">
-                        <el-input
-                          v-model="member.name"
-                          placeholder="Имя участника"
-                          style="width: 250px; margin-right: 12px"
-                        />
-
-                        <el-input
-                          v-model="member.role"
-                          placeholder="Роль в группе"
-                          style="width: 200px; margin-right: 12px"
-                        />
-
-                        <el-input
-                          v-model="member.years"
-                          placeholder="Годы участия (например: 1994-2000)"
-                          style="flex: 1; margin-right: 12px"
-                        />
-
-                        <el-button type="danger" :icon="Remove" circle @click="removePastMember(index)" />
-                      </div>
-                    </div>
-
-                    <div class="add-member-section">
-                      <el-button type="primary" :icon="Plus" @click="addPastMember" text>
-                        Добавить бывшего участника
-                      </el-button>
-                    </div>
-                  </div>
-                </el-tab-pane>
-              </el-tabs>
             </div>
           </div>
         </el-card>
@@ -306,6 +228,8 @@ import { Plus, Remove, Picture } from '@element-plus/icons-vue'
 
 import { useStore } from '@/stores/store'
 
+import { getDefaultGroup } from '@/consts'
+
 import type { Group } from '@/types'
 import SocialLinkForm from '@/components/forms/SocialLinkForm.vue'
 
@@ -318,26 +242,7 @@ const newTheme = ref('')
 const activeMembersTab = ref('current')
 
 // Form data
-const form = ref<Group>({
-  name: '',
-  description: '',
-  country: '',
-  city: '',
-  formedYear: new Date().getFullYear(),
-  status: 'active',
-  genres: [],
-  themes: [],
-  logo: '',
-  banner: '',
-  socialLinks: [],
-  currentMembers: [],
-  pastMembers: [],
-  stats: {
-    albumsCount: 0,
-    likes: [],
-    views: 0
-  }
-})
+const form = ref<Group>(getDefaultGroup())
 
 // Validation rules
 const rules = reactive({
@@ -345,12 +250,7 @@ const rules = reactive({
     { required: true, message: 'Введите название группы', trigger: 'blur' },
     { min: 2, message: 'Название должно содержать минимум 2 символа', trigger: 'blur' }
   ],
-  description: [{ required: true, message: 'Введите описание группы', trigger: 'blur' }],
   country: [{ required: true, message: 'Выберите страну', trigger: 'change' }],
-  formedYear: [
-    { required: true, message: 'Введите год основания', trigger: 'blur' },
-    { type: 'number', min: 1900, max: new Date().getFullYear(), message: 'Введите корректный год', trigger: 'blur' }
-  ],
   status: [{ required: true, message: 'Выберите статус группы', trigger: 'change' }],
   genres: [{ required: true, message: 'Добавьте хотя бы один жанр', trigger: 'change' }]
 })
@@ -377,36 +277,13 @@ const removeTheme = index => {
 
 const addSocialLink = () => {
   form.value.socialLinks.push({
-    platform: '',
+    platform: 'website',
     url: ''
   })
 }
 
 const removeSocialLink = index => {
-  form.socialLinks.splice(index, 1)
-}
-
-const addCurrentMember = () => {
-  form.value.currentMembers.push({
-    name: '',
-    role: ''
-  })
-}
-
-const removeCurrentMember = index => {
-  form.value.currentMembers.splice(index, 1)
-}
-
-const addPastMember = () => {
-  form.value.pastMembers.push({
-    name: '',
-    role: '',
-    years: ''
-  })
-}
-
-const removePastMember = index => {
-  form.value.pastMembers.splice(index, 1)
+  form.value.socialLinks.splice(index, 1)
 }
 
 const submitForm = async () => {
@@ -418,7 +295,7 @@ const submitForm = async () => {
 
     loading.value = true
 
-    await store.addGroup(form.value)
+    await store.addGroup(form.value, true)
   } catch (error) {
     console.error('Error adding group:', error)
     ElMessage.error(error.message || 'Ошибка при добавлении группы')
@@ -464,8 +341,6 @@ const resetForm = async () => {
 
 onMounted(async () => {
   await store.getGenres()
-  addSocialLink()
-  addCurrentMember()
 })
 </script>
 

@@ -6,7 +6,6 @@ export interface User {
   profile: {
     bio: string
     location: string
-    favoriteGenres: Genre[]
     favoriteGroups: Group[]
     favoriteAlbums: Albums[]
     website: string

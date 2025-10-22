@@ -121,16 +121,26 @@
                 <h4 class="group-name">{{ group.name }}</h4>
                 <div class="group-meta">
                   <span class="group-country">
-                    <i class="el-icon-location"></i>
+                    <el-icon>
+                      <Location />
+                    </el-icon>
                     {{ group.country }}
                   </span>
                   <span class="group-year">
-                    <i class="el-icon-date"></i>
+                    <el-icon>
+                      <Calendar />
+                    </el-icon>
                     {{ group.formedYear }}
                   </span>
                 </div>
                 <div class="group-genres">
-                  <el-tag v-for="genre in group.genres.slice(0, 2)" :key="genre._id" size="small" effect="plain">
+                  <el-tag
+                    v-for="genre in group.genres.slice(0, 2)"
+                    :key="genre._id"
+                    size="small"
+                    effect="plain"
+                    style="padding: 0"
+                  >
                     {{ genre.name }}
                   </el-tag>
                 </div>
@@ -289,6 +299,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { Calendar, Location } from '@element-plus/icons-vue'
 
 const router = useRouter()
 
@@ -373,31 +384,31 @@ const getCategoryLabel = category => {
 const fetchHomeData = async () => {
   try {
     // Fetch latest news
-    const newsResponse = await fetch('/metal-library/api/news/latest?limit=6')
+    const newsResponse = await fetch('/api/news/latest?limit=6')
     if (newsResponse.ok) {
       latestNews.value = await newsResponse.json()
     }
 
     // Fetch latest groups
-    const groupsResponse = await fetch('/metal-library/api/groups/latest?limit=5')
+    const groupsResponse = await fetch('/api/groups/latest?limit=5')
     if (groupsResponse.ok) {
       latestGroups.value = await groupsResponse.json()
     }
 
     // Fetch top albums
-    const albumsResponse = await fetch('/metal-library/api/albums/top?limit=5')
+    const albumsResponse = await fetch('/api/albums/top?limit=5')
     if (albumsResponse.ok) {
       topAlbums.value = await albumsResponse.json()
     }
 
     // Fetch featured genres
-    const genresResponse = await fetch('/metal-library/api/genres/popular?limit=6')
+    const genresResponse = await fetch('/api/genres/popular?limit=6')
     if (genresResponse.ok) {
       featuredGenres.value = await genresResponse.json()
     }
 
     // Fetch statistics
-    const statsResponse = await fetch('/metal-library/api/stats')
+    const statsResponse = await fetch('/api/stats')
     if (statsResponse.ok) {
       stats.value = await statsResponse.json()
     }

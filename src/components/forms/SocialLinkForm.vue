@@ -8,6 +8,7 @@ import type { SocialNetwork } from '@/types'
 
 const store = useStore()
 
+const emit = defineEmits(['remove'])
 const props = defineProps({
   link: {
     type: Object as PropType<SocialNetwork>,
@@ -25,7 +26,7 @@ const props = defineProps({
 
       <el-input v-model="link.url" placeholder="URL ссылка" style="flex: 1; margin: 0 12px" />
 
-      <el-button type="danger" :icon="Remove" circle />
+      <el-button type="danger" :icon="Remove" circle @click="emit('remove')" />
     </div>
   </div>
 </template>

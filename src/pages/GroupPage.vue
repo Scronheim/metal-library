@@ -79,7 +79,7 @@
               <div class="biography-content">
                 <div class="flex items-center gap-3 mb-3">
                   <h3>О группе</h3>
-                  <EditIconButton @click="showGroupBioDialog = true" />
+                  <EditIconButton v-if="store.userIsAdmin" @click="showGroupBioDialog = true" />
                 </div>
                 <div class="description-text" v-html="formatDescription(group.description)"></div>
 
@@ -121,7 +121,7 @@
               <div class="discography-header">
                 <div class="flex items-center gap-3">
                   <h3>Дискография</h3>
-                  <AddIconButton @click="openAlbumAddDialog" />
+                  <AddIconButton v-if="store.userIsAdmin" @click="openAlbumAddDialog" />
                 </div>
                 <div class="discography-stats">
                   <span class="stat">
@@ -192,6 +192,7 @@
                 <h3>
                   Текущий состав
                   <AddIconButton
+                    v-if="store.userIsAdmin"
                     title="Добавить участника"
                     :is-close-edit="showNewMemberInput"
                     @click="toggleNewMemberInput"
@@ -218,6 +219,7 @@
                 <h3>
                   Бывшие участники
                   <AddIconButton
+                    v-if="store.userIsAdmin"
                     title="Добавить участника"
                     :is-close-edit="showPastMemberInput"
                     @click="togglePastMemberInput"
@@ -642,7 +644,7 @@ const group = ref<Group>(getDefaultGroup())
 const albums = ref<Album[]>([])
 const similarGroups = ref<Group[]>([])
 const relatedNews = ref<News[]>([])
-const activeTab = ref<string>('members')
+const activeTab = ref<string>('biography')
 const showGroupInfoDialog = ref<boolean>(false)
 const showGroupBioDialog = ref<boolean>(false)
 const showEditableAlbumDialog = ref<boolean>(false)
@@ -699,6 +701,7 @@ const openAddMemberDialog = (): void => {
   showMemberDialog.value = true
 }
 const openEditMemberDialog = (member: Member): void => {
+  if (!store.userIsAdmin) return
   editableMember.value = member
   memberMode.value = 'edit'
   showMemberDialog.value = true
@@ -797,25 +800,25 @@ const fetchGroupData = async () => {
   const groupId = route.params.id
   try {
     // Fetch group data
-    const groupResponse = await fetch(`/metal-library/api/groups/${groupId}`)
+    const groupResponse = await fetch(`/api/groups/${groupId}`)
     if (groupResponse.ok) {
       group.value = await groupResponse.json()
     }
 
     // Fetch group albums
-    const albumsResponse = await fetch(`/metal-library/api/groups/${groupId}/albums`)
+    const albumsResponse = await fetch(`/api/groups/${groupId}/albums`)
     if (albumsResponse.ok) {
       albums.value = await albumsResponse.json()
     }
 
     // Fetch similar groups
-    const similarResponse = await fetch(`/metal-library/api/groups/${groupId}/similar`)
+    const similarResponse = await fetch(`/api/groups/${groupId}/similar`)
     if (similarResponse.ok) {
       similarGroups.value = await similarResponse.json()
     }
 
     // Fetch related news
-    const newsResponse = await fetch(`/metal-library/api/news/group/${groupId}`)
+    const newsResponse = await fetch(`/api/news/group/${groupId}`)
     if (newsResponse.ok) {
       relatedNews.value = await newsResponse.json()
     }
