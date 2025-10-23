@@ -54,6 +54,20 @@
                   Редактировать
                 </el-button>
               </div>
+              <el-divider />
+              <div class="group-actions">
+                <el-button
+                  v-for="link in group.socialLinks"
+                  :key="link.platform"
+                  :type="store.socialLinkColorMap[link.platform]"
+                  :icon="store.socialLinkIconsMap[link.platform]"
+                  tag="a"
+                  :href="link.url"
+                  target="_blank"
+                >
+                  {{ store.socialPlatformNamesMap[link.platform] }}
+                </el-button>
+              </div>
             </div>
           </div>
         </div>
@@ -83,24 +97,6 @@
                     <el-tag v-for="theme in group.themes" :key="theme" effect="plain" class="theme-tag">
                       {{ theme }}
                     </el-tag>
-                  </div>
-                </div>
-
-                <!-- Social Links -->
-                <div class="social-links" v-if="group.socialLinks && group.socialLinks.length">
-                  <h4>Ссылки</h4>
-                  <div class="social-buttons">
-                    <el-button
-                      v-for="link in group.socialLinks"
-                      :key="link.platform"
-                      :type="store.socialLinkColorMap[link.platform]"
-                      :icon="store.socialLinkIconsMap[link.platform]"
-                      tag="a"
-                      :href="link.url"
-                      target="_blank"
-                    >
-                      {{ store.socialPlatformNamesMap[link.platform] }}
-                    </el-button>
                   </div>
                 </div>
               </div>
@@ -491,7 +487,7 @@
           </el-form-item>
         </div>
       </el-card>
-      <el-card header="Изображения">
+      <el-card header="Изображения" class="mb-2">
         <div class="flex gap-2">
           <el-form-item prop="logo">
             <template #label>
@@ -527,6 +523,26 @@
           </el-form-item>
         </div>
       </el-card>
+      <el-card>
+        <template #header>
+          Соц. сети
+          <AddIconButton @click="addSocialLink" />
+        </template>
+        <el-form-item prop="socialLinks">
+          <div v-for="(link, index) in group.socialLinks" :key="link.url" class="flex items-center gap-3 mb-2">
+            <el-select v-model="link.platform" placeholder="Платформа" style="width: 250px">
+              <el-option
+                v-for="(value, key) in store.socialPlatformNamesMap"
+                :key="value"
+                :label="value"
+                :value="key"
+              />
+            </el-select>
+            <el-input v-model="link.url" placeholder="Введите URL" />
+            <DeleteIconButton @confirm="removeSocialLink(index)" />
+          </div>
+        </el-form-item>
+      </el-card>
     </el-form>
 
     <template #footer>
@@ -554,26 +570,6 @@
         >
           <el-option v-for="theme in group.themes" :key="theme" :label="theme" :value="theme" />
         </el-select>
-      </el-card>
-      <el-card>
-        <template #header>
-          Соц. сети
-          <AddIconButton @click="addSocialLink" />
-        </template>
-        <el-form-item prop="socialLinks">
-          <div v-for="(link, index) in group.socialLinks" :key="link.url" class="flex items-center gap-3 mb-2">
-            <el-select v-model="link.platform" placeholder="Платформа" style="width: 200px">
-              <el-option
-                v-for="(value, key) in store.socialPlatformNamesMap"
-                :key="value"
-                :label="value"
-                :value="key"
-              />
-            </el-select>
-            <el-input v-model="link.url" placeholder="Введите URL" />
-            <DeleteIconButton @confirm="removeSocialLink(index)" />
-          </div>
-        </el-form-item>
       </el-card>
     </el-form>
     <template #footer>
@@ -737,18 +733,9 @@ const openGroupInfoDialog = async (): Promise<void> => {
   await store.getGenres()
   showGroupInfoDialog.value = true
 }
-const saveGroupInfo = (): void => {
-  groupRef.value.validate(async (isValid: boolean) => {
-    if (!isValid) {
-      ElNotification({
-        type: 'error',
-        message: 'Ошибка! Проверьте все поля'
-      })
-    } else {
-      await store.updateGroup(group.value, true)
-      showGroupInfoDialog.value = false
-    }
-  })
+const saveGroupInfo = async (): Promise<void> => {
+  await store.updateGroup(group.value, true)
+  showGroupInfoDialog.value = false
 }
 
 const formatDescription = (text: string): string => {

@@ -74,6 +74,7 @@ export interface TrackInfo {
   discNumber: number
   duration: string
   lyrics: string
+  isInstrumental: boolean
 }
 
 export interface Group {

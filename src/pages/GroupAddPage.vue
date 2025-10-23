@@ -22,7 +22,6 @@
           <template #header>
             <div class="section-header">
               <h2>Основная информация</h2>
-              <el-tag type="info">Обязательные поля</el-tag>
             </div>
           </template>
 
@@ -95,7 +94,6 @@
           <template #header>
             <div class="section-header">
               <h2>Изображения</h2>
-              <el-tag type="info">Необязательные поля</el-tag>
             </div>
           </template>
 
@@ -162,31 +160,17 @@
           <div class="form-row">
             <el-form-item label="Тематика" class="form-item">
               <div class="tags-input-section">
-                <el-input
-                  v-model="newTheme"
+                <el-select
+                  v-model="form.themes"
                   placeholder="Введите тематику"
-                  style="width: 300px; margin-bottom: 10px"
-                  @keyup.enter="addTheme"
+                  multiple
+                  filterable
+                  allow-create
+                  default-first-option
+                  :reserve-keyword="false"
                 >
-                  <template #append>
-                    <el-button @click="addTheme">Добавить</el-button>
-                  </template>
-                </el-input>
-
-                <div class="tags-container">
-                  <el-tag
-                    v-for="(theme, index) in form.themes"
-                    :key="index"
-                    closable
-                    type="info"
-                    @close="removeTheme(index)"
-                    class="theme-tag"
-                  >
-                    {{ theme }}
-                  </el-tag>
-
-                  <div v-if="form.themes.length === 0" class="empty-tags">Тематика не добавлена</div>
-                </div>
+                  <el-option v-for="theme in form.themes" :key="theme" :label="theme" :value="theme" />
+                </el-select>
               </div>
             </el-form-item>
           </div>
@@ -201,7 +185,12 @@
           </template>
 
           <div class="social-links-section">
-            <SocialLinkForm v-for="(link, index) in form.socialLinks" :link="link" @remove="removeSocialLink(index)" />
+            <SocialLinkForm
+              v-for="(link, index) in form.socialLinks"
+              :link="link"
+              @remove="removeSocialLink(index)"
+              class="mb-2"
+            />
 
             <div class="add-link-section">
               <el-button type="primary" :icon="Plus" @click="addSocialLink" text>Добавить ссылку</el-button>
@@ -224,7 +213,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Remove, Picture } from '@element-plus/icons-vue'
+import { Plus, Picture } from '@element-plus/icons-vue'
 
 import { useStore } from '@/stores/store'
 
@@ -239,7 +228,6 @@ const store = useStore()
 const formRef = ref(null)
 const loading = ref(false)
 const newTheme = ref('')
-const activeMembersTab = ref('current')
 
 // Form data
 const form = ref<Group>(getDefaultGroup())
@@ -315,22 +303,7 @@ const resetForm = async () => {
     }
   )
 
-  Object.assign(form, {
-    _id: '',
-    name: '',
-    description: '',
-    country: '',
-    city: '',
-    formedYear: new Date().getFullYear(),
-    status: 'active',
-    genres: [],
-    themes: [],
-    logo: '',
-    banner: '',
-    socialLinks: [],
-    currentMembers: [],
-    pastMembers: []
-  })
+  Object.assign(form, getDefaultGroup())
 
   if (formRef.value) {
     formRef.value.clearValidate()

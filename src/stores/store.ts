@@ -88,7 +88,7 @@ export const useStore = defineStore('store', () => {
     twitter: ChatLineRound
   })
   const socialPlatformNamesMap = {
-    website: 'Сайт',
+    website: 'Оф. сайт',
     youtube: 'YouTube',
     bandcamp: 'Bandcamp',
     spotify: 'Spotify',

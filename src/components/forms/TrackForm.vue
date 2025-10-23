@@ -50,11 +50,16 @@ const lyricsRules = ref<FormRules<TrackInfo>>({
         </el-form-item>
       </div>
 
-      <el-form-item label="Текст песни" class="lyrics-field">
+      <el-form-item class="lyrics-field">
+        <template #label>
+          <p>Текст трека</p>
+          <el-checkbox v-model="track.isInstrumental" label="Инструментальный" />
+        </template>
         <el-input
           v-model="track.lyrics"
           type="textarea"
           :rows="4"
+          :disabled="track.isInstrumental"
           placeholder="Введите текст песни"
           maxlength="5000"
           show-word-limit

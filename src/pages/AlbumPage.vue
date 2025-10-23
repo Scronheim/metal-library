@@ -49,6 +49,9 @@
                     <div class="track-meta">
                       <span class="track-duration">{{ track.duration }}</span>
                       <el-tag v-if="track.lyrics" size="small" type="info" class="lyrics-tag">есть текст</el-tag>
+                      <el-tag v-if="track.isInstrumental" size="small" type="info" class="lyrics-tag">
+                        инструментальный
+                      </el-tag>
                     </div>
                   </div>
 
@@ -62,9 +65,6 @@
                 <el-collapse-transition>
                   <div v-show="isTrackExpanded(track.number)" class="track-lyrics">
                     <div class="lyrics-content">
-                      <div class="flex gap-2">
-                        <h5>Текст песни</h5>
-                      </div>
                       <pre class="lyrics-text">{{ track.lyrics }}</pre>
                     </div>
                   </div>

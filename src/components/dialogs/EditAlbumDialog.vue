@@ -165,6 +165,7 @@
               <p>Треки не добавлены</p>
             </div>
           </div>
+          <el-button type="primary" :icon="Plus" @click="addTrack" size="small">Добавить трек</el-button>
 
           <div class="tracklist-stats" v-if="form.tracks.length > 0">
             <span>Всего треков: {{ form.tracks.length }}</span>
@@ -175,7 +176,7 @@
           <div class="add-link-section">
             <el-button type="primary" :icon="Plus" @click="addSocialLink" text>Добавить ссылку</el-button>
           </div>
-          <SocialLinkForm v-for="(link, index) in form.socialLinks" :key="link.url" :link="link" />
+          <SocialLinkForm v-for="link in form.socialLinks" :key="link.url" :link="link" class="mb-2" />
         </el-collapse-item>
       </el-collapse>
     </el-form>
@@ -299,7 +300,7 @@ const addTrack = () => {
   form.tracks.push({
     number: form.tracks.length + 1,
     title: '',
-    duration: '',
+    duration: '00:00:01',
     lyrics: '',
     discNumber: 1
   })
@@ -576,7 +577,7 @@ onMounted(() => {
 .tracklist-editor {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
 }
 
 .track-item {
