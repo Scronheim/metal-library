@@ -47,10 +47,10 @@
                   {{ group.stats.likes.length }}
                 </el-button>
                 <el-button type="primary" :icon="Share" @click="shareGroup">Поделиться</el-button>
-                <el-button v-if="store.userIsAuth" type="success" :icon="Plus" @click="addToFavorites">
+                <el-button v-if="authStore.userIsAuth" type="success" :icon="Plus" @click="addToFavorites">
                   В избранное
                 </el-button>
-                <el-button v-if="store.userIsAdmin" type="info" :icon="Edit" @click="openGroupInfoDialog">
+                <el-button v-if="authStore.userIsAdmin" type="info" :icon="Edit" @click="openGroupInfoDialog">
                   Редактировать
                 </el-button>
               </div>
@@ -86,7 +86,7 @@
               <div class="biography-content">
                 <div class="flex items-center gap-3 mb-3">
                   <h3>О группе</h3>
-                  <EditIconButton v-if="store.userIsAdmin" @click="showGroupBioDialog = true" />
+                  <EditIconButton v-if="authStore.userIsAdmin" @click="showGroupBioDialog = true" />
                 </div>
                 <div class="description-text" v-html="formatDescription(group.description)"></div>
 
@@ -110,7 +110,7 @@
               <div class="discography-header">
                 <div class="flex items-center gap-3">
                   <h3>Дискография</h3>
-                  <AddIconButton v-if="store.userIsAdmin" @click="openAlbumAddDialog" />
+                  <AddIconButton v-if="authStore.userIsAdmin" @click="openAlbumAddDialog" />
                 </div>
                 <div class="discography-stats">
                   <span class="stat">
@@ -181,7 +181,7 @@
                 <h3>
                   Текущий состав
                   <AddIconButton
-                    v-if="store.userIsAdmin"
+                    v-if="authStore.userIsAdmin"
                     title="Добавить участника"
                     :is-close-edit="showNewMemberInput"
                     @click="toggleNewMemberInput"
@@ -208,7 +208,7 @@
                 <h3>
                   Бывшие участники
                   <AddIconButton
-                    v-if="store.userIsAdmin"
+                    v-if="authStore.userIsAdmin"
                     title="Добавить участника"
                     :is-close-edit="showPastMemberInput"
                     @click="togglePastMemberInput"
@@ -593,7 +593,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { ElMessage, ElNotification, type FormRules } from 'element-plus'
+import { ElMessage, type FormRules } from 'element-plus'
 import {
   Star,
   Share,
@@ -611,7 +611,10 @@ import {
 import SvgIcon from '@jamescoyle/vue-icon'
 import { mdiAlbum } from '@mdi/js'
 
+import { api } from '@/services/api'
+
 import { useStore } from '@/stores/store'
+import { useAuthStore } from '@/stores/auth'
 
 import { getDefaultGroup, getDefaultMember } from '@/consts'
 
@@ -627,6 +630,7 @@ import MemberCard from '@/components/forms/MemberCard.vue'
 
 const route = useRoute()
 const store = useStore()
+const authStore = useAuthStore()
 
 // Refs
 const group = ref<Group>(getDefaultGroup())
@@ -690,7 +694,7 @@ const openAddMemberDialog = (): void => {
   showMemberDialog.value = true
 }
 const openEditMemberDialog = (member: Member): void => {
-  if (!store.userIsAdmin) return
+  if (!authStore.userIsAdmin) return
   editableMember.value = member
   memberMode.value = 'edit'
   showMemberDialog.value = true
@@ -775,33 +779,20 @@ const addToFavorites = () => {
   ElMessage.success('Группа добавлена в избранное')
 }
 
-// Fetch data
 const fetchGroupData = async () => {
   const groupId = route.params.id
   try {
-    // Fetch group data
-    const groupResponse = await fetch(`/api/groups/${groupId}`)
-    if (groupResponse.ok) {
-      group.value = await groupResponse.json()
-    }
+    const groupResponse = await api.get(`/groups/${groupId}`)
+    if (groupResponse.data) group.value = groupResponse.data
 
-    // Fetch group albums
-    const albumsResponse = await fetch(`/api/groups/${groupId}/albums`)
-    if (albumsResponse.ok) {
-      albums.value = await albumsResponse.json()
-    }
+    const albumsResponse = await api.get(`/groups/${groupId}/albums`)
+    if (albumsResponse.data) albums.value = albumsResponse.data
 
-    // Fetch similar groups
-    const similarResponse = await fetch(`/api/groups/${groupId}/similar`)
-    if (similarResponse.ok) {
-      similarGroups.value = await similarResponse.json()
-    }
+    const similarResponse = await api.get(`/groups/${groupId}/similar`)
+    if (similarResponse.data) similarGroups.value = similarResponse.data
 
-    // Fetch related news
-    const newsResponse = await fetch(`/api/news/group/${groupId}`)
-    if (newsResponse.ok) {
-      relatedNews.value = await newsResponse.json()
-    }
+    const newsResponse = await api.get(`/news/group/${groupId}`)
+    if (newsResponse.data) relatedNews.value = newsResponse.data
   } catch (error) {
     console.error('Error fetching group data:', error)
     ElMessage.error('Ошибка загрузки данных группы')

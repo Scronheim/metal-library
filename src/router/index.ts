@@ -1,5 +1,6 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
-import { useStore } from '@/stores/store'
+
+import { useAuthStore } from '@/stores/auth'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -21,6 +22,24 @@ const routes: RouteRecordRaw[] = [
     path: '/albums/:id',
     name: 'Albums page',
     component: () => import('@/pages/AlbumPage.vue')
+  },
+  {
+    path: '/auth',
+    name: 'Auth',
+    component: () => import('@/pages/auth/AuthPage.vue'),
+    meta: { guestOnly: true }
+  },
+  {
+    path: '/auth/success',
+    name: 'AuthSuccess',
+    component: () => import('@/pages/auth/AuthSuccess.vue'),
+    meta: { guestOnly: true }
+  },
+  {
+    path: '/auth/error',
+    name: 'AuthError',
+    component: () => import('@/pages/auth/AuthError.vue'),
+    meta: { guestOnly: true }
   }
 ]
 
@@ -30,10 +49,15 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
-  const store = useStore()
+  const authStore = useAuthStore()
 
-  await store.checkUserLoggedIn()
-  next()
+  if (to.meta.requiresAuth && !authStore.userIsAuth) {
+    next('/auth')
+  } else if (to.meta.guestOnly && authStore.userIsAuth) {
+    next('/')
+  } else {
+    next()
+  }
 })
 
 export default router

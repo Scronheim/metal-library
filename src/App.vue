@@ -1,9 +1,18 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { HomeFilled } from '@element-plus/icons-vue'
 import ru from 'element-plus/es/locale/lang/ru'
 
-import SearchBar from './components/SearchBar.vue'
-import UserBar from './components/UserBar.vue'
+import { useAuthStore } from './stores/auth'
+
+import SearchBar from '@/components/SearchBar.vue'
+import UserBar from '@/components/UserBar.vue'
+
+const authStore = useAuthStore()
+
+onMounted(async () => {
+  await authStore.checkAuth()
+})
 </script>
 
 <template>

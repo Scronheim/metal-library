@@ -97,68 +97,7 @@
         <el-collapse-item title="Треклист" name="tracklist">
           <el-button type="primary" :icon="Plus" @click="addTrack" size="small">Добавить трек</el-button>
           <div class="tracklist-editor">
-            <div v-for="(track, index) in form.tracks" :key="index" class="track-item">
-              <div class="track-header">
-                <div>
-                  <span class="track-number">
-                    Трек №
-                    <el-input-number v-model.number="track.number" :min="1" />
-                  </span>
-                  <span class="track-number">
-                    Диск №
-                    <el-input-number v-model.number="track.discNumber" :min="1" />
-                  </span>
-                </div>
-                <el-button
-                  type="danger"
-                  :icon="Delete"
-                  text
-                  @click="removeTrack(index)"
-                  v-if="form.tracks.length > 1"
-                />
-              </div>
-
-              <div class="track-fields">
-                <el-form-item
-                  label="Название трека"
-                  :prop="`tracks[${index}].title`"
-                  :rules="trackRules.title"
-                  class="track-field"
-                >
-                  <el-input v-model="track.title" placeholder="Введите название трека" maxlength="100" />
-                </el-form-item>
-
-                <el-form-item
-                  label="Длительность"
-                  :prop="`tracks[${index}].duration`"
-                  :rules="trackRules.duration"
-                  class="track-field"
-                >
-                  <el-input
-                    v-model="track.duration"
-                    placeholder="Длительность (чч:мм:сс)"
-                    maxlength="5"
-                    type="time"
-                    step="1"
-                  >
-                    <template #append>
-                      <span class="duration-hint">мм:сс</span>
-                    </template>
-                  </el-input>
-                </el-form-item>
-              </div>
-
-              <el-form-item label="Текст песни" class="lyrics-field">
-                <el-input
-                  v-model="track.lyrics"
-                  type="textarea"
-                  :rows="4"
-                  placeholder="Введите текст песни"
-                  maxlength="5000"
-                  show-word-limit
-                />
-              </el-form-item>
-            </div>
+            <TrackForm v-for="(track, index) in form.tracks" :key="index" :track="track" />
 
             <div class="empty-tracks" v-if="form.tracks.length === 0">
               <i class="el-icon-headset"></i>
@@ -206,6 +145,7 @@ import { useStore } from '@/stores/store'
 
 import type { Album, Group } from '@/types'
 import SocialLinkForm from '../forms/SocialLinkForm.vue'
+import TrackForm from '../forms/TrackForm.vue'
 
 dayjs.extend(durationPlugin)
 

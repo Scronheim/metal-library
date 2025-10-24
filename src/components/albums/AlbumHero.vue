@@ -7,6 +7,7 @@ import dayjs from 'dayjs'
 import durationPlugin from 'dayjs/plugin/duration'
 
 import { useStore } from '@/stores/store'
+import { useAuthStore } from '@/stores/auth'
 
 import EditAlbumDialog from '@/components/dialogs/EditAlbumDialog.vue'
 
@@ -14,6 +15,7 @@ import type { Album } from '@/types'
 import { ElNotification } from 'element-plus'
 
 const store = useStore()
+const authStore = useAuthStore()
 
 const emit = defineEmits(['updateAlbum'])
 const props = defineProps({
@@ -26,8 +28,8 @@ const props = defineProps({
 dayjs.extend(durationPlugin)
 
 // Computed
-const isAuthenticated = computed((): boolean => store.userIsAuth)
-const userLikedAlbum = computed((): boolean => !props.album.stats.likes.findIndex(u => u._id === store.user.id))
+const isAuthenticated = computed((): boolean => authStore.userIsAuth)
+const userLikedAlbum = computed((): boolean => !props.album.stats.likes.findIndex(u => u._id === authStore.user.id))
 const albumReleaseYear = computed((): number => new Date(props.album.releaseDate).getFullYear())
 const albumGenres = computed((): string => props.album.genres.map(g => g.name).join(', '))
 const albumTotalDuration = computed((): string => {
@@ -156,7 +158,7 @@ const openAlbumInfoEditDialog = async (): Promise<void> => {
           </el-button>
           <el-button type="primary" :icon="Share" @click="shareAlbum">Поделиться</el-button>
           <el-button v-if="isAuthenticated" type="success" :icon="Plus" @click="addToCollection">В коллекцию</el-button>
-          <el-button v-if="store.userIsAdmin" type="info" :icon="Edit" @click="openAlbumInfoEditDialog">
+          <el-button v-if="authStore.userIsAdmin" type="info" :icon="Edit" @click="openAlbumInfoEditDialog">
             Редактировать
           </el-button>
         </div>

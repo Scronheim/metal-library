@@ -1,45 +1,17 @@
 import { ref, computed, watch, markRaw } from 'vue'
 import { useRouter } from 'vue-router'
 import { defineStore } from 'pinia'
-import axios from 'axios'
+import { api } from '@/services/api'
 import { ElNotification } from 'element-plus'
 import { debounce } from 'lodash-es'
 import { Link, VideoPlay, Headset, Camera, ChatLineRound, ChatLineSquare } from '@element-plus/icons-vue'
 
-import type { User, AuthData, Group, Album, Genre, TrackInfo, Country, Member } from '@/types'
+import type { AuthData, Group, Album, Genre, TrackInfo, Country, Member } from '@/types'
 
 export const useStore = defineStore('store', () => {
   const router = useRouter()
 
   // Refs
-  const user = ref<User>({
-    id: '',
-    username: '',
-    email: '',
-    profile: {
-      bio: '',
-      location: '',
-      favoriteAlbums: [],
-      favoriteGroups: [],
-      favoriteGenres: [],
-      website: ''
-    },
-    role: '',
-    stats: {
-      groupsAdded: 0,
-      albumsAdded: 0,
-      contributions: 0,
-      reviewsWritten: 0
-    },
-    isVerified: false,
-    lastLogin: new Date(),
-    preferences: {
-      emailNotifications: false,
-      language: 'ru',
-      theme: 'dark'
-    }
-  })
-  const token = ref<string | null>(localStorage.getItem('token'))
   const queryIsLoading = ref(false)
   const albumTypesMap = {
     'full-length': 'Студийный альбом',
@@ -98,7 +70,7 @@ export const useStore = defineStore('store', () => {
     instagram: 'Instagram',
     twitter: 'Twitter'
   }
-  const instruments = ['Вокал', 'Ритм гитара', 'Соло гитара', 'Бас гитара', 'Ударные', 'Бэк вокал', 'DJ'].sort()
+  const instruments = ['Вокал', 'Ритм гитара', 'Соло гитара', 'Бас гитара', 'Ударные', 'Бэк вокал', 'DJ', 'Всё'].sort()
   const countries: Country[] = [
     { name: 'Российская Федерация', alpha2: 'RU', alpha3: 'RUS' },
     { name: 'Киргизстан', alpha2: 'KG', alpha3: 'KGZ' },
@@ -321,13 +293,11 @@ export const useStore = defineStore('store', () => {
   const availableGenres = ref<Genre[]>([])
 
   // Computed
-  const userIsAuth = computed(() => !!token.value)
-  const userIsAdmin = computed(() => user.value.role === 'admin')
   const availableYears = computed(() => Array.from({ length: 51 }, (_, i) => new Date().getFullYear() - i))
 
   // Methods
   async function updateMember(member: Member, showNotification: boolean = false): Promise<void> {
-    await axios.put(`api/members/${member._id}`, member)
+    await api.put(`/members/${member._id}`, member)
     if (showNotification)
       ElNotification({
         type: 'success',
@@ -340,7 +310,7 @@ export const useStore = defineStore('store', () => {
     isCurrent: boolean = true,
     showNotification: boolean = false
   ): Promise<void> {
-    await axios.put('api/members', { groupId, member, isCurrent })
+    await api.put('/members', { groupId, member, isCurrent })
     if (showNotification)
       ElNotification({
         type: 'success',
@@ -348,10 +318,10 @@ export const useStore = defineStore('store', () => {
       })
   }
   async function searchMember(searchQuery: string): Promise<{ data: Member[] }> {
-    return await axios.get(`api/members/search/${searchQuery}`)
+    return await api.get(`/members/search/${searchQuery}`)
   }
   async function updateLyrics(album: Album, track: TrackInfo, showNotification: boolean = false): Promise<void> {
-    await axios.patch(`api/albums/${album._id}/tracks/${track.number}/lyrics`, { track })
+    await api.patch(`/albums/${album._id}/tracks/${track.number}/lyrics`, { track })
     if (showNotification)
       ElNotification({
         type: 'success',
@@ -359,7 +329,7 @@ export const useStore = defineStore('store', () => {
       })
   }
   async function updateAlbum(album: Album, showNotification: boolean = false): Promise<void> {
-    await axios.put(`api/albums/${album._id}`, album)
+    await api.put(`/albums/${album._id}`, album)
     if (showNotification)
       ElNotification({
         type: 'success',
@@ -368,7 +338,7 @@ export const useStore = defineStore('store', () => {
   }
 
   async function updateGroup(group: Group, showNotification: boolean = false): Promise<void> {
-    await axios.put(`api/groups/${group._id}`, group)
+    await api.put(`/groups/${group._id}`, group)
     if (showNotification)
       ElNotification({
         type: 'success',
@@ -377,7 +347,7 @@ export const useStore = defineStore('store', () => {
   }
 
   async function addAlbum(album: Album, showNotification: boolean = false): Promise<void> {
-    await axios.post('api/albums', album)
+    await api.post('/albums', album)
     if (showNotification)
       ElNotification({
         type: 'success',
@@ -386,7 +356,7 @@ export const useStore = defineStore('store', () => {
   }
 
   async function addGroup(group: Group, showNotification: boolean = false): Promise<void> {
-    await axios.post('api/groups', group)
+    await api.post('/groups', group)
     if (showNotification)
       ElNotification({
         type: 'success',
@@ -395,16 +365,16 @@ export const useStore = defineStore('store', () => {
   }
 
   async function searchGroup(searchQuery: string): Promise<{ data: { groups: Group[] } }> {
-    return await axios.get(`api/groups?search=${searchQuery}&limit=5`)
+    return await api.get(`/groups?search=${searchQuery}&limit=5`)
   }
 
   async function getGenres(): Promise<void> {
-    const { data } = await axios.get('api/genres')
+    const { data } = await api.get('/genres')
     availableGenres.value = data
   }
 
   async function toggleLike(album: Album): Promise<{ newAlbum: Album; message: string }> {
-    const { data } = await axios.patch(`/api/albums/${album._id}/like`)
+    const { data } = await api.patch(`/albums/${album._id}/like`)
 
     return {
       newAlbum: data.album,
@@ -412,54 +382,8 @@ export const useStore = defineStore('store', () => {
     }
   }
 
-  async function aboutMe(): Promise<void> {
-    const { data } = await axios.get('api/auth/me')
-    user.value = { ...data }
-  }
-
-  async function register(registerData: AuthData): Promise<void> {
-    const { data } = await axios.post('api/auth/register', { ...user.value, ...registerData })
-
-    if (data) {
-      user.value = data.user
-      axios.defaults.headers.common['Authorization'] = data.token
-      localStorage.setItem('token', data.token)
-      token.value = data.token
-      router.push('/')
-      ElNotification({
-        title: 'Успешно',
-        message: 'Вы успешно зарегистрированы',
-        type: 'success'
-      })
-    } else {
-      ElNotification({
-        title: 'Ошибка',
-        message: data.message,
-        type: 'error'
-      })
-    }
-  }
-
-  async function login(authData: AuthData): Promise<void> {
-    try {
-      const { data } = await axios.post('api/auth/login', authData)
-      user.value = { ...user.value, ...data.user }
-      axios.defaults.headers.common['Authorization'] = data.token
-      localStorage.setItem('token', data.token)
-      token.value = data.token
-      router.push('/')
-    } catch (error) {
-      ElNotification({
-        title: 'Ошибка',
-        message: error.response.data.message,
-        type: 'error'
-      })
-      localStorage.removeItem('token')
-    }
-  }
-
   async function updateCurrentUser(showNotification: boolean = false): Promise<void> {
-    await axios.patch('api/update_user', user.value)
+    await api.patch('/update_user', user.value)
     if (showNotification) {
       ElNotification({
         title: 'Успешно',
@@ -467,16 +391,6 @@ export const useStore = defineStore('store', () => {
         type: 'success'
       })
     }
-  }
-
-  function logout() {
-    localStorage.removeItem('token')
-    delete axios.defaults.headers.common['Authorization']
-    token.value = null
-  }
-
-  async function checkUserLoggedIn(): Promise<void> {
-    if (token.value && !user.value.id) await aboutMe()
   }
 
   // watch(
@@ -488,11 +402,7 @@ export const useStore = defineStore('store', () => {
   // )
 
   return {
-    user,
     queryIsLoading,
-    userIsAuth,
-    userIsAdmin,
-    token,
     albumTypesMap,
     albumTypeColorMap,
     statusTypesMap,
@@ -503,11 +413,6 @@ export const useStore = defineStore('store', () => {
     availableGenres,
     availableYears,
     instruments,
-    checkUserLoggedIn,
-    register,
-    login,
-    logout,
-    aboutMe,
     searchGroup,
     updateAlbum,
     updateGroup,

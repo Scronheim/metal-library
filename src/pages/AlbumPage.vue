@@ -22,7 +22,7 @@
             <div class="tracklist-header">
               <div class="flex gap-2 items-center">
                 <h3>Треклист</h3>
-                <AddIconButton v-if="store.userIsAdmin" @click="addLyrics" />
+                <AddIconButton v-if="authStore.userIsAdmin" @click="addLyrics" />
               </div>
               <div class="tracklist-stats">
                 <span>Всего: {{ album.tracks.length }} треков</span>
@@ -55,7 +55,7 @@
                     </div>
                   </div>
 
-                  <div v-if="store.userIsAdmin" class="track-actions">
+                  <div v-if="authStore.userIsAdmin" class="track-actions">
                     <EditIconButton @click="editLyrics(track)" />
                     <DeleteIconButton @confirm="removeTrack(index)" />
                   </div>
@@ -86,7 +86,7 @@
               </el-icon>
               Группа
               <EditIconButton
-                v-if="store.userIsAdmin"
+                v-if="authStore.userIsAdmin"
                 @click="isGroupEdit = !isGroupEdit"
                 :is-close-edit="isGroupEdit"
               />
@@ -127,7 +127,7 @@
                 <InfoFilled />
               </el-icon>
               Детали
-              <EditIconButton v-if="store.userIsAdmin" @click="showDetailsEdit" :is-close-edit="isDetailsEdit" />
+              <EditIconButton v-if="authStore.userIsAdmin" @click="showDetailsEdit" :is-close-edit="isDetailsEdit" />
             </h3>
           </div>
           <div class="details-list">
@@ -284,7 +284,10 @@ import { Headset, View, InfoFilled } from '@element-plus/icons-vue'
 import SvgIcon from '@jamescoyle/vue-icon'
 import { mdiAlbum } from '@mdi/js'
 
+import { api } from '@/services/api'
+
 import { useStore } from '@/stores/store'
+import { useAuthStore } from '@/stores/auth'
 
 import EditIconButton from '@/components/buttons/EditIconButton.vue'
 import AddIconButton from '@/components/buttons/AddIconButton.vue'
@@ -302,6 +305,7 @@ dayjs.extend(durationPlugin)
 
 const route = useRoute()
 const store = useStore()
+const authStore = useAuthStore()
 // Refs
 const album = ref<Album>(getDefaultAlbum())
 const otherAlbums = ref<Album[]>([])
@@ -436,31 +440,27 @@ const saveLyrics = async (): Promise<void> => {
   }
 }
 
-// Fetch data
 const fetchAlbumData = async () => {
   const albumId = route.params.id
   try {
-    // Fetch album data
-    const albumResponse = await fetch(`/api/albums/${albumId}`)
-    if (albumResponse.ok) {
-      album.value = await albumResponse.json()
+    const albumResponse = await api.get(`/albums/${albumId}`)
+    if (albumResponse.data) {
+      album.value = albumResponse.data
     } else {
       throw new Error('Альбом не найден')
     }
 
-    // Fetch other albums by the same group
     if (album.value.group._id) {
-      const otherResponse = await fetch(`/api/groups/${album.value.group._id}/albums`)
-      if (otherResponse.ok) {
-        const allAlbums = await otherResponse.json()
+      const otherResponse = await api.get(`/groups/${album.value.group._id}/albums`)
+      if (otherResponse.data) {
+        const allAlbums = otherResponse.data
         otherAlbums.value = allAlbums.filter(a => a._id !== albumId).slice(0, 5)
       }
     }
 
-    // Fetch related news
-    const newsResponse = await fetch(`/api/news/album/${albumId}`)
-    if (newsResponse.ok) {
-      relatedNews.value = await newsResponse.json()
+    const newsResponse = await api.get(`/news/album/${albumId}`)
+    if (newsResponse.data) {
+      relatedNews.value = newsResponse.data
     }
   } catch (error) {
     console.error('Error fetching album data:', error)

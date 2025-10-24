@@ -252,46 +252,6 @@
         </section>
       </el-col>
     </el-container>
-
-    <!-- Featured Genres Section -->
-    <section class="genres-section">
-      <div class="container">
-        <div class="section-header">
-          <h2 class="section-title">
-            <i class="el-icon-collection-tag"></i>
-            Популярные жанры
-          </h2>
-          <el-button type="text" @click="$router.push('/genres')" class="view-all-btn">
-            Все жанры
-            <i class="el-icon-arrow-right"></i>
-          </el-button>
-        </div>
-
-        <div class="genres-grid">
-          <el-card
-            v-for="genre in featuredGenres"
-            :key="genre._id"
-            class="genre-card"
-            shadow="hover"
-            @click="$router.push(`/genres/${genre._id}`)"
-          >
-            <div class="genre-content">
-              <h3 class="genre-name">{{ genre.name }}</h3>
-              <p class="genre-description">{{ genre.description }}</p>
-              <div class="genre-stats">
-                <span class="genre-groups">
-                  <i class="el-icon-headset"></i>
-                  {{ genre.groupsCount }} групп
-                </span>
-                <el-tag size="small" :type="genre.popularity > 70 ? 'danger' : 'info'">
-                  Популярность: {{ genre.popularity }}%
-                </el-tag>
-              </div>
-            </div>
-          </el-card>
-        </div>
-      </div>
-    </section>
   </div>
 </template>
 
@@ -300,6 +260,8 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Calendar, Location } from '@element-plus/icons-vue'
+
+import { api } from '@/services/api'
 
 const router = useRouter()
 
@@ -384,33 +346,33 @@ const getCategoryLabel = category => {
 const fetchHomeData = async () => {
   try {
     // Fetch latest news
-    const newsResponse = await fetch('/api/news/latest?limit=6')
-    if (newsResponse.ok) {
-      latestNews.value = await newsResponse.json()
+    const newsResponse = await api.get('/news/latest?limit=6')
+    if (newsResponse.data) {
+      latestNews.value = newsResponse.data
     }
 
     // Fetch latest groups
-    const groupsResponse = await fetch('/api/groups/latest?limit=5')
-    if (groupsResponse.ok) {
-      latestGroups.value = await groupsResponse.json()
+    const groupsResponse = await api.get('/groups/latest?limit=5')
+    if (groupsResponse.data) {
+      latestGroups.value = groupsResponse.data
     }
 
     // Fetch top albums
-    const albumsResponse = await fetch('/api/albums/top?limit=5')
-    if (albumsResponse.ok) {
-      topAlbums.value = await albumsResponse.json()
+    const albumsResponse = await api.get('/albums/top?limit=5')
+    if (albumsResponse.data) {
+      topAlbums.value = albumsResponse.data
     }
 
     // Fetch featured genres
-    const genresResponse = await fetch('/api/genres/popular?limit=6')
-    if (genresResponse.ok) {
-      featuredGenres.value = await genresResponse.json()
+    const genresResponse = await api.get('/genres/popular?limit=6')
+    if (genresResponse.data) {
+      featuredGenres.value = genresResponse.data
     }
 
     // Fetch statistics
-    const statsResponse = await fetch('/api/stats')
-    if (statsResponse.ok) {
-      stats.value = await statsResponse.json()
+    const statsResponse = await api.get('/stats')
+    if (statsResponse.data) {
+      stats.value = statsResponse.data
     }
   } catch (error) {
     console.error('Error fetching home data:', error)
