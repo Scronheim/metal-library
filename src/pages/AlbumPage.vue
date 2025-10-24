@@ -77,6 +77,27 @@
 
       <!-- Right Column - Sidebar -->
       <el-col :xs="24" :lg="8" class="right-column">
+        <!-- embed players -->
+        <iframe
+          v-if="yandexMusicEmbedAlbumUrl"
+          frameborder="0"
+          allow="clipboard-write"
+          style="border: none; width: 100%; height: 352px"
+          :src="yandexMusicEmbedAlbumUrl"
+          class="mb-2"
+        />
+        <iframe
+          v-if="spotifyEmbedAlbumUrl"
+          data-testid="embed-iframe"
+          style="border-radius: 12px"
+          :src="spotifyEmbedAlbumUrl"
+          width="100%"
+          height="352"
+          frameBorder="0"
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          loading="lazy"
+          class="mb-2"
+        />
         <!-- Group Info -->
         <section class="sidebar-section">
           <div class="section-header">
@@ -321,7 +342,6 @@ const foundedGroups = ref<Group[]>([])
 // Computed
 
 const albumGenres = computed((): string => album.value.genres.map(g => g.name).join(', '))
-
 const albumTotalDuration = computed((): string => {
   const totalSeconds = album.value.tracks.reduce((total, track) => {
     const [hours, minutes, seconds] = track.duration.split(':').map(i => parseInt(i))
@@ -351,6 +371,14 @@ const tracksSortedByDiscNumber = computed((): { [discNumber: number]: TrackInfo[
     })
 
   return sorted
+})
+const spotifyEmbedAlbumUrl = computed(() => {
+  const link = album.value.socialLinks.find(l => l.platform === 'spotify')
+  return link?.url.replace('/album', '/embed/album')
+})
+const yandexMusicEmbedAlbumUrl = computed(() => {
+  const link = album.value.socialLinks.find(l => l.platform === 'yandex')
+  return link?.url.replace('/album', '/iframe/album')
 })
 
 // Methods

@@ -115,7 +115,13 @@
           <div class="add-link-section">
             <el-button type="primary" :icon="Plus" @click="addSocialLink" text>Добавить ссылку</el-button>
           </div>
-          <SocialLinkForm v-for="link in form.socialLinks" :key="link.url" :link="link" class="mb-2" />
+          <SocialLinkForm
+            v-for="(link, index) in form.socialLinks"
+            :key="link.url"
+            :link="link"
+            class="mb-2"
+            @remove="removeSocialLink(index)"
+          />
         </el-collapse-item>
       </el-collapse>
     </el-form>
@@ -134,7 +140,7 @@
 <script setup lang="ts">
 import { ref, reactive, watch, computed, nextTick, onMounted, type PropType } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Plus, Delete } from '@element-plus/icons-vue'
+import { Plus } from '@element-plus/icons-vue'
 import SvgIcon from '@jamescoyle/vue-icon'
 import { mdiAlbum } from '@mdi/js'
 import dayjs from 'dayjs'
@@ -196,19 +202,6 @@ const rules = reactive({
   genres: [{ required: true, message: 'Выберите жанры', trigger: 'change' }],
   releaseDate: [{ required: true, message: 'Введите дату релиза', trigger: 'blur' }]
 })
-
-const trackRules = reactive({
-  title: [{ required: true, message: 'Введите название трека', trigger: 'blur' }],
-  duration: [
-    { required: true, message: 'Введите длительность трека', trigger: 'blur' },
-    {
-      pattern: /^([0-5][0-9]):([0-5]?[0-9]):([0-5][0-9])$/,
-      message: 'Формат: мм:сс (например: 04:20)',
-      trigger: 'blur'
-    }
-  ]
-})
-
 // Computed
 const visible = computed({
   get: () => props.modelValue,
@@ -255,6 +248,9 @@ const removeTrack = (index: number): void => {
   form.tracks.splice(index, 1)
   // Renumber tracks
   form.tracks.forEach((track, idx) => (track.number = idx + 1))
+}
+const removeSocialLink = (index: number): void => {
+  form.socialLinks.splice(index, 1)
 }
 
 const albumTotalDuration = computed((): string => {

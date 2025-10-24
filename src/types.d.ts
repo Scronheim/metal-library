@@ -118,7 +118,7 @@ export interface Genre {
 }
 
 export interface SocialNetwork {
-  platform: 'website' | 'youtube' | 'bandcamp' | 'spotify' | 'facebook' | 'instagram' | 'twitter'
+  platform: 'website' | 'youtube' | 'bandcamp' | 'spotify' | 'facebook' | 'instagram' | 'twitter' | 'yandex' | 'vk'
   url: string
 }
 

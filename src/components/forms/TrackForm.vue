@@ -42,9 +42,9 @@ const lyricsRules = ref<FormRules<TrackInfo>>({
         </el-form-item>
 
         <el-form-item label="Длительность" prop="duration" class="track-field">
-          <el-input v-model="track.duration" placeholder="Длительность (чч:мм:сс)" maxlength="5" type="time" step="1">
+          <el-input v-model="track.duration" placeholder="Длительность (чч:мм:сс)" type="time" step="1">
             <template #append>
-              <span class="duration-hint">мм:сс</span>
+              <span class="duration-hint">чч::мм:сс</span>
             </template>
           </el-input>
         </el-form-item>
@@ -101,7 +101,7 @@ const lyricsRules = ref<FormRules<TrackInfo>>({
 
 .track-fields {
   display: grid;
-  grid-template-columns: 1fr 200px;
+  grid-template-columns: auto 230px;
   gap: 12px;
   margin-bottom: 12px;
 }
