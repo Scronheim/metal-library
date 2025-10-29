@@ -1,9 +1,9 @@
 <template>
-  <el-card header="Комментарий" class="mb-3">
+  <el-card :header="cardTitle" class="mb-3">
     <QuillEditor ref="editor" v-model:content="content" :options="options" />
     <template #footer>
       <div class="flex justify-start">
-        <el-rate v-model="rating" :colors="colors" allow-half />
+        <el-rate v-model="props.review.rating" :colors="colors" allow-half />
       </div>
       <div class="flex justify-end">
         <el-button type="success" @click="saveContent">Отправить</el-button>
@@ -12,12 +12,27 @@
   </el-card>
 </template>
 
-<script setup>
-import { ref, reactive, computed } from 'vue'
+<script setup lang="ts">
+import { ref, computed, PropType } from 'vue'
 import { QuillEditor } from '@vueup/vue-quill'
 import '@/styles/quill.smoke.css'
+import { Review } from '@/types'
 
 const emits = defineEmits(['saveContent'])
+const props = defineProps({
+  review: {
+    type: Object as PropType<Review>,
+    required: false,
+    default: () => {
+      return {}
+    }
+  },
+  mode: {
+    type: String,
+    default: 'add', // 'add' or 'edit'
+    validator: (value: string) => ['add', 'edit'].includes(value)
+  }
+})
 
 const editor = ref(null)
 const content = ref('')
@@ -33,9 +48,11 @@ const options = ref({
       ['clean']
     ]
   },
-  placeholder: 'Введите коментарий',
+  placeholder: 'Введите текст обзора',
   theme: 'snow'
 })
+
+const cardTitle = computed(() => (props.mode === 'add' ? 'Добавить обзор' : 'Редактировать обзор'))
 
 const saveContent = () => {
   emits('saveContent', JSON.stringify(content.value), editor.value.getText(), rating.value)

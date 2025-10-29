@@ -20,8 +20,18 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/albums/:id',
-    name: 'Albums page',
-    component: () => import('@/pages/AlbumPage.vue')
+    children: [
+      {
+        name: 'Albums page',
+        path: '',
+        component: () => import('@/pages/AlbumPage.vue')
+      },
+      {
+        name: 'albumReviews',
+        path: 'reviews',
+        component: () => import('@/pages/albums/AlbumReviewsPage.vue')
+      }
+    ]
   },
   {
     path: '/auth',

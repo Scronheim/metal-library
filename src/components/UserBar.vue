@@ -1,31 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { User } from '@element-plus/icons-vue'
 
 import { useAuthStore } from '@/stores/auth'
 
-import type { RegisterData } from '@/types'
-
 const store = useAuthStore()
-
-const isRegister = ref<boolean>(false)
-const authData = ref({
-  username: '',
-  password: ''
-})
-const registerData = ref<RegisterData>({
-  username: '',
-  password: '',
-  passwordConfirm: '',
-  email: ''
-})
-
-const doLogin = async () => {
-  await store.login(authData.value)
-}
-const doRegister = async () => {
-  await store.register(registerData.value)
-}
 </script>
 
 <template>
@@ -36,6 +14,10 @@ const doRegister = async () => {
     <div class="flex flex-col">
       <p class="font-bold">{{ store.user.username }}</p>
       <el-button tag="router-link" to="/groups/add">Добавить группу</el-button>
+    </div>
+    <el-divider />
+    <div class="flex flex-col">
+      <el-button type="danger" @click="store.logout">Выход</el-button>
     </div>
   </el-popover>
   <template v-else>

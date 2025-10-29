@@ -17,7 +17,7 @@ export interface User {
     reviewsWritten: number
   }
   isVerified: boolean
-  lastLogin: Date
+  lastLogin: string
   preferences: {
     emailNotifications: boolean
     language: string
@@ -33,13 +33,6 @@ export interface AuthData {
 export interface RegisterData extends AuthData {
   email: string
   passwordConfirm?: string
-}
-
-export interface Review {
-  content: string
-  text: string
-  user: string
-  rating: number
 }
 
 export interface Album {
@@ -155,4 +148,18 @@ export interface News {
   isPublished: boolean
   publishedAt: string
   views: number
+}
+
+export interface Review {
+  _id?: string
+  album: Album
+  user: User
+  plainText: string
+  delta: string
+  safeHTML: string
+  rating: number
+  isVerified: boolean
+  verifiedUser: User | null
+  views: number
+  isEdit?: boolean // нужен только на фронте
 }

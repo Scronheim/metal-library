@@ -46,11 +46,6 @@
           Google
         </el-button>
 
-        <el-button class="oauth-button vk-button" @click="handleOAuth('vk')" :disabled="authStore.isLoading">
-          <img src="@/assets/vk-icon.svg" alt="VK" class="oauth-icon" />
-          VK
-        </el-button>
-
         <el-button class="oauth-button github-button" @click="handleOAuth('github')" :disabled="authStore.isLoading">
           <img src="@/assets/github-icon.svg" alt="GitHub" class="oauth-icon" />
           GitHub
@@ -69,6 +64,7 @@
 import { ref, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Message, User, Lock } from '@element-plus/icons-vue'
+import * as VKID from '@vkid/sdk'
 
 import { useAuthStore } from '@/stores/auth'
 
@@ -118,8 +114,6 @@ const handleOAuth = provider => {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 20px;
 }
 

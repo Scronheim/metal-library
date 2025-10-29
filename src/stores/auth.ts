@@ -2,36 +2,13 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { api } from '@/services/api'
 
+import { getDefaultUser } from '@/consts'
+
 import type { User } from '@/types'
 
 export const useAuthStore = defineStore('auth', () => {
-  const token = ref(localStorage.getItem('token'))
-  const user = ref<User>({
-    id: '',
-    username: '',
-    email: '',
-    profile: {
-      bio: '',
-      location: '',
-      favoriteAlbums: [],
-      favoriteGroups: [],
-      website: ''
-    },
-    role: '',
-    stats: {
-      groupsAdded: 0,
-      albumsAdded: 0,
-      contributions: 0,
-      reviewsWritten: 0
-    },
-    isVerified: false,
-    lastLogin: new Date(),
-    preferences: {
-      emailNotifications: false,
-      language: 'ru',
-      theme: 'dark'
-    }
-  })
+  const token = ref<string | null>(localStorage.getItem('token'))
+  const user = ref<User>(getDefaultUser())
   const isLoading = ref(false)
 
   const userIsAuth = computed(() => !!token.value)
@@ -71,7 +48,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const logout = () => {
     token.value = null
-    user.value = null
+    user.value = getDefaultUser()
     localStorage.removeItem('token')
     delete api.defaults.headers.common['Authorization']
   }
@@ -151,6 +128,28 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  const handleVKAuth = async vkData => {
+    try {
+      isLoading.value = true
+
+      // Отправляем данные VK на бэкенд для верификации и создания пользователя
+      const response = await api.post('/auth/vk/callback', vkData)
+
+      // Устанавливаем данные аутентификации
+      setAuthData(response.data)
+
+      return { success: true }
+    } catch (error) {
+      console.error('VK auth error:', error)
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Ошибка авторизации через VK'
+      }
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     token,
     user,
@@ -164,6 +163,7 @@ export const useAuthStore = defineStore('auth', () => {
     initiateOAuth,
     handleOAuthCallback,
     handleOAuthSuccess,
-    setAuthData
+    setAuthData,
+    handleVKAuth
   }
 })

@@ -427,7 +427,7 @@
     <el-skeleton :rows="10" animated />
   </div>
 
-  <el-dialog v-model="showGroupInfoDialog" title="Редактирование информации о группе" top="10px" width="750px">
+  <el-dialog v-model="showGroupInfoDialog" title="Редактирование информации о группе" top="10px" width="800px">
     <el-form ref="groupRef" :model="group" :rules="groupInfoRules" label-position="top">
       <el-card header="Основная информация" class="mb-2">
         <div class="flex gap-2">
@@ -580,7 +580,7 @@
     </template>
   </el-dialog>
 
-  <EditAlbumDialog v-model="showEditableAlbumDialog" mode="add" :group="group" @success="fetchGroupData" />
+  <EditAlbumDialog v-model="showEditableAlbumDialog" mode="add" :group="group" @success="store.getGroupById" />
   <MemberFormDialog
     v-model="showMemberDialog"
     :mode="memberMode"
@@ -611,12 +611,10 @@ import {
 import SvgIcon from '@jamescoyle/vue-icon'
 import { mdiAlbum } from '@mdi/js'
 
-import { api } from '@/services/api'
-
 import { useStore } from '@/stores/store'
 import { useAuthStore } from '@/stores/auth'
 
-import { getDefaultGroup, getDefaultMember } from '@/consts'
+import { getDefaultMember } from '@/consts'
 
 import EditIconButton from '@/components/buttons/EditIconButton.vue'
 import AddIconButton from '@/components/buttons/AddIconButton.vue'
@@ -633,7 +631,6 @@ const store = useStore()
 const authStore = useAuthStore()
 
 // Refs
-const group = ref<Group>(getDefaultGroup())
 const albums = ref<Album[]>([])
 const similarGroups = ref<Group[]>([])
 const relatedNews = ref<News[]>([])
@@ -657,6 +654,7 @@ const groupInfoRules = ref<FormRules<Group>>({
 const groupRef = ref()
 const editableMember = ref<Member>(getDefaultMember())
 // Computed
+const group = computed(() => store.currentGroup)
 const totalMembers = computed((): number => {
   if (!group.value) return 0
   return (group.value.currentMembers?.length || 0) + (group.value.pastMembers?.length || 0)
@@ -701,7 +699,7 @@ const openEditMemberDialog = (member: Member): void => {
 }
 const addMemberToGroup = async (): Promise<void> => {
   await store.addMemberToGroup(group.value._id as string, editableMember.value, isCurrentMember.value, true)
-  await fetchGroupData()
+  await store.getGroupById()
 }
 
 const toggleNewMemberInput = (): void => {
@@ -779,32 +777,14 @@ const addToFavorites = () => {
   ElMessage.success('Группа добавлена в избранное')
 }
 
-const fetchGroupData = async () => {
-  const groupId = route.params.id
-  try {
-    const groupResponse = await api.get(`/groups/${groupId}`)
-    if (groupResponse.data) group.value = groupResponse.data
-
-    const albumsResponse = await api.get(`/groups/${groupId}/albums`)
-    if (albumsResponse.data) albums.value = albumsResponse.data
-
-    const similarResponse = await api.get(`/groups/${groupId}/similar`)
-    if (similarResponse.data) similarGroups.value = similarResponse.data
-
-    const newsResponse = await api.get(`/news/group/${groupId}`)
-    if (newsResponse.data) relatedNews.value = newsResponse.data
-  } catch (error) {
-    console.error('Error fetching group data:', error)
-    ElMessage.error('Ошибка загрузки данных группы')
-  }
-}
-
 watch(route, () => {
-  fetchGroupData()
+  store.getGroupById()
 })
 
-onMounted(() => {
-  fetchGroupData()
+onMounted(async () => {
+  await store.getGroupById()
+  albums.value = await store.getGroupAlbums()
+  similarGroups.value = await store.getSimilarGroups()
 })
 </script>
 

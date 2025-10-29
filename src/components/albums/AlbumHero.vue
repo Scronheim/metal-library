@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, type PropType } from 'vue'
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { mdiCalendar, mdiAlbum, mdiMusic } from '@mdi/js'
 import SvgIcon from '@jamescoyle/vue-icon'
-import { Headset, Timer, Star, StarFilled, Share, Plus, Edit } from '@element-plus/icons-vue'
+import { Headset, Timer, Star, StarFilled, Share, View, Edit } from '@element-plus/icons-vue'
 import dayjs from 'dayjs'
 import durationPlugin from 'dayjs/plugin/duration'
 
@@ -11,29 +12,27 @@ import { useAuthStore } from '@/stores/auth'
 
 import EditAlbumDialog from '@/components/dialogs/EditAlbumDialog.vue'
 
-import type { Album } from '@/types'
 import { ElNotification } from 'element-plus'
+
+const router = useRouter()
 
 const store = useStore()
 const authStore = useAuthStore()
 
 const emit = defineEmits(['updateAlbum'])
-const props = defineProps({
-  album: {
-    type: Object as PropType<Album>,
-    required: true
-  }
-})
 
 dayjs.extend(durationPlugin)
 
 // Computed
+const album = computed(() => store.currentAlbum)
 const isAuthenticated = computed((): boolean => authStore.userIsAuth)
-const userLikedAlbum = computed((): boolean => !props.album.stats.likes.findIndex(u => u._id === authStore.user.id))
-const albumReleaseYear = computed((): number => new Date(props.album.releaseDate).getFullYear())
-const albumGenres = computed((): string => props.album.genres.map(g => g.name).join(', '))
+const userLikedAlbum = computed(
+  (): boolean => !store.currentAlbum.stats.likes.findIndex(u => u._id === authStore.user.id)
+)
+const albumReleaseYear = computed((): number => new Date(store.currentAlbum.releaseDate).getFullYear())
+const albumGenres = computed((): string => store.currentAlbum.genres.map(g => g.name).join(', '))
 const albumTotalDuration = computed((): string => {
-  const totalSeconds = props.album.tracks.reduce((total, track) => {
+  const totalSeconds = store.currentAlbum.tracks.reduce((total, track) => {
     const [hours, minutes, seconds] = track.duration.split(':').map(i => parseInt(i))
     return total + dayjs.duration({ hours, minutes, seconds }).asSeconds()
   }, 0)
@@ -44,14 +43,17 @@ const albumTotalDuration = computed((): string => {
 const showAlbumInfoEdit = ref(false)
 
 // Methods
+const goToAlbumReviewPage = () => {
+  router.push({ name: 'albumReviews' })
+}
 const toggleLike = async () => {
   try {
-    const { newAlbum, message } = await store.toggleLike(props.album)
+    const { newAlbum, message } = await store.toggleLike(store.currentAlbum)
     ElNotification({
       type: 'success',
       message
     })
-    props.album = newAlbum
+    store.currentAlbum = newAlbum
   } catch (error) {
     ElNotification({
       type: 'error',
@@ -73,12 +75,6 @@ const shareAlbum = async () => {
     })
   }
 }
-const addToCollection = () => {
-  ElNotification({
-    type: 'success',
-    message: 'Альбом добавлен в коллекцию'
-  })
-}
 const openAlbumInfoEditDialog = async (): Promise<void> => {
   await store.getGenres()
   showAlbumInfoEdit.value = true
@@ -89,7 +85,7 @@ const openAlbumInfoEditDialog = async (): Promise<void> => {
   <section class="album-hero">
     <div class="hero-container">
       <div class="album-cover-section">
-        <el-image :src="props.album.cover" :alt="props.album.title" fit="cover" class="album-cover">
+        <el-image :src="store.currentAlbum.cover" :alt="store.currentAlbum.title" fit="cover" class="album-cover">
           <template #error>
             <div class="cover-placeholder">
               <SvgIcon type="mdi" :path="mdiAlbum" :size="18" />
@@ -157,7 +153,7 @@ const openAlbumInfoEditDialog = async (): Promise<void> => {
             {{ album.stats.likes.length }}
           </el-button>
           <el-button type="primary" :icon="Share" @click="shareAlbum">Поделиться</el-button>
-          <el-button v-if="isAuthenticated" type="success" :icon="Plus" @click="addToCollection">В коллекцию</el-button>
+          <el-button v-if="isAuthenticated" type="warning" :icon="View" @click="goToAlbumReviewPage">Обзоры</el-button>
           <el-button v-if="authStore.userIsAdmin" type="info" :icon="Edit" @click="openAlbumInfoEditDialog">
             Редактировать
           </el-button>
@@ -182,9 +178,9 @@ const openAlbumInfoEditDialog = async (): Promise<void> => {
 
   <EditAlbumDialog
     v-model="showAlbumInfoEdit"
-    :album="props.album"
+    :album="store.currentAlbum"
     mode="edit"
-    :group="props.album.group"
+    :group="store.currentAlbum.group"
     @success="emit('updateAlbum')"
   />
 </template>

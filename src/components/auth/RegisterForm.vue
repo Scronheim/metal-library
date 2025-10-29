@@ -131,8 +131,6 @@ const handleRegister = async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 20px;
 }
 
@@ -147,7 +145,7 @@ const handleRegister = async () => {
 
 .card-header h2 {
   margin: 0;
-  color: #333;
+  color: #c1c1c1;
 }
 
 .register-button {

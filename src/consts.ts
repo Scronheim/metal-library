@@ -1,4 +1,4 @@
-import type { Album, Group, Member } from './types'
+import type { Album, Group, Member, User } from './types'
 
 export const getDefaultAlbum = (): Album => {
   return {
@@ -63,5 +63,34 @@ export const getDefaultMember = (): Member => {
     photo: '',
     socialLinks: [],
     status: 'active'
+  }
+}
+
+export const getDefaultUser = (): User => {
+  return {
+    id: '',
+    email: '',
+    isVerified: false,
+    lastLogin: '',
+    preferences: {
+      emailNotifications: false,
+      language: '',
+      theme: ''
+    },
+    profile: {
+      bio: '',
+      favoriteAlbums: [],
+      favoriteGroups: [],
+      location: '',
+      website: ''
+    },
+    role: '',
+    stats: {
+      albumsAdded: 0,
+      contributions: 0,
+      groupsAdded: 0,
+      reviewsWritten: 0
+    },
+    username: ''
   }
 }

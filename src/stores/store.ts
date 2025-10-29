@@ -1,17 +1,21 @@
-import { ref, computed, watch, markRaw } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, markRaw } from 'vue'
+import { useRoute } from 'vue-router'
 import { defineStore } from 'pinia'
 import { api } from '@/services/api'
 import { ElNotification } from 'element-plus'
-import { debounce } from 'lodash-es'
 import { Link, VideoPlay, Headset, Camera, ChatLineRound, ChatLineSquare } from '@element-plus/icons-vue'
 
-import type { AuthData, Group, Album, Genre, TrackInfo, Country, Member } from '@/types'
+import { useAuthStore } from '@/stores/auth'
+
+import { getDefaultAlbum, getDefaultGroup } from '@/consts'
+
+import type { Group, Album, Genre, TrackInfo, Country, Member, Review } from '@/types'
 
 export const useStore = defineStore('store', () => {
-  const router = useRouter()
-
   // Refs
+  const route = useRoute()
+  const currentGroup = ref<Group>(getDefaultGroup())
+  const currentAlbum = ref<Album>(getDefaultAlbum())
   const queryIsLoading = ref(false)
   const albumTypesMap = {
     'full-length': 'Студийный альбом',
@@ -364,10 +368,57 @@ export const useStore = defineStore('store', () => {
       })
   }
 
+  async function addReview(
+    delta: string,
+    safeHTML: string,
+    plainText: string,
+    rating: number,
+    showNotification: boolean = true
+  ): Promise<void> {
+    const authStore = useAuthStore()
+    const payload: Review = {
+      album: currentAlbum.value,
+      delta,
+      isVerified: false,
+      plainText,
+      safeHTML,
+      rating,
+      user: authStore.user,
+      verifiedUser: null,
+      views: 0
+    }
+    await api.post(`/albums/${route.params.id}/reviews`, payload)
+    if (showNotification)
+      ElNotification({
+        type: 'success',
+        message: 'Обзор успешно добавлен'
+      })
+  }
+
   async function searchGroup(searchQuery: string): Promise<{ data: { groups: Group[] } }> {
     return await api.get(`/groups?search=${searchQuery}&limit=5`)
   }
 
+  async function getGroupById(): Promise<void> {
+    const { data } = await api.get(`/groups/${route.params.id}`)
+    currentGroup.value = data
+  }
+  async function getGroupAlbums(): Promise<Album[]> {
+    const { data } = await api.get(`/groups/${route.params.id}/albums`)
+    return data
+  }
+  async function getSimilarGroups(): Promise<Group[]> {
+    const { data } = await api.get(`/groups/${route.params.id}/similar`)
+    return data
+  }
+  async function getAlbumById(): Promise<void> {
+    const { data } = await api.get(`/albums/${route.params.id}`)
+    currentAlbum.value = data
+  }
+  async function getAlbumReviews(): Promise<Review[]> {
+    const { data } = await api.get(`/albums/${route.params.id}/reviews`)
+    return data
+  }
   async function getGenres(): Promise<void> {
     const { data } = await api.get('/genres')
     availableGenres.value = data
@@ -382,26 +433,9 @@ export const useStore = defineStore('store', () => {
     }
   }
 
-  async function updateCurrentUser(showNotification: boolean = false): Promise<void> {
-    await api.patch('/update_user', user.value)
-    if (showNotification) {
-      ElNotification({
-        title: 'Успешно',
-        message: 'Пользователь сохранён',
-        type: 'success'
-      })
-    }
-  }
-
-  // watch(
-  //   user,
-  //   debounce(async () => {
-  //     if (user.value.id) await updateCurrentUser()
-  //   }, 500),
-  //   { deep: true }
-  // )
-
   return {
+    currentGroup,
+    currentAlbum,
     queryIsLoading,
     albumTypesMap,
     albumTypeColorMap,
@@ -423,6 +457,12 @@ export const useStore = defineStore('store', () => {
     addAlbum,
     searchMember,
     addMemberToGroup,
-    updateMember
+    updateMember,
+    getGroupById,
+    getAlbumById,
+    getGroupAlbums,
+    getSimilarGroups,
+    getAlbumReviews,
+    addReview
   }
 })

@@ -1,7 +1,7 @@
 <template>
-  <div class="album-page" v-if="album">
+  <div class="album-page" v-if="store.currentAlbum">
     <!-- Hero Section -->
-    <AlbumHero :album="album" @update-album="fetchAlbumData" />
+    <AlbumHero @update-album="store.getAlbumById" />
 
     <!-- Main Content -->
     <el-container class="album-main-content">
@@ -16,7 +16,6 @@
             <p>{{ album.description }}</p>
           </div>
         </el-card>
-        <!-- <TextEditor @save-content="addComment" /> -->
         <el-card class="tracklist-card">
           <template #header>
             <div class="tracklist-header">
@@ -297,15 +296,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { debounce } from 'lodash-es'
 import dayjs from 'dayjs'
 import durationPlugin from 'dayjs/plugin/duration'
 import { ElMessage } from 'element-plus'
 import { Headset, View, InfoFilled } from '@element-plus/icons-vue'
 import SvgIcon from '@jamescoyle/vue-icon'
 import { mdiAlbum } from '@mdi/js'
-
-import { api } from '@/services/api'
 
 import { useStore } from '@/stores/store'
 import { useAuthStore } from '@/stores/auth'
@@ -314,10 +310,6 @@ import EditIconButton from '@/components/buttons/EditIconButton.vue'
 import AddIconButton from '@/components/buttons/AddIconButton.vue'
 import DeleteIconButton from '@/components/buttons/DeleteIconButton.vue'
 import TrackForm from '@/components/forms/TrackForm.vue'
-
-import TextEditor from '@/components/TextEditor.vue'
-
-import { getDefaultAlbum } from '@/consts'
 
 import type { Album, Group, News, TrackInfo } from '@/types'
 import AlbumHero from '@/components/albums/AlbumHero.vue'
@@ -328,7 +320,6 @@ const route = useRoute()
 const store = useStore()
 const authStore = useAuthStore()
 // Refs
-const album = ref<Album>(getDefaultAlbum())
 const otherAlbums = ref<Album[]>([])
 const relatedNews = ref<News[]>([])
 const expandedTracks = ref(new Set())
@@ -340,10 +331,10 @@ const searchQuery = ref('')
 const foundedGroups = ref<Group[]>([])
 
 // Computed
-
-const albumGenres = computed((): string => album.value.genres.map(g => g.name).join(', '))
+const album = computed(() => store.currentAlbum)
+const albumGenres = computed((): string => store.currentAlbum.genres.map(g => g.name).join(', '))
 const albumTotalDuration = computed((): string => {
-  const totalSeconds = album.value.tracks.reduce((total, track) => {
+  const totalSeconds = store.currentAlbum.tracks.reduce((total, track) => {
     const [hours, minutes, seconds] = track.duration.split(':').map(i => parseInt(i))
     return total + dayjs.duration({ hours, minutes, seconds }).asSeconds()
   }, 0)
@@ -353,7 +344,7 @@ const albumTotalDuration = computed((): string => {
 const tracksSortedByDiscNumber = computed((): { [discNumber: number]: TrackInfo[] } => {
   const grouped: { [discNumber: number]: TrackInfo[] } = {}
 
-  album.value.tracks.forEach(track => {
+  store.currentAlbum.tracks.forEach(track => {
     const disc = track.discNumber
     if (!grouped[disc]) {
       grouped[disc] = []
@@ -373,17 +364,17 @@ const tracksSortedByDiscNumber = computed((): { [discNumber: number]: TrackInfo[
   return sorted
 })
 const spotifyEmbedAlbumUrl = computed(() => {
-  const link = album.value.socialLinks.find(l => l.platform === 'spotify')
+  const link = store.currentAlbum.socialLinks.find(l => l.platform === 'spotify')
   return link?.url.replace('/album', '/embed/album')
 })
 const yandexMusicEmbedAlbumUrl = computed(() => {
-  const link = album.value.socialLinks.find(l => l.platform === 'yandex')
+  const link = store.currentAlbum.socialLinks.find(l => l.platform === 'yandex')
   return link?.url.replace('/album', '/iframe/album')
 })
 
 // Methods
 const addComment = (quillContent: string, quillText: string, rating: number): void => {
-  album.value.reviews.push({
+  store.currentAlbum.reviews.push({
     content: quillContent,
     text: quillText,
     rating,
@@ -392,14 +383,14 @@ const addComment = (quillContent: string, quillText: string, rating: number): vo
 }
 
 const removeTrack = (index: number): void => {
-  album.value.tracks.splice(index, 1)
+  store.currentAlbum.tracks.splice(index, 1)
 }
 const showDetailsEdit = async (): Promise<void> => {
   await store.getGenres()
   isDetailsEdit.value = !isDetailsEdit.value
 }
 const handleSelectGroup = (group: Group): void => {
-  album.value.group = group
+  store.currentAlbum.group = group
 }
 const searchGroup = async (queryString: string, cb: any): Promise<void> => {
   if (!queryString) return cb([])
@@ -436,7 +427,7 @@ const toggleTrackLyrics = (track: TrackInfo): void => {
 }
 
 const addLyrics = (): void => {
-  const lastTrackNumber = album.value.tracks.length
+  const lastTrackNumber = store.currentAlbum.tracks.length
   editingTrack.value = { number: lastTrackNumber + 1, discNumber: 1, duration: '00:00:01' }
   showLyricsEdit.value = true
 }
@@ -453,61 +444,24 @@ const handleEditClose = (): void => {
 
 const saveLyrics = async (): Promise<void> => {
   try {
-    await store.updateLyrics(album.value, editingTrack.value, true)
+    await store.updateLyrics(store.currentAlbum, editingTrack.value, true)
     showLyricsEdit.value = false
     // Update local data
-    const trackIndex = album.value.tracks.findIndex(t => t.number === editingTrack.value.number)
+    const trackIndex = store.currentAlbum.tracks.findIndex(t => t.number === editingTrack.value.number)
     if (trackIndex !== -1) {
-      album.value.tracks[trackIndex].lyrics = editingTrack.value.lyrics
-      album.value.tracks[trackIndex].hasLyrics = !!editingTrack.value.lyrics
+      store.currentAlbum.tracks[trackIndex].lyrics = editingTrack.value.lyrics
     }
   } catch (error) {
     ElMessage.error('Ошибка при сохранении текста')
   } finally {
-    await fetchAlbumData()
+    await store.getGroupById()
   }
 }
-
-const fetchAlbumData = async () => {
-  const albumId = route.params.id
-  try {
-    const albumResponse = await api.get(`/albums/${albumId}`)
-    if (albumResponse.data) {
-      album.value = albumResponse.data
-    } else {
-      throw new Error('Альбом не найден')
-    }
-
-    if (album.value.group._id) {
-      const otherResponse = await api.get(`/groups/${album.value.group._id}/albums`)
-      if (otherResponse.data) {
-        const allAlbums = otherResponse.data
-        otherAlbums.value = allAlbums.filter(a => a._id !== albumId).slice(0, 5)
-      }
-    }
-
-    const newsResponse = await api.get(`/news/album/${albumId}`)
-    if (newsResponse.data) {
-      relatedNews.value = newsResponse.data
-    }
-  } catch (error) {
-    console.error('Error fetching album data:', error)
-    ElMessage.error('Ошибка загрузки данных альбома')
-  }
-}
-
-watch(
-  album,
-  debounce(async (value: Album, oldValue): Promise<void> => {
-    if (oldValue) await store.updateAlbum(value)
-  }, 500),
-  { deep: true }
-)
 watch(route, () => {
-  fetchAlbumData()
+  store.getAlbumById()
 })
 onMounted(() => {
-  fetchAlbumData()
+  store.getAlbumById()
 })
 </script>
 
