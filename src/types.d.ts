@@ -1,5 +1,5 @@
 export interface User {
-  id: string
+  _id: string
   username: string
   email: string
   role: string
@@ -136,10 +136,10 @@ export interface Country {
 }
 
 export interface News {
-  _id: string
+  _id?: string
   title: string
   content: string
-  author: User
+  author: User | string
   category: 'news' | 'review' | 'interview' | 'release'
   tags: string[]
   featuredImage: string

@@ -34,6 +34,21 @@ const routes: RouteRecordRaw[] = [
     ]
   },
   {
+    path: '/news',
+    children: [
+      {
+        name: 'News page',
+        path: '',
+        component: () => import('@/pages/news/NewsPage.vue')
+      },
+      {
+        name: 'addNewsPage',
+        path: 'add',
+        component: () => import('@/pages/news/NewsAddPage.vue')
+      }
+    ]
+  },
+  {
     path: '/auth',
     name: 'Auth',
     component: () => import('@/pages/auth/AuthPage.vue'),

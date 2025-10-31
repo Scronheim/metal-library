@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { type PropType } from 'vue'
-import EditIconButton from '@/components/buttons/EditIconButton.vue'
+
 import TextEditor from '@/components/TextEditor.vue'
 
 import type { Review } from '@/types'
@@ -23,7 +23,6 @@ const props = defineProps({
           Обзор от пользователя
           <b>{{ review.user.username }}</b>
         </div>
-        <EditIconButton @click="review.isEdit = !review.isEdit" />
       </div>
     </template>
     <p v-html="review.safeHTML" />

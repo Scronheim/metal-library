@@ -15,7 +15,6 @@ const authStore = useAuthStore()
 
 // Refs
 const reviews = ref<Review[]>([])
-const isEdit = ref<boolean>(false)
 // Methods
 const getReviews = async (): Promise<void> => {
   reviews.value = await store.getAlbumReviews()

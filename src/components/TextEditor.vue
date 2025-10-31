@@ -13,10 +13,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, PropType } from 'vue'
+import { ref, computed, type PropType } from 'vue'
 import { QuillEditor } from '@vueup/vue-quill'
 import '@/styles/quill.smoke.css'
-import { Review } from '@/types'
+
+import type { Review } from '@/types'
 
 const emits = defineEmits(['saveContent'])
 const props = defineProps({

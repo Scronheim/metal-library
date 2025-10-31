@@ -9,7 +9,7 @@ import { useAuthStore } from '@/stores/auth'
 
 import { getDefaultAlbum, getDefaultGroup } from '@/consts'
 
-import type { Group, Album, Genre, TrackInfo, Country, Member, Review } from '@/types'
+import type { Group, Album, Genre, TrackInfo, Country, Member, Review, News } from '@/types'
 
 export const useStore = defineStore('store', () => {
   // Refs
@@ -295,6 +295,7 @@ export const useStore = defineStore('store', () => {
     else return 1
   })
   const availableGenres = ref<Genre[]>([])
+  const news = ref<News[]>([])
 
   // Computed
   const availableYears = computed(() => Array.from({ length: 51 }, (_, i) => new Date().getFullYear() - i))
@@ -395,6 +396,18 @@ export const useStore = defineStore('store', () => {
       })
   }
 
+  async function addNews(news: News, showNotification: boolean = true): Promise<void> {
+    await api.post('/news', news)
+    if (showNotification)
+      ElNotification({
+        type: 'success',
+        message: 'Новость успешно добавлена'
+      })
+  }
+
+  async function searchAlbum(searchQuery: string): Promise<{ data: { albums: Album[] } }> {
+    return await api.get(`/albums?search=${searchQuery}&limit=5`)
+  }
   async function searchGroup(searchQuery: string): Promise<{ data: { groups: Group[] } }> {
     return await api.get(`/groups?search=${searchQuery}&limit=5`)
   }
@@ -423,6 +436,10 @@ export const useStore = defineStore('store', () => {
     const { data } = await api.get('/genres')
     availableGenres.value = data
   }
+  async function getNews(): Promise<void> {
+    const { data } = await api.get('/news')
+    news.value = data
+  }
 
   async function toggleLike(album: Album): Promise<{ newAlbum: Album; message: string }> {
     const { data } = await api.patch(`/albums/${album._id}/like`)
@@ -447,6 +464,8 @@ export const useStore = defineStore('store', () => {
     availableGenres,
     availableYears,
     instruments,
+    news,
+    searchAlbum,
     searchGroup,
     updateAlbum,
     updateGroup,
@@ -455,14 +474,16 @@ export const useStore = defineStore('store', () => {
     updateLyrics,
     addGroup,
     addAlbum,
+    addReview,
+    addNews,
     searchMember,
     addMemberToGroup,
     updateMember,
+    getNews,
     getGroupById,
     getAlbumById,
     getGroupAlbums,
     getSimilarGroups,
-    getAlbumReviews,
-    addReview
+    getAlbumReviews
   }
 })
