@@ -78,7 +78,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   // OAuth методы
   const initiateOAuth = provider => {
-    window.location.href = `https://metal-library.ru/api/auth/${provider}`
+    window.location.href = `https://metal-archives.ru/api/auth/${provider}`
   }
 
   const handleOAuthCallback = () => {

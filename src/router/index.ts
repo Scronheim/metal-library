@@ -9,27 +9,33 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/pages/MainPage.vue')
   },
   {
-    path: '/groups/add',
-    name: 'Groups add page',
-    component: () => import('@/pages/GroupAddPage.vue')
-  },
-  {
-    path: '/groups/:id',
-    name: 'Groups page',
-    component: () => import('@/pages/GroupPage.vue')
-  },
-  {
-    path: '/albums/:id',
+    path: '/groups',
     children: [
       {
-        name: 'Albums page',
-        path: '',
-        component: () => import('@/pages/AlbumPage.vue')
+        path: 'add',
+        name: 'Groups add page',
+        component: () => import('@/pages/GroupAddPage.vue')
       },
       {
+        path: ':id',
+        name: 'Groups page',
+        component: () => import('@/pages/GroupPage.vue')
+      }
+    ]
+  },
+
+  {
+    path: '/albums',
+    children: [
+      {
         name: 'albumReviews',
-        path: 'reviews',
+        path: ':id/reviews',
         component: () => import('@/pages/albums/AlbumReviewsPage.vue')
+      },
+      {
+        name: 'Albums page',
+        path: ':id',
+        component: () => import('@/pages/albums/AlbumPage.vue')
       }
     ]
   },
@@ -44,7 +50,13 @@ const routes: RouteRecordRaw[] = [
       {
         name: 'addNewsPage',
         path: 'add',
-        component: () => import('@/pages/news/NewsAddPage.vue')
+        component: () => import('@/pages/news/NewsAddPage.vue'),
+        meta: { requiredAdmin: true }
+      },
+      {
+        name: 'News content page',
+        path: ':id',
+        component: () => import('@/pages/news/NewsContentPage.vue')
       }
     ]
   },

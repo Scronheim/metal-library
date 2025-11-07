@@ -80,6 +80,7 @@
         <iframe
           v-if="yandexMusicEmbedAlbumUrl"
           frameborder="0"
+          sandbox="allow-same-origin allow-scripts"
           allow="clipboard-write"
           style="border: none; width: 100%; height: 352px"
           :src="yandexMusicEmbedAlbumUrl"
@@ -369,7 +370,7 @@ const spotifyEmbedAlbumUrl = computed(() => {
 })
 const yandexMusicEmbedAlbumUrl = computed(() => {
   const link = store.currentAlbum.socialLinks.find(l => l.platform === 'yandex')
-  return link?.url.replace('/album', '/iframe/album')
+  return link?.url.replace('/album', '/iframe/album') || ''
 })
 
 // Methods

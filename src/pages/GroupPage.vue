@@ -80,29 +80,6 @@
       <el-col :xs="24" :lg="16" class="left-column">
         <!-- Tabs Navigation -->
         <el-tabs v-model="activeTab" class="group-tabs">
-          <!-- Biography Tab -->
-          <el-tab-pane label="Биография" name="biography">
-            <el-card>
-              <div class="biography-content">
-                <div class="flex items-center gap-3 mb-3">
-                  <h3>О группе</h3>
-                  <EditIconButton v-if="authStore.userIsAdmin" @click="showGroupBioDialog = true" />
-                </div>
-                <div class="description-text" v-html="formatDescription(group.description)"></div>
-
-                <!-- Themes -->
-                <div class="themes-section" v-if="group.themes && group.themes.length">
-                  <h4>Тематика</h4>
-                  <div class="themes-list">
-                    <el-tag v-for="theme in group.themes" :key="theme" effect="plain" class="theme-tag">
-                      {{ theme }}
-                    </el-tag>
-                  </div>
-                </div>
-              </div>
-            </el-card>
-          </el-tab-pane>
-
           <!-- Discography Tab -->
           <el-tab-pane label="Дискография" name="discography">
             <el-card>
@@ -112,6 +89,10 @@
                   <h3>Дискография</h3>
                   <AddIconButton v-if="authStore.userIsAdmin" @click="openAlbumAddDialog" />
                 </div>
+                <el-select v-model="selectedAlbumType" style="width: 200px">
+                  <el-option label="Все" value="all" />
+                  <el-option v-for="(value, key) in store.albumTypesMap" :key="key" :label="value" :value="key" />
+                </el-select>
                 <div class="discography-stats">
                   <span class="stat">
                     <i class="el-icon-disc"></i>
@@ -232,6 +213,10 @@
             </el-card>
           </el-tab-pane>
 
+          <el-tab-pane label="Новости" name="news">
+            <NewsForm v-for="item in relatedNews" :key="item._id" :news="item" class="mb-2" />
+          </el-tab-pane>
+
           <!-- Similar Groups Tab -->
           <el-tab-pane label="Похожие группы" name="similar">
             <el-card>
@@ -281,6 +266,25 @@
       <!-- Right Column - Sidebar -->
       <el-col :xs="24" :lg="8" class="right-column">
         <!-- Group Stats -->
+        <section class="sidebar-section">
+          <div class="biography-content">
+            <div class="flex items-center gap-3 mb-3">
+              <h3>О группе</h3>
+              <EditIconButton v-if="authStore.userIsAdmin" @click="showGroupBioDialog = true" />
+            </div>
+            <div class="description-text" v-html="formatDescription(group.description)"></div>
+
+            <!-- Themes -->
+            <div class="themes-section" v-if="group.themes && group.themes.length">
+              <h4>Тематика</h4>
+              <div class="themes-list">
+                <el-tag v-for="theme in group.themes" :key="theme" effect="plain" class="theme-tag">
+                  {{ theme }}
+                </el-tag>
+              </div>
+            </div>
+          </div>
+        </section>
         <section class="sidebar-section">
           <div class="section-header">
             <h3 class="section-title">
@@ -380,40 +384,6 @@
                     {{ album.stats.views }}
                   </span>
                 </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Related News -->
-        <section class="sidebar-section" v-if="relatedNews.length">
-          <div class="section-header">
-            <h3 class="section-title">
-              <i class="el-icon-news"></i>
-              Новости о группе
-            </h3>
-          </div>
-          <div class="related-news">
-            <div
-              v-for="news in relatedNews"
-              :key="news._id"
-              class="news-item"
-              @click="$router.push(`/news/${news._id}`)"
-            >
-              <div class="news-image">
-                <el-image :src="news.featuredImage" :alt="news.title" fit="cover" class="image">
-                  <template #error>
-                    <div class="image-slot">
-                      <el-icon>
-                        <Picture />
-                      </el-icon>
-                    </div>
-                  </template>
-                </el-image>
-              </div>
-              <div class="news-content">
-                <h5 class="news-title">{{ news.title }}</h5>
-                <p class="news-date">{{ formatDate(news.publishedAt) }}</p>
               </div>
             </div>
           </div>
@@ -580,7 +550,7 @@
     </template>
   </el-dialog>
 
-  <EditAlbumDialog v-model="showEditableAlbumDialog" mode="add" :group="group" @success="store.getGroupById" />
+  <EditAlbumDialog v-model="showEditableAlbumDialog" mode="add" :group="group" @success="getGroupInfo" />
   <MemberFormDialog
     v-model="showMemberDialog"
     :mode="memberMode"
@@ -605,8 +575,7 @@ import {
   Location,
   Clock,
   Edit,
-  Search,
-  Picture
+  Search
 } from '@element-plus/icons-vue'
 import SvgIcon from '@jamescoyle/vue-icon'
 import { mdiAlbum } from '@mdi/js'
@@ -620,11 +589,12 @@ import EditIconButton from '@/components/buttons/EditIconButton.vue'
 import AddIconButton from '@/components/buttons/AddIconButton.vue'
 import DeleteIconButton from '@/components/buttons/DeleteIconButton.vue'
 import EditAlbumDialog from '@/components/dialogs/EditAlbumDialog.vue'
-
-import type { Album, Group, Member, News } from '@/types'
 import MemberFormDialog from '@/components/dialogs/MemberFormDialog.vue'
 import NewMemberAddForm from '@/components/forms/NewMemberAddForm.vue'
 import MemberCard from '@/components/forms/MemberCard.vue'
+
+import type { Album, Group, Member, News } from '@/types'
+import NewsForm from '@/components/forms/NewsForm.vue'
 
 const route = useRoute()
 const store = useStore()
@@ -634,7 +604,7 @@ const authStore = useAuthStore()
 const albums = ref<Album[]>([])
 const similarGroups = ref<Group[]>([])
 const relatedNews = ref<News[]>([])
-const activeTab = ref<string>('biography')
+const activeTab = ref<string>('discography')
 const showGroupInfoDialog = ref<boolean>(false)
 const showGroupBioDialog = ref<boolean>(false)
 const showEditableAlbumDialog = ref<boolean>(false)
@@ -643,6 +613,7 @@ const showNewMemberInput = ref<boolean>(false)
 const showPastMemberInput = ref<boolean>(false)
 const isCurrentMember = ref<boolean>(false)
 const memberMode = ref<string>('add')
+const selectedAlbumType = ref<string>('all')
 const groupInfoRules = ref<FormRules<Group>>({
   country: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }],
   formedYear: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }],
@@ -660,9 +631,16 @@ const totalMembers = computed((): number => {
   return (group.value.currentMembers?.length || 0) + (group.value.pastMembers?.length || 0)
 })
 
-const sortedAlbums = computed((): Album[] => [...albums.value].sort((a, b) => b.releaseDate - a.releaseDate))
+const sortedAlbums = computed((): Album[] =>
+  albums.value
+    .filter(a => {
+      if (selectedAlbumType.value === 'all') return a
+      else return a.type === selectedAlbumType.value
+    })
+    .sort((a, b) => b.releaseDate - a.releaseDate)
+)
 
-const latestAlbums = computed((): Album[] => sortedAlbums.value.slice(0, 5))
+const latestAlbums = computed((): Album[] => sortedAlbums.value.slice(0, 6))
 
 const getDiscographyPeriod = computed((): string => {
   if (albums.value.length === 0) return 'Нет данных'
@@ -675,6 +653,9 @@ const getDiscographyPeriod = computed((): string => {
 })
 
 // Methods
+const getGroupInfo = async (): Promise<void> => {
+  albums.value = await store.getGroupAlbums()
+}
 const removePastMember = async (index: number): Promise<void> => {
   group.value.pastMembers.splice(index, 1)
   await store.updateGroup(group.value)
@@ -745,15 +726,6 @@ const formatDescription = (text: string): string => {
   return text.replace(/\n/g, '<br>')
 }
 
-const formatDate = (dateString: string): string => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('ru-RU', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  })
-}
-
 const toggleLike = async () => {
   try {
     // API call to like/unlike
@@ -783,8 +755,9 @@ watch(route, () => {
 
 onMounted(async () => {
   await store.getGroupById()
-  albums.value = await store.getGroupAlbums()
+  await getGroupInfo()
   similarGroups.value = await store.getSimilarGroups()
+  relatedNews.value = await store.getGroupNews()
 })
 </script>
 
@@ -1228,7 +1201,7 @@ onMounted(async () => {
   background: #1e1e1e;
   border-radius: 8px;
   padding: 20px;
-  margin-bottom: 24px;
+  margin-bottom: 12px;
   border: 1px solid #333;
 }
 

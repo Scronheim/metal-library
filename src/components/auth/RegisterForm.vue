@@ -61,11 +61,13 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { User, Message, Lock } from '@element-plus/icons-vue'
 
 import { useAuthStore } from '@/stores/auth'
 
+const router = useRouter()
 const emit = defineEmits(['switch-to-login'])
 
 const authStore = useAuthStore()
@@ -79,11 +81,8 @@ const registerForm = reactive({
 })
 
 const validateConfirmPassword = (rule, value, callback) => {
-  if (value !== registerForm.password) {
-    callback(new Error('Пароли не совпадают'))
-  } else {
-    callback()
-  }
+  if (value !== registerForm.password) callback(new Error('Пароли не совпадают'))
+  else callback()
 }
 
 const registerRules = {
@@ -116,7 +115,7 @@ const handleRegister = async () => {
 
     if (result.success) {
       ElMessage.success('Регистрация успешна!')
-      // Перенаправление или закрытие модального окна
+      router.push('/')
     } else {
       ElMessage.error(result.error)
     }

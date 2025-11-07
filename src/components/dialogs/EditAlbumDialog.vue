@@ -311,11 +311,7 @@ const handleClose = () => {
 
 // Watchers
 watch(visible, newVal => {
-  if (newVal) {
-    nextTick(() => {
-      loadAlbumData()
-    })
-  }
+  if (newVal) nextTick(() => loadAlbumData())
 })
 
 // Initialize

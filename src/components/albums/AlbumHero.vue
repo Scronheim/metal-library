@@ -101,7 +101,9 @@ const openAlbumInfoEditDialog = async (): Promise<void> => {
           </el-tag>
         </div>
 
-        <h1 class="album-title">{{ album.title }}</h1>
+        <h1 class="album-title">
+          <RouterLink :to="`/albums/${album._id}`">{{ album.title }}</RouterLink>
+        </h1>
 
         <div class="album-artist">
           <el-avatar :size="40" :src="album.group.logo" :alt="album.group.name" shape="square" class="artist-logo">

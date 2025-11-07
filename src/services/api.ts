@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 export const api = axios.create({
-  baseURL: 'https://metal-library.ru/api'
+  baseURL: 'https://metal-archives.ru/api'
 })
 
 // Интерцептор для добавления токена

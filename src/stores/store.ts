@@ -424,6 +424,10 @@ export const useStore = defineStore('store', () => {
     const { data } = await api.get(`/groups/${route.params.id}/similar`)
     return data
   }
+  async function getGroupNews(): Promise<News[]> {
+    const { data } = await api.get(`/groups/${route.params.id}/news`)
+    return data
+  }
   async function getAlbumById(): Promise<void> {
     const { data } = await api.get(`/albums/${route.params.id}`)
     currentAlbum.value = data
@@ -438,7 +442,11 @@ export const useStore = defineStore('store', () => {
   }
   async function getNews(): Promise<void> {
     const { data } = await api.get('/news')
-    news.value = data
+    news.value = data.news
+  }
+  async function getNewsById(): Promise<News> {
+    const { data } = await api.get(`/news/${route.params.id}`)
+    return data
   }
 
   async function toggleLike(album: Album): Promise<{ newAlbum: Album; message: string }> {
@@ -484,6 +492,8 @@ export const useStore = defineStore('store', () => {
     getAlbumById,
     getGroupAlbums,
     getSimilarGroups,
-    getAlbumReviews
+    getGroupNews,
+    getAlbumReviews,
+    getNewsById
   }
 })

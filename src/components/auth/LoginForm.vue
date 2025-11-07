@@ -20,6 +20,7 @@
             size="large"
             show-password
             :prefix-icon="Lock"
+            @keypress.enter="handleLogin"
           />
         </el-form-item>
 
@@ -62,12 +63,14 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Message, User, Lock } from '@element-plus/icons-vue'
 import * as VKID from '@vkid/sdk'
 
 import { useAuthStore } from '@/stores/auth'
 
+const router = useRouter()
 const emit = defineEmits(['switch-to-register'])
 
 const authStore = useAuthStore()
@@ -95,7 +98,7 @@ const handleLogin = async () => {
 
     if (result.success) {
       ElMessage.success('Успешный вход!')
-      // Перенаправление или закрытие модального окна
+      router.push('/')
     } else {
       ElMessage.error(result.error)
     }

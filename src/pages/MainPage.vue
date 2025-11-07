@@ -432,6 +432,7 @@ onMounted(() => {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
+  gap: 25px;
 }
 
 /* Section Headers */
@@ -461,7 +462,7 @@ onMounted(() => {
 .news-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 20px;
+  gap: 15px;
 }
 
 .news-card {
