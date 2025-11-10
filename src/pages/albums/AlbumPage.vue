@@ -122,7 +122,7 @@
               @select="handleSelectGroup"
             />
           </div>
-          <div v-else class="group-info-card" @click="$router.push(`/groups/${album.group._id}`)">
+          <div v-else class="group-info-card" @click="$router.push(`/group/${album.group._id}`)">
             <el-avatar :size="60" :src="album.group.logo" :alt="album.group.name" shape="square" class="group-logo">
               <el-icon v-if="!album.group.logo">
                 <Headset />
@@ -130,7 +130,7 @@
             </el-avatar>
             <div class="group-info">
               <h4 class="group-name">{{ album.group.name }}</h4>
-              <p class="group-country">{{ album.group.country }}</p>
+              <p class="group-country">{{ album.group.country.join(', ') }}</p>
               <div class="group-genres">
                 <el-text v-for="genre in album.group.genres.slice(0, 2)" :key="genre._id" size="small" type="primary">
                   {{ genre.name }}
@@ -211,14 +211,14 @@
               <SvgIcon type="mdi" :path="mdiAlbum" :size="18" />
               Другие альбомы
             </h3>
-            <el-button type="text" size="small" @click="$router.push(`/groups/${album.group._id}`)">Все</el-button>
+            <el-button type="text" size="small" @click="$router.push(`/group/${album.group._id}`)">Все</el-button>
           </div>
           <div class="other-albums">
             <div
               v-for="otherAlbum in otherAlbums"
               :key="otherAlbum._id"
               class="other-album-item"
-              @click="$router.push(`/albums/${otherAlbum._id}`)"
+              @click="$router.push(`/album/${otherAlbum._id}`)"
             >
               <div class="album-cover">
                 <el-avatar :size="50" :src="otherAlbum.cover" :alt="otherAlbum.title" shape="square">
@@ -458,11 +458,11 @@ const saveLyrics = async (): Promise<void> => {
     await store.getGroupById()
   }
 }
-watch(route, () => {
-  store.getAlbumById()
+watch(route, async () => {
+  await store.getAlbumById()
 })
-onMounted(() => {
-  store.getAlbumById()
+onMounted(async () => {
+  await store.getAlbumById()
 })
 </script>
 

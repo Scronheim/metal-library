@@ -9,7 +9,8 @@ export const getDefaultAlbum = (): Album => {
     format: '',
     genres: [],
     group: {
-      genres: []
+      genres: [],
+      country: []
     },
     socialLinks: [],
     label: '',
@@ -28,7 +29,7 @@ export const getDefaultAlbum = (): Album => {
 export const getDefaultGroup = (): Group => {
   return {
     name: '',
-    country: '',
+    country: [],
     city: '',
     banner: '',
     logo: '',
@@ -56,8 +57,6 @@ export const getDefaultMember = (): Member => {
     birthName: '',
     birthPlace: '',
     country: '',
-    discography: [],
-    groups: [],
     instruments: [],
     name: '',
     photo: '',

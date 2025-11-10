@@ -66,7 +66,6 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Message, User, Lock } from '@element-plus/icons-vue'
-import * as VKID from '@vkid/sdk'
 
 import { useAuthStore } from '@/stores/auth'
 

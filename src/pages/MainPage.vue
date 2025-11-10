@@ -3,20 +3,20 @@
     <!-- Hero Section -->
     <section class="hero-section">
       <el-carousel height="500px" :interval="5000" indicator-position="outside" arrow="always">
-        <el-carousel-item v-for="(slide, index) in heroSlides" :key="index">
+        <el-carousel-item v-for="(news, index) in latestNews" :key="index">
           <div
             class="hero-slide"
             :style="{
-              backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${slide.image})`
+              backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${news.featuredImage})`
             }"
           >
             <div class="hero-content">
-              <el-tag v-if="slide.category" type="danger" size="large">
-                {{ slide.category }}
+              <el-tag v-if="news.category" type="danger" size="large">
+                {{ news.category }}
               </el-tag>
-              <h1 class="hero-title">{{ slide.title }}</h1>
-              <p class="hero-description">{{ slide.description }}</p>
-              <el-button type="danger" size="large" @click="$router.push(slide.link)">Узнать больше</el-button>
+              <h1 class="hero-title">{{ news.title }}</h1>
+              <p class="hero-description">{{ news.content }}</p>
+              <el-button type="danger" size="large" @click="$router.push(`/news/${news._id}`)">Узнать больше</el-button>
             </div>
           </div>
         </el-carousel-item>
@@ -102,7 +102,6 @@
               <i class="el-icon-star"></i>
               Новые группы
             </h3>
-            <el-button type="text" size="small" @click="$router.push('/groups')">Все</el-button>
           </div>
 
           <div class="groups-list">
@@ -110,7 +109,7 @@
               v-for="group in latestGroups"
               :key="group._id"
               class="group-item"
-              @click="$router.push(`/groups/${group._id}`)"
+              @click="$router.push(`/group/${group._id}`)"
             >
               <div class="group-logo">
                 <el-avatar :size="50" :src="group.logo" :alt="group.name" shape="square">
@@ -124,7 +123,7 @@
                     <el-icon>
                       <Location />
                     </el-icon>
-                    {{ group.country }}
+                    {{ group.country.join(', ') }}
                   </span>
                   <span class="group-year">
                     <el-icon>
@@ -163,7 +162,7 @@
               v-for="(album, index) in topAlbums"
               :key="album._id"
               class="album-item"
-              @click="$router.push(`/albums/${album._id}`)"
+              @click="$router.push(`/album/${album._id}`)"
             >
               <div class="album-rank">
                 <span class="rank-number">{{ index + 1 }}</span>
@@ -255,15 +254,15 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Calendar, Location } from '@element-plus/icons-vue'
 
 import { api } from '@/services/api'
 
-const router = useRouter()
+import type { Album, Genre, Group, News } from '@/types'
+import { textEllipsis } from '@/utils'
 
 // Hero slides data
 const heroSlides = ref([
@@ -291,16 +290,16 @@ const heroSlides = ref([
 ])
 
 // Latest news
-const latestNews = ref([])
+const latestNews = ref<News[]>([])
 
 // Latest groups
-const latestGroups = ref([])
+const latestGroups = ref<Group[]>([])
 
 // Top albums
-const topAlbums = ref([])
+const topAlbums = ref<Album[]>([])
 
 // Featured genres
-const featuredGenres = ref([])
+const featuredGenres = ref<Genre[]>([])
 
 // Statistics
 const stats = ref({
@@ -352,19 +351,19 @@ const fetchHomeData = async () => {
     }
 
     // Fetch latest groups
-    const groupsResponse = await api.get('/groups/latest?limit=5')
+    const groupsResponse = await api.get('/group/latest?limit=5')
     if (groupsResponse.data) {
       latestGroups.value = groupsResponse.data
     }
 
     // Fetch top albums
-    const albumsResponse = await api.get('/albums/top?limit=5')
+    const albumsResponse = await api.get('/album/top?limit=5')
     if (albumsResponse.data) {
       topAlbums.value = albumsResponse.data
     }
 
     // Fetch featured genres
-    const genresResponse = await api.get('/genres/popular?limit=6')
+    const genresResponse = await api.get('/genre/popular?limit=6')
     if (genresResponse.data) {
       featuredGenres.value = genresResponse.data
     }

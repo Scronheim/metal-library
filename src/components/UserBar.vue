@@ -13,7 +13,7 @@ const store = useAuthStore()
     </template>
     <div class="flex flex-col">
       <p class="font-bold">{{ store.user.username }}</p>
-      <el-button tag="router-link" to="/groups/add">Добавить группу</el-button>
+      <el-button tag="router-link" to="/group/add">Добавить группу</el-button>
     </div>
     <el-divider />
     <div class="flex flex-col">

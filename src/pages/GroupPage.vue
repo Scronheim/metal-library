@@ -24,7 +24,7 @@
                   <el-icon>
                     <Location />
                   </el-icon>
-                  <span>{{ group.country }}</span>
+                  <span>{{ group.country.join(', ') }}</span>
                   <span v-if="group.city">, {{ group.city }}</span>
                 </div>
                 <div class="meta-item">
@@ -112,7 +112,7 @@
                   :key="album._id"
                   class="album-card"
                   shadow="hover"
-                  @click="$router.push(`/albums/${album._id}`)"
+                  @click="$router.push(`/album/${album._id}`)"
                 >
                   <div class="album-cover">
                     <el-image :src="album.cover" :alt="album.title" fit="cover" class="cover-image" />
@@ -227,7 +227,7 @@
                     :key="similarGroup._id"
                     class="similar-group-card"
                     shadow="hover"
-                    @click="$router.push(`/groups/${similarGroup._id}`)"
+                    @click="$router.push(`/group/${similarGroup._id}`)"
                   >
                     <div class="similar-group-content">
                       <el-avatar
@@ -241,7 +241,7 @@
                       </el-avatar>
                       <div class="similar-group-info">
                         <h4 class="group-name">{{ similarGroup.name }}</h4>
-                        <p class="group-country">{{ similarGroup.country }}</p>
+                        <p class="group-country">{{ similarGroup.country.join(', ') }}</p>
                         <div class="group-genres">
                           <el-tag
                             v-for="genre in similarGroup.genres.slice(0, 2)"
@@ -272,7 +272,12 @@
               <h3>О группе</h3>
               <EditIconButton v-if="authStore.userIsAdmin" @click="showGroupBioDialog = true" />
             </div>
-            <div class="description-text" v-html="formatDescription(group.description)"></div>
+            <div class="description-text">
+              <el-text :line-clamp="lineClampedForGroupDescription" v-html="formatDescription(group.description)" />
+              <el-link @click="toggleGroupDescription">
+                {{ lineClampedForGroupDescription === 'none' ? 'Свернуть' : 'Развернуть' }}
+              </el-link>
+            </div>
 
             <!-- Themes -->
             <div class="themes-section" v-if="group.themes && group.themes.length">
@@ -364,7 +369,7 @@
               v-for="album in latestAlbums"
               :key="album._id"
               class="album-item"
-              @click="$router.push(`/albums/${album._id}`)"
+              @click="$router.push(`/album/${album._id}`)"
             >
               <div class="album-cover">
                 <el-avatar :size="50" :src="album.cover" :alt="album.title" shape="square">
@@ -376,6 +381,7 @@
                 <p class="album-year-type">
                   {{ new Date(album.releaseDate).getFullYear() }}
                 </p>
+                <p class="album-year-type">{{ store.albumTypesMap[album.type] }}</p>
                 <div class="album-stats">
                   <span class="stat">
                     <el-icon>
@@ -402,7 +408,14 @@
       <el-card header="Основная информация" class="mb-2">
         <div class="flex gap-2">
           <el-form-item label="Страна" prop="country">
-            <el-select v-model="group.country" placeholder="Выберите страну" filterable value-key="name">
+            <el-select
+              v-model="group.country"
+              placeholder="Выберите страну"
+              multiple
+              filterable
+              value-key="name"
+              style="width: 250px"
+            >
               <el-option
                 v-for="country in store.countries"
                 :key="country.alpha2"
@@ -550,7 +563,7 @@
     </template>
   </el-dialog>
 
-  <EditAlbumDialog v-model="showEditableAlbumDialog" mode="add" :group="group" @success="getGroupInfo" />
+  <EditAlbumDialog v-model="showEditableAlbumDialog" mode="add" :group="group" @success="getGroupAlbums" />
   <MemberFormDialog
     v-model="showMemberDialog"
     :mode="memberMode"
@@ -624,6 +637,7 @@ const groupInfoRules = ref<FormRules<Group>>({
 })
 const groupRef = ref()
 const editableMember = ref<Member>(getDefaultMember())
+const lineClampedForGroupDescription = ref<number | string>(5)
 // Computed
 const group = computed(() => store.currentGroup)
 const totalMembers = computed((): number => {
@@ -653,7 +667,12 @@ const getDiscographyPeriod = computed((): string => {
 })
 
 // Methods
-const getGroupInfo = async (): Promise<void> => {
+const toggleGroupDescription = () => {
+  lineClampedForGroupDescription.value === 'none'
+    ? (lineClampedForGroupDescription.value = 5)
+    : (lineClampedForGroupDescription.value = 'none')
+}
+const getGroupAlbums = async (): Promise<void> => {
   albums.value = await store.getGroupAlbums()
 }
 const removePastMember = async (index: number): Promise<void> => {
@@ -749,15 +768,19 @@ const addToFavorites = () => {
   ElMessage.success('Группа добавлена в избранное')
 }
 
-watch(route, () => {
-  store.getGroupById()
+const collectGroupInfo = async (): Promise<void> => {
+  await store.getGroupById()
+  await getGroupAlbums()
+  similarGroups.value = await store.getSimilarGroups()
+  relatedNews.value = await store.getGroupNews()
+}
+
+watch(route, async () => {
+  await collectGroupInfo()
 })
 
 onMounted(async () => {
-  await store.getGroupById()
-  await getGroupInfo()
-  similarGroups.value = await store.getSimilarGroups()
-  relatedNews.value = await store.getGroupNews()
+  await collectGroupInfo()
 })
 </script>
 

@@ -52,7 +52,7 @@
 
           <div class="form-row columns-2">
             <el-form-item label="Страна" prop="country" class="form-item">
-              <el-select v-model="form.country" placeholder="Выберите страну" filterable style="width: 100%">
+              <el-select v-model="form.country" placeholder="Выберите страну" filterable multiple style="width: 100%">
                 <el-option
                   v-for="country in store.countries"
                   :key="country.alpha2"
@@ -212,6 +212,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Picture } from '@element-plus/icons-vue'
 
@@ -219,15 +220,16 @@ import { useStore } from '@/stores/store'
 
 import { getDefaultGroup } from '@/consts'
 
-import type { Group } from '@/types'
 import SocialLinkForm from '@/components/forms/SocialLinkForm.vue'
 
+import type { Group } from '@/types'
+
+const router = useRouter()
 const store = useStore()
 
 // Refs
 const formRef = ref(null)
 const loading = ref(false)
-const newTheme = ref('')
 
 // Form data
 const form = ref<Group>(getDefaultGroup())
@@ -244,37 +246,25 @@ const rules = reactive({
 })
 
 // Methods
-const removeLogo = () => {
+const removeLogo = (): void => {
   form.value.logo = ''
 }
-
-const removeBanner = () => {
+const removeBanner = (): void => {
   form.value.banner = ''
 }
 
-const addTheme = () => {
-  if (newTheme.value && !form.value.themes.includes(newTheme.value)) {
-    form.value.themes.push(newTheme.value)
-    newTheme.value = ''
-  }
-}
-
-const removeTheme = index => {
-  form.value.themes.splice(index, 1)
-}
-
-const addSocialLink = () => {
+const addSocialLink = (): void => {
   form.value.socialLinks.push({
     platform: 'website',
     url: ''
   })
 }
 
-const removeSocialLink = index => {
+const removeSocialLink = (index: number): void => {
   form.value.socialLinks.splice(index, 1)
 }
 
-const submitForm = async () => {
+const submitForm = async (): Promise<void> => {
   if (!formRef.value) return
 
   try {
@@ -283,7 +273,8 @@ const submitForm = async () => {
 
     loading.value = true
 
-    await store.addGroup(form.value, true)
+    const group = await store.addGroup(form.value, true)
+    router.push(`/group/${group._id}`)
   } catch (error) {
     console.error('Error adding group:', error)
     ElMessage.error(error.message || 'Ошибка при добавлении группы')

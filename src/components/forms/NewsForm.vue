@@ -41,13 +41,13 @@ const props = defineProps({
           <div class="flex">
             <SvgIcon type="mdi" :path="mdiAccountGroup" :size="18" class="mr-2" />
             <template v-for="group in news.relatedGroups" :key="group._id">
-              <router-link class="link" :to="`/groups/${group._id}`">{{ group.name }}</router-link>
+              <router-link class="link" :to="`/group/${group._id}`">{{ group.name }}</router-link>
             </template>
           </div>
-          <div class="flex">
+          <div v-if="news.relatedAlbums.length" class="flex">
             <SvgIcon type="mdi" :path="mdiAlbum" :size="18" class="mr-2" />
             <template v-for="album in news.relatedAlbums" :key="album._id">
-              <router-link class="link" :to="`/albums/${album._id}`">{{ album.title }}</router-link>
+              <router-link class="link" :to="`/album/${album._id}`">{{ album.title }}</router-link>
             </template>
           </div>
         </div>

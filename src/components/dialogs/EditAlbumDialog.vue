@@ -94,7 +94,13 @@
 
       <!-- Tracklist -->
       <el-collapse>
-        <el-collapse-item title="Треклист" name="tracklist">
+        <el-collapse-item name="tracklist">
+          <template #title>
+            Треклист
+            <el-button @click.stop="parsePastedTracklist">
+              <SvgIcon type="mdi" :path="mdiClipboard" :size="18" />
+            </el-button>
+          </template>
           <el-button type="primary" :icon="Plus" @click="addTrack" size="small">Добавить трек</el-button>
           <div class="tracklist-editor">
             <TrackForm v-for="(track, index) in form.tracks" :key="index" :track="track" />
@@ -142,7 +148,8 @@ import { ref, reactive, watch, computed, nextTick, onMounted, type PropType } fr
 import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import SvgIcon from '@jamescoyle/vue-icon'
-import { mdiAlbum } from '@mdi/js'
+import { onKeyStroke } from '@vueuse/core'
+import { mdiAlbum, mdiClipboard } from '@mdi/js'
 import dayjs from 'dayjs'
 import durationPlugin from 'dayjs/plugin/duration'
 
@@ -178,11 +185,11 @@ const props = defineProps({
 
 // Emits
 const emit = defineEmits(['update:modelValue', 'success', 'close'])
-
 // Store
 const store = useStore()
 
 // Refs
+
 const formRef = ref(null)
 const loading = ref(false)
 const searchQuery = ref('')
@@ -209,7 +216,7 @@ const visible = computed({
 })
 
 // Methods
-const addSocialLink = () => {
+const addSocialLink = (): void => {
   form.socialLinks.push({
     platform: '',
     url: ''
@@ -225,30 +232,22 @@ const searchGroup = async (queryString: string, cb: any): Promise<void> => {
   cb(data.groups)
 }
 
-const removeCover = () => {
+const removeCover = (): void => {
   form.cover = ''
 }
 
-const addTrack = () => {
+const addTrack = (): void => {
+  const lastTrack = form.tracks.at(-1)
   form.tracks.push({
     number: form.tracks.length + 1,
     title: '',
     duration: '00:00:01',
     lyrics: '',
-    discNumber: 1
+    discNumber: lastTrack ? lastTrack.discNumber : 1,
+    isInstrumental: false
   })
 }
 
-const removeTrack = (index: number): void => {
-  if (form.tracks.length <= 1) {
-    ElMessage.warning('Альбом должен содержать хотя бы один трек')
-    return
-  }
-
-  form.tracks.splice(index, 1)
-  // Renumber tracks
-  form.tracks.forEach((track, idx) => (track.number = idx + 1))
-}
 const removeSocialLink = (index: number): void => {
   form.socialLinks.splice(index, 1)
 }
@@ -262,21 +261,19 @@ const albumTotalDuration = computed((): string => {
   return dayjs.duration(totalSeconds, 'seconds').format('HH:mm:ss')
 })
 
-const resetForm = () => {
+const resetForm = (): void => {
   Object.assign(form, getDefaultAlbum())
 
-  if (formRef.value) {
-    formRef.value.clearValidate()
-  }
+  if (formRef.value) formRef.value.clearValidate()
 }
 
-const loadAlbumData = async () => {
+const loadAlbumData = async (): Promise<void> => {
   searchQuery.value = props.group.name
   if (props.mode === 'edit' && props.album) Object.assign(form, props.album)
   else if (props.mode === 'add') form.group = props.group
 }
 
-const submitForm = async () => {
+const submitForm = async (): Promise<void> => {
   if (!formRef.value) return
 
   try {
@@ -318,6 +315,24 @@ watch(visible, newVal => {
 onMounted(() => {
   if (visible.value) loadAlbumData()
 })
+
+const parsePastedTracklist = async () => {
+  const clipboardContents = await navigator.clipboard.read()
+  const blob = await clipboardContents[0].getType('text/plain')
+  const blobText = await blob.text()
+  const temp = blobText.split('\n')
+  temp.map((i, index) => {
+    const temp1 = i.split('\t')
+    form.tracks.push({
+      number: index + 1,
+      title: temp1[0],
+      duration: `00:0${temp1[1].replace('\r', '')}`,
+      discNumber: 1,
+      isInstrumental: false,
+      lyrics: ''
+    })
+  })
+}
 </script>
 
 <style scoped>

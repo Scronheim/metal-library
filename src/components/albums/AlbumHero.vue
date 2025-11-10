@@ -102,7 +102,7 @@ const openAlbumInfoEditDialog = async (): Promise<void> => {
         </div>
 
         <h1 class="album-title">
-          <RouterLink :to="`/albums/${album._id}`">{{ album.title }}</RouterLink>
+          <RouterLink :to="`/album/${album._id}`">{{ album.title }}</RouterLink>
         </h1>
 
         <div class="album-artist">
@@ -111,7 +111,7 @@ const openAlbumInfoEditDialog = async (): Promise<void> => {
               <Headset />
             </el-icon>
           </el-avatar>
-          <span class="artist-name" @click="$router.push(`/groups/${album.group._id}`)">
+          <span class="artist-name" @click="$router.push(`/group/${album.group._id}`)">
             {{ album.group.name }}
           </span>
         </div>

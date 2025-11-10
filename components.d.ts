@@ -14,6 +14,7 @@ declare module 'vue' {
     DeleteIconButton: typeof import('./src/components/buttons/DeleteIconButton.vue')['default']
     EditAlbumDialog: typeof import('./src/components/dialogs/EditAlbumDialog.vue')['default']
     EditIconButton: typeof import('./src/components/buttons/EditIconButton.vue')['default']
+    ElAlert: typeof import('element-plus/es')['ElAlert']
     ElAutocomplete: typeof import('element-plus/es')['ElAutocomplete']
     ElAvatar: typeof import('element-plus/es')['ElAvatar']
     ElButton: typeof import('element-plus/es')['ElButton']

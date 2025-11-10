@@ -1,5 +1,5 @@
 import { ref, computed, markRaw } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { defineStore } from 'pinia'
 import { api } from '@/services/api'
 import { ElNotification } from 'element-plus'
@@ -13,6 +13,7 @@ import type { Group, Album, Genre, TrackInfo, Country, Member, Review, News } fr
 
 export const useStore = defineStore('store', () => {
   // Refs
+  const router = useRouter()
   const route = useRoute()
   const currentGroup = ref<Group>(getDefaultGroup())
   const currentAlbum = ref<Album>(getDefaultAlbum())
@@ -326,7 +327,7 @@ export const useStore = defineStore('store', () => {
     return await api.get(`/members/search/${searchQuery}`)
   }
   async function updateLyrics(album: Album, track: TrackInfo, showNotification: boolean = false): Promise<void> {
-    await api.patch(`/albums/${album._id}/tracks/${track.number}/lyrics`, { track })
+    await api.patch(`/album/${album._id}/tracks/${track.number}/lyrics`, { track })
     if (showNotification)
       ElNotification({
         type: 'success',
@@ -334,7 +335,7 @@ export const useStore = defineStore('store', () => {
       })
   }
   async function updateAlbum(album: Album, showNotification: boolean = false): Promise<void> {
-    await api.put(`/albums/${album._id}`, album)
+    await api.put(`/album/${album._id}`, album)
     if (showNotification)
       ElNotification({
         type: 'success',
@@ -343,7 +344,7 @@ export const useStore = defineStore('store', () => {
   }
 
   async function updateGroup(group: Group, showNotification: boolean = false): Promise<void> {
-    await api.put(`/groups/${group._id}`, group)
+    await api.put(`/group/${group._id}`, group)
     if (showNotification)
       ElNotification({
         type: 'success',
@@ -352,7 +353,7 @@ export const useStore = defineStore('store', () => {
   }
 
   async function addAlbum(album: Album, showNotification: boolean = false): Promise<void> {
-    await api.post('/albums', album)
+    await api.post('/album', album)
     if (showNotification)
       ElNotification({
         type: 'success',
@@ -360,13 +361,14 @@ export const useStore = defineStore('store', () => {
       })
   }
 
-  async function addGroup(group: Group, showNotification: boolean = false): Promise<void> {
-    await api.post('/groups', group)
+  async function addGroup(group: Group, showNotification: boolean = false): Promise<Group> {
+    const { data } = await api.post('/group', group)
     if (showNotification)
       ElNotification({
         type: 'success',
         message: 'Группа успешно добавлена'
       })
+    return data
   }
 
   async function addReview(
@@ -388,7 +390,7 @@ export const useStore = defineStore('store', () => {
       verifiedUser: null,
       views: 0
     }
-    await api.post(`/albums/${route.params.id}/reviews`, payload)
+    await api.post(`/album/${route.params.id}/reviews`, payload)
     if (showNotification)
       ElNotification({
         type: 'success',
@@ -406,38 +408,38 @@ export const useStore = defineStore('store', () => {
   }
 
   async function searchAlbum(searchQuery: string): Promise<{ data: { albums: Album[] } }> {
-    return await api.get(`/albums?search=${searchQuery}&limit=5`)
+    return await api.get(`/album?search=${searchQuery}&limit=5`)
   }
   async function searchGroup(searchQuery: string): Promise<{ data: { groups: Group[] } }> {
-    return await api.get(`/groups?search=${searchQuery}&limit=5`)
+    return await api.get(`/group?search=${searchQuery}&limit=5`)
   }
 
   async function getGroupById(): Promise<void> {
-    const { data } = await api.get(`/groups/${route.params.id}`)
+    const { data } = await api.get(`/group/${route.params.id}`)
     currentGroup.value = data
   }
   async function getGroupAlbums(): Promise<Album[]> {
-    const { data } = await api.get(`/groups/${route.params.id}/albums`)
+    const { data } = await api.get(`/group/${route.params.id}/albums`)
     return data
   }
   async function getSimilarGroups(): Promise<Group[]> {
-    const { data } = await api.get(`/groups/${route.params.id}/similar`)
+    const { data } = await api.get(`/group/${route.params.id}/similar`)
     return data
   }
   async function getGroupNews(): Promise<News[]> {
-    const { data } = await api.get(`/groups/${route.params.id}/news`)
+    const { data } = await api.get(`/group/${route.params.id}/news`)
     return data
   }
   async function getAlbumById(): Promise<void> {
-    const { data } = await api.get(`/albums/${route.params.id}`)
+    const { data } = await api.get(`/album/${route.params.id}`)
     currentAlbum.value = data
   }
   async function getAlbumReviews(): Promise<Review[]> {
-    const { data } = await api.get(`/albums/${route.params.id}/reviews`)
+    const { data } = await api.get(`/album/${route.params.id}/reviews`)
     return data
   }
   async function getGenres(): Promise<void> {
-    const { data } = await api.get('/genres')
+    const { data } = await api.get('/genre')
     availableGenres.value = data
   }
   async function getNews(): Promise<void> {
@@ -450,7 +452,7 @@ export const useStore = defineStore('store', () => {
   }
 
   async function toggleLike(album: Album): Promise<{ newAlbum: Album; message: string }> {
-    const { data } = await api.patch(`/albums/${album._id}/like`)
+    const { data } = await api.patch(`/album/${album._id}/like`)
 
     return {
       newAlbum: data.album,

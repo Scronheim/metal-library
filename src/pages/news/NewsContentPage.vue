@@ -10,7 +10,7 @@ import type { News } from '@/types'
 const store = useStore()
 
 // Refs
-const news = ref<News>({ author: {}, content: '' })
+const news = ref<News>({ author: {}, content: '', relatedAlbums: [], relatedGroups: [] })
 
 onMounted(async () => {
   news.value = await store.getNewsById()

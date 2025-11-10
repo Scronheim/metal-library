@@ -60,12 +60,14 @@ import { Search } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { onKeyStroke } from '@vueuse/core'
 
+import type { Album, Group } from '@/types'
+
 const router = useRouter()
 
 // Refs
 const searchQuery = ref('')
 const popoverVisible = ref(false)
-const quickResults = ref([])
+const quickResults = ref<Group[] | Album[]>([])
 const isLoading = ref(false)
 const searchInputRef = ref(null)
 const searchTimeout = ref(null)
@@ -115,8 +117,8 @@ const performQuickSearch = async () => {
 
     // Search groups and albums simultaneously
     const [groupsResponse, albumsResponse] = await Promise.all([
-      fetch(`/api/groups?search=${encodeURIComponent(query)}&limit=3`),
-      fetch(`/api/albums?search=${encodeURIComponent(query)}&limit=3`)
+      fetch(`/api/group?search=${encodeURIComponent(query)}&limit=3`),
+      fetch(`/api/album?search=${encodeURIComponent(query)}&limit=3`)
     ])
 
     const groupsData = groupsResponse.ok ? await groupsResponse.json() : { groups: [] }
@@ -154,9 +156,9 @@ const showAllResults = () => {
 const navigateToItem = item => {
   popoverVisible.value = false
   if (item.type === 'group') {
-    router.push(`/groups/${item._id}`)
+    router.push(`/group/${item._id}`)
   } else {
-    router.push(`/albums/${item._id}`)
+    router.push(`/album/${item._id}`)
   }
   searchQuery.value = ''
   quickResults.value = []

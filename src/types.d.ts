@@ -74,7 +74,7 @@ export interface Group {
   _id?: string
   name: string
   description: string
-  country: string
+  country: string[]
   city: string
   formedYear: number
   yearsActive: string
@@ -116,10 +116,10 @@ export interface SocialNetwork {
 }
 
 export interface Member {
-  _id: string
+  _id?: string
   name: string
   birthName: string // настоящее имя, если отличается
-  birthDate: Date
+  birthDate: string
   birthPlace: string
   country: string
   bio: string

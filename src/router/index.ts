@@ -9,7 +9,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/pages/MainPage.vue')
   },
   {
-    path: '/groups',
+    path: '/group',
     children: [
       {
         path: 'add',
@@ -25,7 +25,7 @@ const routes: RouteRecordRaw[] = [
   },
 
   {
-    path: '/albums',
+    path: '/album',
     children: [
       {
         name: 'albumReviews',
