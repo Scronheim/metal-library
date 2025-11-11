@@ -29,6 +29,7 @@ const handleSelectGroup = (group: Group): void => {
     :fetch-suggestions="searchGroup"
     clearable
     value-key="name"
+    placeholder="Введите название группы"
     @select="handleSelectGroup"
   />
 </template>

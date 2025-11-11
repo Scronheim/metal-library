@@ -8,14 +8,6 @@
       <!-- Left Column - Tracklist -->
       <el-col :xs="24" :lg="16" class="left-column">
         <!-- Album Description -->
-        <el-card class="description-card" v-if="album.description">
-          <template #header>
-            <h3>Об альбоме</h3>
-          </template>
-          <div class="description-content">
-            <p>{{ album.description }}</p>
-          </div>
-        </el-card>
         <el-card class="tracklist-card">
           <template #header>
             <div class="tracklist-header">
@@ -77,28 +69,78 @@
       <!-- Right Column - Sidebar -->
       <el-col :xs="24" :lg="8" class="right-column">
         <!-- embed players -->
-        <iframe
-          v-if="yandexMusicEmbedAlbumUrl"
-          frameborder="0"
-          sandbox="allow-same-origin allow-scripts"
-          allow="clipboard-write"
-          style="border: none; width: 100%; height: 352px"
-          :src="yandexMusicEmbedAlbumUrl"
-          class="mb-2"
-        />
-        <iframe
-          v-if="spotifyEmbedAlbumUrl"
-          data-testid="embed-iframe"
-          style="border-radius: 12px"
-          :src="spotifyEmbedAlbumUrl"
-          width="100%"
-          height="352"
-          frameBorder="0"
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          loading="lazy"
-          class="mb-2"
-        />
+        <section v-if="yandexMusicEmbedAlbumUrl || spotifyEmbedAlbumUrl" class="sidebar-section">
+          <div class="section-header">
+            <h3 class="section-title">
+              <SvgIcon type="mdi" :path="mdiPlay" :size="18" />
+              Онлайн прослушивание
+              <EditIconButton
+                v-if="authStore.userIsAdmin"
+                @click="isSocialLinkEdit = !isSocialLinkEdit"
+                :is-close-edit="isSocialLinkEdit"
+              />
+            </h3>
+          </div>
+          <div v-if="isSocialLinkEdit">
+            <SocialLinkForm v-for="link in album.socialLinks" :key="link.url" :link="link" />
+          </div>
+          <el-collapse v-else>
+            <el-collapse-item v-if="yandexMusicEmbedAlbumUrl" title="Yandex" name="yandex">
+              <iframe
+                frameborder="0"
+                sandbox="allow-same-origin allow-scripts"
+                allow="clipboard-write"
+                style="border: none; width: 100%; height: 352px"
+                :src="yandexMusicEmbedAlbumUrl"
+                class="mb-2"
+              />
+            </el-collapse-item>
+            <el-collapse-item v-if="spotifyEmbedAlbumUrl" title="Spotify" name="spotify">
+              <iframe
+                data-testid="embed-iframe"
+                style="border-radius: 12px"
+                :src="spotifyEmbedAlbumUrl"
+                width="100%"
+                height="352"
+                frameBorder="0"
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+              />
+            </el-collapse-item>
+          </el-collapse>
+        </section>
+
         <!-- Group Info -->
+        <section class="sidebar-section">
+          <div class="section-header">
+            <h3 class="section-title">
+              <el-icon>
+                <EditPen />
+              </el-icon>
+              Об альбоме
+              <EditIconButton
+                v-if="authStore.userIsAdmin"
+                @click="isDescriptionEdit = !isDescriptionEdit"
+                :is-close-edit="isDescriptionEdit"
+              />
+            </h3>
+          </div>
+          <div v-if="isDescriptionEdit">
+            <el-input
+              type="textarea"
+              :rows="20"
+              v-model="album.description"
+              placeholder="Введите информацию об альбоме"
+            />
+          </div>
+          <div v-else class="description-text">
+            <el-text :line-clamp="lineClampedForAlbumDescription" v-html="formatDescription(album.description)" />
+            <br />
+            <el-link v-if="album.description" @click="toggleAlbumDescription">
+              {{ lineClampedForAlbumDescription === 'none' ? 'Свернуть' : 'Развернуть' }}
+            </el-link>
+          </div>
+        </section>
         <section class="sidebar-section">
           <div class="section-header">
             <h3 class="section-title">
@@ -300,20 +342,24 @@ import { useRoute } from 'vue-router'
 import dayjs from 'dayjs'
 import durationPlugin from 'dayjs/plugin/duration'
 import { ElMessage } from 'element-plus'
-import { Headset, View, InfoFilled } from '@element-plus/icons-vue'
+import { Headset, View, InfoFilled, EditPen } from '@element-plus/icons-vue'
 import SvgIcon from '@jamescoyle/vue-icon'
-import { mdiAlbum } from '@mdi/js'
+import { mdiAlbum, mdiPlay } from '@mdi/js'
+import { debounce } from 'lodash-es'
 
 import { useStore } from '@/stores/store'
 import { useAuthStore } from '@/stores/auth'
+
+import { formatDescription } from '@/utils'
 
 import EditIconButton from '@/components/buttons/EditIconButton.vue'
 import AddIconButton from '@/components/buttons/AddIconButton.vue'
 import DeleteIconButton from '@/components/buttons/DeleteIconButton.vue'
 import TrackForm from '@/components/forms/TrackForm.vue'
+import AlbumHero from '@/components/albums/AlbumHero.vue'
 
 import type { Album, Group, News, TrackInfo } from '@/types'
-import AlbumHero from '@/components/albums/AlbumHero.vue'
+import SocialLinkForm from '@/components/forms/SocialLinkForm.vue'
 
 dayjs.extend(durationPlugin)
 
@@ -326,10 +372,13 @@ const relatedNews = ref<News[]>([])
 const expandedTracks = ref(new Set())
 const showLyricsEdit = ref(false)
 const editingTrack = ref<TrackInfo>({})
+const isSocialLinkEdit = ref(false)
+const isDescriptionEdit = ref(false)
 const isGroupEdit = ref(false)
 const isDetailsEdit = ref(false)
 const searchQuery = ref('')
 const foundedGroups = ref<Group[]>([])
+const lineClampedForAlbumDescription = ref<number | string>(5)
 
 // Computed
 const album = computed(() => store.currentAlbum)
@@ -374,13 +423,10 @@ const yandexMusicEmbedAlbumUrl = computed(() => {
 })
 
 // Methods
-const addComment = (quillContent: string, quillText: string, rating: number): void => {
-  store.currentAlbum.reviews.push({
-    content: quillContent,
-    text: quillText,
-    rating,
-    user: store.user.id
-  })
+const toggleAlbumDescription = () => {
+  lineClampedForAlbumDescription.value === 'none'
+    ? (lineClampedForAlbumDescription.value = 5)
+    : (lineClampedForAlbumDescription.value = 'none')
 }
 
 const removeTrack = (index: number): void => {
@@ -461,12 +507,25 @@ const saveLyrics = async (): Promise<void> => {
 watch(route, async () => {
   await store.getAlbumById()
 })
+watch(
+  album,
+  debounce(async (_: Album, oldValue: Album) => {
+    if (!oldValue._id) return
+    await store.updateAlbum(album.value)
+  }, 500),
+  { deep: true }
+)
 onMounted(async () => {
   await store.getAlbumById()
 })
 </script>
 
-<style scoped>
+<style scoped lang="css">
+.description-text {
+  color: #e0e0e0;
+  line-height: 1.6;
+  font-size: 1rem;
+}
 .album-page {
   min-height: 100vh;
   background: #121212;
@@ -643,8 +702,8 @@ onMounted(async () => {
 .sidebar-section {
   background: #1e1e1e;
   border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 24px;
+  padding: 15px;
+  margin-bottom: 12px;
   border: 1px solid #333;
 }
 

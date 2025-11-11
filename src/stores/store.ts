@@ -1,5 +1,5 @@
 import { ref, computed, markRaw } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { defineStore } from 'pinia'
 import { api } from '@/services/api'
 import { ElNotification } from 'element-plus'
@@ -13,7 +13,6 @@ import type { Group, Album, Genre, TrackInfo, Country, Member, Review, News } fr
 
 export const useStore = defineStore('store', () => {
   // Refs
-  const router = useRouter()
   const route = useRoute()
   const currentGroup = ref<Group>(getDefaultGroup())
   const currentAlbum = ref<Album>(getDefaultAlbum())
@@ -300,7 +299,14 @@ export const useStore = defineStore('store', () => {
 
   // Computed
   const availableYears = computed(() => Array.from({ length: 51 }, (_, i) => new Date().getFullYear() - i))
-
+  const groupInFavorites = computed((): boolean => {
+    const authStore = useAuthStore()
+    return !!authStore.user.profile.favoriteGroups.find(g => g._id === currentGroup.value._id)
+  })
+  const albumInFavorites = computed((): boolean => {
+    const authStore = useAuthStore()
+    return !!authStore.user.profile.favoriteAlbums.find(a => a._id === currentAlbum.value._id)
+  })
   // Methods
   async function updateMember(member: Member, showNotification: boolean = false): Promise<void> {
     await api.put(`/members/${member._id}`, member)
@@ -416,7 +422,7 @@ export const useStore = defineStore('store', () => {
 
   async function getGroupById(): Promise<void> {
     const { data } = await api.get(`/group/${route.params.id}`)
-    currentGroup.value = data
+    currentGroup.value = { ...currentGroup.value, ...data }
   }
   async function getGroupAlbums(): Promise<Album[]> {
     const { data } = await api.get(`/group/${route.params.id}/albums`)
@@ -475,6 +481,8 @@ export const useStore = defineStore('store', () => {
     availableYears,
     instruments,
     news,
+    groupInFavorites,
+    albumInFavorites,
     searchAlbum,
     searchGroup,
     updateAlbum,

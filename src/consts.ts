@@ -32,6 +32,10 @@ export const getDefaultGroup = (): Group => {
     country: [],
     city: '',
     banner: '',
+    bannerBackgroundOffset: {
+      x: 0,
+      y: 0
+    },
     logo: '',
     description: '',
     genres: [],
@@ -67,7 +71,7 @@ export const getDefaultMember = (): Member => {
 
 export const getDefaultUser = (): User => {
   return {
-    id: '',
+    _id: '',
     email: '',
     isVerified: false,
     lastLogin: '',

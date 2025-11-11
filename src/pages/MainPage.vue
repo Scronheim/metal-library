@@ -11,9 +11,6 @@
             }"
           >
             <div class="hero-content">
-              <el-tag v-if="news.category" type="danger" size="large">
-                {{ news.category }}
-              </el-tag>
               <h1 class="hero-title">{{ news.title }}</h1>
               <p class="hero-description">{{ news.content }}</p>
               <el-button type="danger" size="large" @click="$router.push(`/news/${news._id}`)">Узнать больше</el-button>

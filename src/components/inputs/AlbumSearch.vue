@@ -29,6 +29,7 @@ const handleSelectAlbum = (album: Album): void => {
     :fetch-suggestions="searchAlbum"
     clearable
     value-key="title"
+    placeholder="Введите название альбома"
     @select="handleSelectAlbum"
   >
     <template #default="{ item }">{{ item.title }} ({{ item.group.name }})</template>

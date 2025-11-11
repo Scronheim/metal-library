@@ -5,7 +5,8 @@
       <div
         class="hero-banner"
         :style="{
-          backgroundImage: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(${group.banner})`
+          backgroundImage: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(${group.banner})`,
+          backgroundPosition: `${group.bannerBackgroundOffset.x}px ${group.bannerBackgroundOffset.y}px`
         }"
       >
         <div class="hero-content">
@@ -47,8 +48,13 @@
                   {{ group.stats.likes.length }}
                 </el-button>
                 <el-button type="primary" :icon="Share" @click="shareGroup">Поделиться</el-button>
-                <el-button v-if="authStore.userIsAuth" type="success" :icon="Plus" @click="addToFavorites">
-                  В избранное
+                <el-button
+                  v-if="authStore.userIsAuth"
+                  :type="store.groupInFavorites ? 'danger' : 'success'"
+                  :icon="store.groupInFavorites ? Close : Plus"
+                  @click="toggleFavorites"
+                >
+                  {{ store.groupInFavorites ? 'Убрать из любимых' : 'В любимые' }}
                 </el-button>
                 <el-button v-if="authStore.userIsAdmin" type="info" :icon="Edit" @click="openGroupInfoDialog">
                   Редактировать
@@ -274,7 +280,8 @@
             </div>
             <div class="description-text">
               <el-text :line-clamp="lineClampedForGroupDescription" v-html="formatDescription(group.description)" />
-              <el-link @click="toggleGroupDescription">
+              <br />
+              <el-link v-if="group.description" @click="toggleGroupDescription">
                 {{ lineClampedForGroupDescription === 'none' ? 'Свернуть' : 'Развернуть' }}
               </el-link>
             </div>
@@ -505,6 +512,22 @@
             </el-image>
           </el-form-item>
         </div>
+        <div class="flex gap-2">
+          <el-form-item label="Смещение по горизонтали" prop="bannerBackgroundOffset.x">
+            <el-input-number :step="1" v-model.number="group.bannerBackgroundOffset.x">
+              <template #suffix>
+                <span>px</span>
+              </template>
+            </el-input-number>
+          </el-form-item>
+          <el-form-item label="Смещение по вертикали" prop="bannerBackgroundOffset.y">
+            <el-input-number :step="1" v-model.number="group.bannerBackgroundOffset.y">
+              <template #suffix>
+                <span>px</span>
+              </template>
+            </el-input-number>
+          </el-form-item>
+        </div>
       </el-card>
       <el-card>
         <template #header>
@@ -588,15 +611,18 @@ import {
   Location,
   Clock,
   Edit,
-  Search
+  Search,
+  Close
 } from '@element-plus/icons-vue'
 import SvgIcon from '@jamescoyle/vue-icon'
 import { mdiAlbum } from '@mdi/js'
+import { debounce } from 'lodash-es'
 
 import { useStore } from '@/stores/store'
 import { useAuthStore } from '@/stores/auth'
 
 import { getDefaultMember } from '@/consts'
+import { formatDescription } from '@/utils'
 
 import EditIconButton from '@/components/buttons/EditIconButton.vue'
 import AddIconButton from '@/components/buttons/AddIconButton.vue'
@@ -605,9 +631,9 @@ import EditAlbumDialog from '@/components/dialogs/EditAlbumDialog.vue'
 import MemberFormDialog from '@/components/dialogs/MemberFormDialog.vue'
 import NewMemberAddForm from '@/components/forms/NewMemberAddForm.vue'
 import MemberCard from '@/components/forms/MemberCard.vue'
+import NewsForm from '@/components/forms/NewsForm.vue'
 
 import type { Album, Group, Member, News } from '@/types'
-import NewsForm from '@/components/forms/NewsForm.vue'
 
 const route = useRoute()
 const store = useStore()
@@ -740,11 +766,6 @@ const saveGroupInfo = async (): Promise<void> => {
   showGroupInfoDialog.value = false
 }
 
-const formatDescription = (text: string): string => {
-  if (!text) return ''
-  return text.replace(/\n/g, '<br>')
-}
-
 const toggleLike = async () => {
   try {
     // API call to like/unlike
@@ -763,9 +784,16 @@ const shareGroup = async () => {
   }
 }
 
-const addToFavorites = () => {
-  // API call to add to favorites
-  ElMessage.success('Группа добавлена в избранное')
+const toggleFavorites = async (): Promise<void> => {
+  if (store.groupInFavorites) {
+    const index = authStore.user.profile.favoriteGroups.findIndex(g => g._id === group.value._id)
+    authStore.user.profile.favoriteGroups.splice(index, 1)
+    ElMessage.success('Группа убрана из любимых')
+  } else {
+    authStore.user.profile.favoriteGroups.push(group.value)
+    ElMessage.success('Группа добавлена в любимые')
+  }
+  await authStore.updateUser()
 }
 
 const collectGroupInfo = async (): Promise<void> => {
@@ -778,7 +806,14 @@ const collectGroupInfo = async (): Promise<void> => {
 watch(route, async () => {
   await collectGroupInfo()
 })
-
+watch(
+  group,
+  debounce(async (_: Group, oldValue: Group) => {
+    if (!oldValue._id) return
+    await store.updateGroup(group.value)
+  }, 500),
+  { deep: true }
+)
 onMounted(async () => {
   await collectGroupInfo()
 })
@@ -799,7 +834,6 @@ onMounted(async () => {
 .hero-banner {
   height: 400px;
   background-size: cover;
-  background-position: center;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1041,7 +1075,7 @@ onMounted(async () => {
   line-height: 1.3;
   overflow: hidden;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 
@@ -1223,7 +1257,7 @@ onMounted(async () => {
 .sidebar-section {
   background: #1e1e1e;
   border-radius: 8px;
-  padding: 20px;
+  padding: 15px;
   margin-bottom: 12px;
   border: 1px solid #333;
 }
@@ -1409,7 +1443,7 @@ onMounted(async () => {
   color: #f5f5f5;
   line-height: 1.3;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

@@ -83,6 +83,10 @@ export interface Group {
   themes: string[]
   logo: string
   banner: string
+  bannerBackgroundOffset: {
+    x: number
+    y: number
+  }
   socialLinks: SocialNetwork[]
   currentMembers: {
     member: Member

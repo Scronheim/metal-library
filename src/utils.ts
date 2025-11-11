@@ -16,3 +16,8 @@ export const textEllipsis = (str: string, maxLength: number = 100, { side = 'end
   }
   return str
 }
+
+export const formatDescription = (text: string): string => {
+  if (!text) return ''
+  return text.replace(/\n/g, '<br>')
+}

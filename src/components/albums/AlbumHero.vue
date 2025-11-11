@@ -3,7 +3,8 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { mdiCalendar, mdiAlbum, mdiMusic } from '@mdi/js'
 import SvgIcon from '@jamescoyle/vue-icon'
-import { Headset, Timer, Star, StarFilled, Share, View, Edit } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
+import { Headset, Timer, Star, StarFilled, Share, View, Edit, Plus, Close } from '@element-plus/icons-vue'
 import dayjs from 'dayjs'
 import durationPlugin from 'dayjs/plugin/duration'
 
@@ -43,6 +44,17 @@ const albumTotalDuration = computed((): string => {
 const showAlbumInfoEdit = ref(false)
 
 // Methods
+const toggleFavorites = async (): Promise<void> => {
+  if (store.albumInFavorites) {
+    const index = authStore.user.profile.favoriteAlbums.findIndex(a => a._id === album.value._id)
+    authStore.user.profile.favoriteAlbums.splice(index, 1)
+    ElMessage.success('Альбом убран из любимых')
+  } else {
+    authStore.user.profile.favoriteAlbums.push(album.value)
+    ElMessage.success('Альбом добавлен в любимые')
+  }
+  await authStore.updateUser()
+}
 const goToAlbumReviewPage = () => {
   router.push({ name: 'albumReviews' })
 }
@@ -153,6 +165,14 @@ const openAlbumInfoEditDialog = async (): Promise<void> => {
         <div class="album-actions">
           <el-button type="danger" :icon="userLikedAlbum ? StarFilled : Star" @click="toggleLike">
             {{ album.stats.likes.length }}
+          </el-button>
+          <el-button
+            v-if="authStore.userIsAuth"
+            :type="store.albumInFavorites ? 'danger' : 'success'"
+            :icon="store.albumInFavorites ? Close : Plus"
+            @click="toggleFavorites"
+          >
+            {{ store.albumInFavorites ? 'Убрать из любимых' : 'В любимые' }}
           </el-button>
           <el-button type="primary" :icon="Share" @click="shareAlbum">Поделиться</el-button>
           <el-button v-if="isAuthenticated" type="warning" :icon="View" @click="goToAlbumReviewPage">Обзоры</el-button>

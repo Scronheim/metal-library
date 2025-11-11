@@ -323,14 +323,27 @@ const parsePastedTracklist = async () => {
   const temp = blobText.split('\n')
   temp.map((i, index) => {
     const temp1 = i.split('\t')
-    form.tracks.push({
-      number: index + 1,
-      title: temp1[0],
-      duration: `00:0${temp1[1].replace('\r', '')}`,
-      discNumber: 1,
-      isInstrumental: false,
-      lyrics: ''
-    })
+    console.log(temp1)
+
+    if (temp1.length === 4) {
+      form.tracks.push({
+        number: index + 1,
+        title: temp1[2],
+        duration: `00:0${temp1[3].replace('\r', '')}`,
+        discNumber: 1,
+        isInstrumental: false,
+        lyrics: ''
+      })
+    } else {
+      form.tracks.push({
+        number: index + 1,
+        title: temp1[0],
+        duration: `00:0${temp1[1].replace('\r', '')}`,
+        discNumber: 1,
+        isInstrumental: false,
+        lyrics: ''
+      })
+    }
   })
 }
 </script>

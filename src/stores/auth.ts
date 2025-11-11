@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { ElNotification } from 'element-plus'
+
 import { api } from '@/services/api'
 
 import { getDefaultUser } from '@/consts'
@@ -14,6 +16,24 @@ export const useAuthStore = defineStore('auth', () => {
   const userIsAuth = computed(() => !!token.value)
   const userIsAdmin = computed(() => user.value.role === 'admin')
 
+  const updateUser = async (showNotification: boolean = false) => {
+    try {
+      isLoading.value = true
+      await api.put('/auth/me', user.value)
+      if (showNotification)
+        ElNotification({
+          type: 'success',
+          message: 'Пользователь сохранён'
+        })
+    } catch (error) {
+      ElNotification({
+        type: 'error',
+        message: error.response?.data?.messag
+      })
+    } finally {
+      isLoading.value = false
+    }
+  }
   const login = async credentials => {
     try {
       isLoading.value = true
@@ -156,6 +176,7 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading,
     userIsAuth,
     userIsAdmin,
+    updateUser,
     login,
     register,
     logout,
