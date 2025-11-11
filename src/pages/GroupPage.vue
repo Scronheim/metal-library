@@ -112,48 +112,8 @@
               </div>
 
               <!-- Albums Grid -->
-              <div class="albums-grid" v-if="sortedAlbums.length">
-                <el-card
-                  v-for="album in sortedAlbums"
-                  :key="album._id"
-                  class="album-card"
-                  shadow="hover"
-                  @click="$router.push(`/album/${album._id}`)"
-                >
-                  <div class="album-cover">
-                    <el-image :src="album.cover" :alt="album.title" fit="cover" class="cover-image" />
-                    <el-tag v-if="album.type" :type="store.albumTypeColorMap[album.type]" class="album-type-tag">
-                      {{ store.albumTypesMap[album.type] }}
-                    </el-tag>
-                  </div>
-                  <div class="album-info">
-                    <h4 class="album-title">{{ album.title }}</h4>
-                    <p class="album-year">{{ new Date(album.releaseDate).getFullYear() }}</p>
-                    <p class="album-label" v-if="album.label">{{ album.label }}</p>
-                    <div class="album-meta">
-                      <span class="tracks-count" v-if="album.tracks">
-                        <el-icon>
-                          <Headset />
-                        </el-icon>
-                        {{ album.tracks.length }} треков
-                      </span>
-                    </div>
-                    <div class="album-stats">
-                      <span class="stat">
-                        <el-icon>
-                          <View />
-                        </el-icon>
-                        {{ album.stats.views }}
-                      </span>
-                      <span class="stat">
-                        <el-icon>
-                          <Star />
-                        </el-icon>
-                        {{ album.stats.likes.length }}
-                      </span>
-                    </div>
-                  </div>
-                </el-card>
+              <div class="grid grid-cols-3 gap-2" v-if="sortedAlbums.length">
+                <AlbumCard v-for="album in sortedAlbums" :key="album._id" :album="album" />
               </div>
 
               <el-empty v-else description="Альбомы не добавлены" class="empty-albums" />
@@ -388,15 +348,7 @@
                 <p class="album-year-type">
                   {{ new Date(album.releaseDate).getFullYear() }}
                 </p>
-                <p class="album-year-type">{{ store.albumTypesMap[album.type] }}</p>
-                <div class="album-stats">
-                  <span class="stat">
-                    <el-icon>
-                      <View />
-                    </el-icon>
-                    {{ album.stats.views }}
-                  </span>
-                </div>
+                <el-tag :type="store.albumTypeColorMap[album.type]">{{ store.albumTypesMap[album.type] }}</el-tag>
               </div>
             </div>
           </div>
@@ -632,6 +584,7 @@ import MemberFormDialog from '@/components/dialogs/MemberFormDialog.vue'
 import NewMemberAddForm from '@/components/forms/NewMemberAddForm.vue'
 import MemberCard from '@/components/forms/MemberCard.vue'
 import NewsForm from '@/components/forms/NewsForm.vue'
+import AlbumCard from '@/components/albums/AlbumCard.vue'
 
 import type { Album, Group, Member, News } from '@/types'
 
@@ -1019,7 +972,7 @@ onMounted(async () => {
 .albums-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
+  gap: 10px;
 }
 
 .album-card {
@@ -1063,8 +1016,10 @@ onMounted(async () => {
 }
 
 .album-info {
-  flex: 1;
-  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-items: start;
+  align-items: center;
 }
 
 .album-title {
@@ -1075,6 +1030,7 @@ onMounted(async () => {
   line-height: 1.3;
   overflow: hidden;
   display: -webkit-box;
+  text-align: center;
   line-clamp: 2;
   -webkit-box-orient: vertical;
 }
@@ -1224,7 +1180,6 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 16px;
 }
 
 .similar-group-info {
@@ -1342,10 +1297,11 @@ onMounted(async () => {
 
 .album-item {
   display: flex;
+  flex-direction: column;
   align-items: center;
   border-radius: 6px;
   cursor: pointer;
-  padding: 0 10px;
+  padding: 10px 0px;
   transition: background-color 0.3s ease;
 }
 

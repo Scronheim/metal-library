@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { HomeFilled } from '@element-plus/icons-vue'
 import ru from 'element-plus/es/locale/lang/ru'
 
 import { useAuthStore } from './stores/auth'
@@ -18,7 +17,7 @@ onMounted(async () => {
 <template>
   <el-config-provider :locale="ru">
     <div class="flex items-center justify-between p-2 font-bold bg-gray-600">
-      <el-button tag="router-link" to="/" type="info" :icon="HomeFilled" />
+      <el-link href="/">Metal-Archives.ru</el-link>
       <div class="flex gap-2">
         <SearchBar />
         <UserBar />

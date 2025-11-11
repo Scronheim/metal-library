@@ -532,8 +532,6 @@ onMounted(async () => {
   color: #f5f5f5;
 }
 
-/* Hero Section */
-
 /* Main Content */
 .album-main-content {
   max-width: 1200px;

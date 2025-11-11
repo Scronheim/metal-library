@@ -9,6 +9,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AddIconButton: typeof import('./src/components/buttons/AddIconButton.vue')['default']
+    AlbumCard: typeof import('./src/components/albums/AlbumCard.vue')['default']
     AlbumHero: typeof import('./src/components/albums/AlbumHero.vue')['default']
     AlbumSearch: typeof import('./src/components/inputs/AlbumSearch.vue')['default']
     DeleteIconButton: typeof import('./src/components/buttons/DeleteIconButton.vue')['default']
