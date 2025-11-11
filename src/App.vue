@@ -17,7 +17,10 @@ onMounted(async () => {
 <template>
   <el-config-provider :locale="ru">
     <div class="flex items-center justify-between p-2 font-bold bg-gray-600">
-      <el-link href="/">Metal-Archives.ru</el-link>
+      <div class="flex items-center gap-2">
+        <el-image style="width: 30px; height: 30px" src="/logo.png" />
+        <el-link href="/">Metal-Archives.ru</el-link>
+      </div>
       <div class="flex gap-2">
         <SearchBar />
         <UserBar />

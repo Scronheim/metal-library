@@ -858,7 +858,6 @@ onMounted(async () => {
 
 .group-actions {
   display: flex;
-  gap: 12px;
   flex-wrap: wrap;
 }
 
