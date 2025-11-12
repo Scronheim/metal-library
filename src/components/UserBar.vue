@@ -14,9 +14,6 @@ const authStore = useAuthStore()
     <div class="flex flex-col gap-2">
       <p class="font-bold">{{ authStore.user.username }}</p>
       <el-button tag="router-link" to="/profile">Профиль</el-button>
-      <el-button v-if="authStore.userIsAdmin" tag="router-link" to="/group/add" style="width: 100%">
-        Добавить группу
-      </el-button>
     </div>
     <el-divider />
     <div class="flex flex-col">

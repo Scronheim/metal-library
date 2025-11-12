@@ -373,7 +373,7 @@
               multiple
               filterable
               value-key="name"
-              style="width: 250px"
+              style="width: 230px"
             >
               <el-option
                 v-for="country in store.countries"
@@ -408,7 +408,7 @@
               multiple
               collapse-tags
               collapse-tags-tooltip
-              :max-collapse-tags="2"
+              :max-collapse-tags="3"
               value-key="name"
             >
               <el-option v-for="genre in store.availableGenres" :key="genre._id" :label="genre.name" :value="genre" />
@@ -759,14 +759,14 @@ const collectGroupInfo = async (): Promise<void> => {
 watch(route, async () => {
   await collectGroupInfo()
 })
-watch(
-  group,
-  debounce(async (_: Group, oldValue: Group) => {
-    if (!oldValue._id) return
-    await store.updateGroup(group.value)
-  }, 500),
-  { deep: true }
-)
+// watch(
+//   group,
+//   debounce(async (_: Group, oldValue: Group) => {
+//     if (!oldValue._id) return
+//     await store.updateGroup(group.value)
+//   }, 500),
+//   { deep: true }
+// )
 onMounted(async () => {
   await collectGroupInfo()
 })

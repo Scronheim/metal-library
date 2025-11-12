@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { mdiCalendar, mdiAlbum, mdiMusic } from '@mdi/js'
+import { mdiCalendar, mdiMusic } from '@mdi/js'
 import SvgIcon from '@jamescoyle/vue-icon'
 import { ElMessage } from 'element-plus'
-import { Headset, Timer, Star, StarFilled, Share, View, Edit, Plus, Close } from '@element-plus/icons-vue'
+import { Headset, Timer, Star, StarFilled, Share, View, Edit, Plus, Close, Picture } from '@element-plus/icons-vue'
 import dayjs from 'dayjs'
 import durationPlugin from 'dayjs/plugin/duration'
 
@@ -96,11 +96,11 @@ const openAlbumInfoEditDialog = async (): Promise<void> => {
 <template>
   <section class="album-hero">
     <div class="hero-container">
-      <div class="album-cover-section">
-        <el-image :src="store.currentAlbum.cover" :alt="store.currentAlbum.title" fit="cover" class="album-cover">
+      <div class="album-cover">
+        <el-image :src="store.currentAlbum.cover" :alt="store.currentAlbum.title" fit="cover" class="cover-image">
           <template #error>
-            <div class="cover-placeholder">
-              <SvgIcon type="mdi" :path="mdiAlbum" :size="18" />
+            <div class="image-error">
+              <el-icon><Picture /></el-icon>
             </div>
           </template>
         </el-image>
@@ -213,6 +213,18 @@ const openAlbumInfoEditDialog = async (): Promise<void> => {
   padding: 20px 0;
   margin-bottom: 20px;
 }
+.cover-image {
+  width: 350px;
+}
+.image-error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 30px;
+  width: 300px;
+  height: 300px;
+  background: #6c6e72;
+}
 
 .hero-container {
   max-width: 1200px;
@@ -226,27 +238,10 @@ const openAlbumInfoEditDialog = async (): Promise<void> => {
 .album-cover {
   position: relative;
   overflow: hidden;
-  max-width: 300px;
 }
 
 .album-cover-section {
   flex-shrink: 1;
-}
-
-.cover-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  background: #252525;
-  color: #666;
-  font-size: 80px;
-  border-radius: 12px;
-}
-
-.album-info-section {
-  flex: 1;
 }
 
 .album-type-tag {

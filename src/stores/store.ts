@@ -1,5 +1,5 @@
 import { ref, computed, markRaw } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { defineStore } from 'pinia'
 import { api } from '@/services/api'
 import { ElNotification } from 'element-plus'
@@ -13,6 +13,7 @@ import type { Group, Album, Genre, TrackInfo, Country, Member, Review, News } fr
 
 export const useStore = defineStore('store', () => {
   // Refs
+  const router = useRouter()
   const route = useRoute()
   const currentGroup = ref<Group>(getDefaultGroup())
   const currentAlbum = ref<Album>(getDefaultAlbum())
@@ -38,19 +39,19 @@ export const useStore = defineStore('store', () => {
     single: 'success',
     demo: 'info',
     live: 'primary',
-    compilation: '',
+    compilation: 'primary',
     split: 'warning'
   }
   const socialLinkColorMap = {
     website: 'primary',
     youtube: 'danger',
-    bandcamp: 'success',
+    bandcamp: 'info',
     spotify: 'success',
     vk: 'primary',
     yandex: 'warning',
     facebook: 'info',
     instagram: 'warning',
-    twitter: 'info'
+    twitter: 'primary'
   }
   const socialLinkIconsMap = markRaw({
     website: Link,
@@ -308,6 +309,10 @@ export const useStore = defineStore('store', () => {
     return !!authStore.user.profile.favoriteAlbums.find(a => a._id === currentAlbum.value._id)
   })
   // Methods
+  async function getRandomGroup(): Promise<void> {
+    const { data } = await api.get('/group/random')
+    router.push(`/group/${data._id}`)
+  }
   async function updateMember(member: Member, showNotification: boolean = false): Promise<void> {
     await api.put(`/members/${member._id}`, member)
     if (showNotification)
@@ -504,6 +509,7 @@ export const useStore = defineStore('store', () => {
     getSimilarGroups,
     getGroupNews,
     getAlbumReviews,
-    getNewsById
+    getNewsById,
+    getRandomGroup
   }
 })

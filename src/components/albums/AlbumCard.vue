@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { type PropType } from 'vue'
-import { Star, Headset, View } from '@element-plus/icons-vue'
+import { Star, Headset, View, Picture } from '@element-plus/icons-vue'
 
 import { useStore } from '@/stores/store'
 
@@ -19,7 +19,13 @@ const store = useStore()
 <template>
   <el-card class="album-card" shadow="hover" @click="$router.push(`/album/${props.album._id}`)">
     <div class="album-cover">
-      <el-image :src="props.album.cover" :alt="props.album.title" fit="cover" class="cover-image" />
+      <el-image :src="props.album.cover" :alt="props.album.title" fit="cover" class="cover-image">
+        <template #error>
+          <div class="image-error">
+            <el-icon><Picture /></el-icon>
+          </div>
+        </template>
+      </el-image>
       <el-tag v-if="props.album.type" :type="store.albumTypeColorMap[props.album.type]" class="album-type-tag">
         {{ store.albumTypesMap[props.album.type] }}
       </el-tag>
@@ -55,6 +61,18 @@ const store = useStore()
 </template>
 
 <style lang="css" scoped>
+.cover-image {
+  width: 100%;
+  height: 100%;
+}
+.image-error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 30px;
+  height: 200px;
+  background: #6c6e72;
+}
 :deep(.el-card__body) {
   padding: 0;
 }

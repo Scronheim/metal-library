@@ -21,7 +21,7 @@
           <div class="results-section">
             <div v-for="item in quickResults" :key="item._id" class="result-item" @click="navigateToItem(item)">
               <div class="item-avatar">
-                <el-avatar :size="32" :src="getItemImage(item)" :shape="item.type === 'group' ? 'square' : 'square'">
+                <el-avatar :size="32" :src="getItemImage(item)">
                   <i :class="getItemIcon(item)"></i>
                 </el-avatar>
               </div>
@@ -30,8 +30,8 @@
                 <div class="item-subtitle">{{ getItemSubtitle(item) }}</div>
               </div>
               <div class="item-type">
-                <el-tag size="small" :type="item.type === 'group' ? 'danger' : 'primary'">
-                  {{ item.type === 'group' ? 'Группа' : 'Альбом' }}
+                <el-tag size="small" :type="item.status ? 'danger' : 'primary'">
+                  {{ item.status ? 'Группа' : 'Альбом' }}
                 </el-tag>
               </div>
             </div>
@@ -40,7 +40,9 @@
 
         <!-- Empty State -->
         <div class="empty-state" v-else-if="searchQuery && !isLoading">
-          <i class="el-icon-search"></i>
+          <el-icon>
+            <Search />
+          </el-icon>
           <p>Ничего не найдено</p>
         </div>
 
@@ -56,7 +58,7 @@
 <script setup lang="ts">
 import { ref, watch, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Search } from '@element-plus/icons-vue'
+import { Search, Headset } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { onKeyStroke } from '@vueuse/core'
 
@@ -78,7 +80,7 @@ const getItemImage = item => {
 }
 
 const getItemIcon = item => {
-  return item.type === 'group' ? 'el-icon-headset' : 'el-icon-disc'
+  return item.type === 'group' ? Headset : 'el-icon-disc'
 }
 
 const getItemTitle = item => {
@@ -179,7 +181,7 @@ watch(popoverVisible, newVal => {
 })
 
 onMounted(() => {
-  onKeyStroke('f', (e: KeyboardEvent) => {
+  onKeyStroke(['f', 'а'], (e: KeyboardEvent) => {
     if (e.ctrlKey) {
       e.preventDefault()
       popoverVisible.value = true

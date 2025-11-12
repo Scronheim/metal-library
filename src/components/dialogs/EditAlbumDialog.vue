@@ -119,7 +119,19 @@
         </el-collapse-item>
         <el-collapse-item title="Соц.сети" name="socialLinks">
           <div class="add-link-section">
-            <el-button type="primary" :icon="Plus" @click="addSocialLink" text>Добавить ссылку</el-button>
+            <el-dropdown v-if="authStore.userIsAdmin" @command="handleCommand">
+              <el-button type="info">
+                Добавить ссылку
+                <el-icon><ArrowDown /></el-icon>
+              </el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item v-for="(value, key) in store.socialPlatformNamesMap" :key="key" :command="key">
+                    {{ value }}
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
           </div>
           <SocialLinkForm
             v-for="(link, index) in form.socialLinks"
@@ -146,19 +158,21 @@
 <script setup lang="ts">
 import { ref, reactive, watch, computed, nextTick, onMounted, type PropType } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
+import { Plus, ArrowDown } from '@element-plus/icons-vue'
 import SvgIcon from '@jamescoyle/vue-icon'
-import { onKeyStroke } from '@vueuse/core'
 import { mdiAlbum, mdiClipboard } from '@mdi/js'
 import dayjs from 'dayjs'
 import durationPlugin from 'dayjs/plugin/duration'
 
-import { getDefaultAlbum } from '@/consts'
 import { useStore } from '@/stores/store'
+import { useAuthStore } from '@/stores/auth'
 
-import type { Album, Group } from '@/types'
 import SocialLinkForm from '../forms/SocialLinkForm.vue'
 import TrackForm from '../forms/TrackForm.vue'
+
+import { getDefaultAlbum } from '@/consts'
+
+import type { Album, Group } from '@/types'
 
 dayjs.extend(durationPlugin)
 
@@ -187,9 +201,9 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'success', 'close'])
 // Store
 const store = useStore()
+const authStore = useAuthStore()
 
 // Refs
-
 const formRef = ref(null)
 const loading = ref(false)
 const searchQuery = ref('')
@@ -216,9 +230,9 @@ const visible = computed({
 })
 
 // Methods
-const addSocialLink = (): void => {
+const handleCommand = (platform: string): void => {
   form.socialLinks.push({
-    platform: '',
+    platform,
     url: ''
   })
 }
