@@ -6,15 +6,15 @@ import { useAuthStore } from '@/stores/auth'
 
 import AlbumSearch from '@/components/inputs/AlbumSearch.vue'
 import GroupSearch from '@/components/inputs/GroupSearch.vue'
-
-import type { Album, Group } from '@/types'
 import DeleteIconButton from '@/components/buttons/DeleteIconButton.vue'
+
+import type { Album, Group, User } from '@/types'
 
 const store = useStore()
 const authStore = useAuthStore()
 
 // Computed
-const user = computed(() => authStore.user)
+const user = computed((): User => authStore.user)
 
 // Refs
 
@@ -88,7 +88,7 @@ onMounted(async () => {})
                   <el-image :src="album.cover" :alt="album.title" fit="cover" class="cover-image" />
                 </div>
                 <div class="album-info">
-                  <h4 class="group-title">{{ album.group.name }}</h4>
+                  <h4 class="group-title">{{ album.groups.map(g => g.name).join(', ') }}</h4>
                   <h4 class="album-title">{{ album.title }}</h4>
                   <p class="album-year">{{ new Date(album.releaseDate).getFullYear() }}</p>
                 </div>

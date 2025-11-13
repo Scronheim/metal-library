@@ -44,7 +44,7 @@ export const useStore = defineStore('store', () => {
     split: 'warning'
   }
   const socialLinkColorMap = {
-    website: 'primary',
+    website: 'info',
     youtube: 'danger',
     bandcamp: 'info',
     spotify: 'success',
@@ -67,17 +67,18 @@ export const useStore = defineStore('store', () => {
   })
   const socialPlatformNamesMap = {
     website: 'Оф. сайт',
-    youtube: 'YouTube',
-    bandcamp: 'Bandcamp',
+    yandex: 'Yandex Music',
     spotify: 'Spotify',
     vk: 'VK',
-    yandex: 'Yandex Music',
-    facebook: 'Facebook',
+    bandcamp: 'Bandcamp',
     instagram: 'Instagram',
+    youtube: 'YouTube',
+    facebook: 'Facebook',
     twitter: 'Twitter'
   }
   const instruments = ['Вокал', 'Ритм гитара', 'Соло гитара', 'Бас гитара', 'Ударные', 'Бэк вокал', 'DJ', 'Всё'].sort()
   const countries: Country[] = [
+    { name: 'Интернациональная', alpha2: '', alpha3: '' },
     { name: 'Российская Федерация', alpha2: 'RU', alpha3: 'RUS' },
     { name: 'Киргизстан', alpha2: 'KG', alpha3: 'KGZ' },
     { name: 'Узбекистан', alpha2: 'UZ', alpha3: 'UZB' },

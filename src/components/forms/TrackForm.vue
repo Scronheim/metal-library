@@ -15,8 +15,7 @@ const lyricsRules = ref<FormRules<TrackInfo>>({
   title: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }],
   number: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }],
   discNumber: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }],
-  lyrics: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }],
-  duration: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }]
+  lyrics: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }]
 })
 </script>
 

@@ -470,7 +470,7 @@ const saveLyrics = async (): Promise<void> => {
   } catch (error) {
     ElMessage.error('Ошибка при сохранении текста')
   } finally {
-    await store.getGroupById()
+    await store.getAlbumById()
   }
 }
 watch(route, async () => {

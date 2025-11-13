@@ -538,7 +538,13 @@
     </template>
   </el-dialog>
 
-  <EditAlbumDialog v-model="showEditableAlbumDialog" mode="add" :groups="[group]" @success="getGroupAlbums" />
+  <EditAlbumDialog
+    v-model="showEditableAlbumDialog"
+    mode="add"
+    :groups="[group]"
+    @success="getGroupAlbums"
+    @close="showEditableAlbumDialog = false"
+  />
   <MemberFormDialog
     v-model="showMemberDialog"
     :mode="memberMode"
@@ -716,7 +722,7 @@ const openGroupInfoDialog = async (): Promise<void> => {
 }
 const saveGroupInfo = async (): Promise<void> => {
   await store.updateGroup(group.value, true)
-  showGroupBioDialog.value = false
+  showGroupInfoDialog.value = false
 }
 
 const toggleLike = async () => {

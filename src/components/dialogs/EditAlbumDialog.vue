@@ -331,6 +331,7 @@ const submitForm = async (): Promise<void> => {
     ElMessage.error(error.message || 'Ошибка при сохранении альбома')
   } finally {
     loading.value = false
+    emit('close')
   }
 }
 
@@ -357,7 +358,6 @@ const parseTracklistFromDiscogs = async () => {
   const temp = blobText.split('\n')
   temp.map((i, index) => {
     const temp1 = i.split('\t')
-    console.log(temp1)
 
     if (temp1.length === 4) {
       form.tracks.push({
@@ -369,10 +369,11 @@ const parseTracklistFromDiscogs = async () => {
         lyrics: ''
       })
     } else {
+      const duration = temp1[1] ? `00:0${temp1[1].replace('\r', '')}` : ''
       form.tracks.push({
         number: index + 1,
         title: temp1[0],
-        duration: `00:0${temp1[1].replace('\r', '')}`,
+        duration,
         discNumber: 1,
         isInstrumental: false,
         lyrics: ''
