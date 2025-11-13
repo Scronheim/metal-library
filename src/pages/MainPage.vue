@@ -28,12 +28,12 @@
         <section class="news-section">
           <div class="section-header">
             <h2 class="section-title">
-              <i class="el-icon-news"></i>
+              <SvgIcon type="mdi" :path="mdiNewspaper" :size="18" />
               Последние новости
             </h2>
             <el-button type="text" @click="$router.push('/news')" class="view-all-btn">
               Все новости
-              <i class="el-icon-arrow-right"></i>
+              <el-icon><ArrowRight /></el-icon>
             </el-button>
           </div>
 
@@ -54,7 +54,7 @@
                 >
                   <template #error>
                     <div class="image-slot">
-                      <i class="el-icon-picture-outline"></i>
+                      <el-icon><Picture /></el-icon>
                     </div>
                   </template>
                 </el-image>
@@ -65,16 +65,15 @@
 
               <div class="news-content">
                 <h3 class="news-title">{{ news.title }}</h3>
-                <p class="news-excerpt">{{ news.excerpt }}</p>
 
                 <div class="news-meta">
                   <div class="meta-left">
                     <span class="news-date">
-                      <i class="el-icon-time"></i>
+                      <el-icon><Clock /></el-icon>
                       {{ formatDate(news.publishedAt) }}
                     </span>
                     <span class="news-views">
-                      <i class="el-icon-view"></i>
+                      <el-icon><View /></el-icon>
                       {{ news.views }}
                     </span>
                   </div>
@@ -96,7 +95,7 @@
         <section class="sidebar-section">
           <div class="section-header">
             <h3 class="section-title">
-              <i class="el-icon-star"></i>
+              <el-icon><Star /></el-icon>
               Новые группы
             </h3>
           </div>
@@ -110,7 +109,7 @@
             >
               <div class="group-logo">
                 <el-avatar :size="50" :src="group.logo" :alt="group.name" shape="square">
-                  <i class="el-icon-headset" v-if="!group.logo"></i>
+                  <el-icon v-if="!group.logo"><Headset /></el-icon>
                 </el-avatar>
               </div>
               <div class="group-info">
@@ -145,53 +144,11 @@
           </div>
         </section>
 
-        <!-- Top Albums -->
-        <section class="sidebar-section">
-          <div class="section-header">
-            <h3 class="section-title">
-              <i class="el-icon-trophy"></i>
-              Топ альбомов
-            </h3>
-          </div>
-
-          <div class="albums-list">
-            <div
-              v-for="(album, index) in topAlbums"
-              :key="album._id"
-              class="album-item"
-              @click="$router.push(`/album/${album._id}`)"
-            >
-              <div class="album-rank">
-                <span class="rank-number">{{ index + 1 }}</span>
-              </div>
-              <div class="album-cover">
-                <el-avatar :size="50" :src="album.cover" :alt="album.title" shape="square">
-                  <i class="el-icon-picture" v-if="!album.cover"></i>
-                </el-avatar>
-              </div>
-              <div class="album-info">
-                <h5 class="album-title">{{ album.title }}</h5>
-                <p class="album-artist">{{ album.group.name }}</p>
-                <div class="album-rating">
-                  <el-rate
-                    v-model="album.rating"
-                    disabled
-                    show-score
-                    text-color="#ff9900"
-                    score-template="{value}"
-                    class="rating-stars"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
         <!-- Quick Stats -->
         <section class="sidebar-section">
           <div class="section-header">
             <h3 class="section-title">
-              <i class="el-icon-data-line"></i>
+              <el-icon><DataLine /></el-icon>
               Статистика
             </h3>
           </div>
@@ -200,7 +157,7 @@
             <el-card shadow="never" class="stat-card">
               <div class="stat-content">
                 <div class="stat-icon groups">
-                  <i class="el-icon-headset"></i>
+                  <el-icon><Headset /></el-icon>
                 </div>
                 <div class="stat-info">
                   <div class="stat-number">{{ stats.totalGroups }}</div>
@@ -212,7 +169,7 @@
             <el-card shadow="never" class="stat-card">
               <div class="stat-content">
                 <div class="stat-icon albums">
-                  <i class="el-icon-disc"></i>
+                  <SvgIcon type="mdi" :path="mdiAlbum" :size="18" />
                 </div>
                 <div class="stat-info">
                   <div class="stat-number">{{ stats.totalAlbums }}</div>
@@ -224,7 +181,7 @@
             <el-card shadow="never" class="stat-card">
               <div class="stat-content">
                 <div class="stat-icon news">
-                  <i class="el-icon-document"></i>
+                  <el-icon><Document /></el-icon>
                 </div>
                 <div class="stat-info">
                   <div class="stat-number">{{ stats.totalNews }}</div>
@@ -236,7 +193,7 @@
             <el-card shadow="never" class="stat-card">
               <div class="stat-content">
                 <div class="stat-icon users">
-                  <i class="el-icon-user"></i>
+                  <el-icon><User /></el-icon>
                 </div>
                 <div class="stat-info">
                   <div class="stat-number">{{ stats.totalUsers }}</div>
@@ -254,37 +211,26 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Calendar, Location } from '@element-plus/icons-vue'
+import {
+  Calendar,
+  Location,
+  ArrowRight,
+  Picture,
+  Clock,
+  View,
+  Star,
+  Headset,
+  Trophy,
+  DataLine,
+  Document,
+  User
+} from '@element-plus/icons-vue'
+import SvgIcon from '@jamescoyle/vue-icon'
+import { mdiAlbum, mdiNewspaper } from '@mdi/js'
 
 import { api } from '@/services/api'
 
 import type { Album, Genre, Group, News } from '@/types'
-import { textEllipsis } from '@/utils'
-
-// Hero slides data
-const heroSlides = ref([
-  {
-    title: 'Новый альбом Rammstein уже скоро!',
-    description: 'Легендарная немецкая группа анонсировала выход нового студийного альбома осенью 2024 года',
-    image: '',
-    category: 'Анонс',
-    link: '/news/1'
-  },
-  {
-    title: 'Metal Festival 2024',
-    description: 'Крупнейший метал-фестиваль года объявил полный лайнап выступлений',
-    image: '',
-    category: 'Событие',
-    link: '/news/2'
-  },
-  {
-    title: 'Интервью с Architects',
-    description: 'Эксклюзивное интервью с участниками британской металкор-группы',
-    image: '',
-    category: 'Интервью',
-    link: '/news/3'
-  }
-])
 
 // Latest news
 const latestNews = ref<News[]>([])

@@ -1,6 +1,7 @@
 import { ref, computed, markRaw } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { defineStore } from 'pinia'
+import axios from 'axios'
 import { api } from '@/services/api'
 import { ElNotification } from 'element-plus'
 import { Link, VideoPlay, Headset, Camera, ChatLineRound, ChatLineSquare } from '@element-plus/icons-vue'

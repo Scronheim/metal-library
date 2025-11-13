@@ -39,7 +39,7 @@ export interface Album {
   _id?: string
   title: string
   description: string
-  group: Group
+  groups: Group[]
   releaseDate: string
   genres: Genre[]
   type: 'full-length' | 'ep' | 'single' | 'demo' | 'live' | 'compilation' | 'split'

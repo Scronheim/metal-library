@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { type PropType } from 'vue'
-import { Star, Headset, View, Picture } from '@element-plus/icons-vue'
+import { Picture } from '@element-plus/icons-vue'
 
 import { useStore } from '@/stores/store'
 
@@ -34,28 +34,6 @@ const store = useStore()
       <h4 class="album-title">{{ props.album.title }}</h4>
       <p class="album-year">{{ new Date(props.album.releaseDate).getFullYear() }}</p>
       <p class="album-label" v-if="props.album.label">{{ props.album.label }}</p>
-      <div class="album-meta">
-        <span class="tracks-count" v-if="props.album.tracks">
-          <el-icon>
-            <Headset />
-          </el-icon>
-          {{ props.album.tracks.length }} треков
-        </span>
-      </div>
-      <div class="album-stats">
-        <span class="stat">
-          <el-icon>
-            <View />
-          </el-icon>
-          {{ props.album.stats.views }}
-        </span>
-        <span class="stat">
-          <el-icon>
-            <Star />
-          </el-icon>
-          {{ props.album.stats.likes.length }}
-        </span>
-      </div>
     </div>
   </el-card>
 </template>
@@ -103,6 +81,7 @@ const store = useStore()
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: end;
 }
 
 .album-title {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { type PropType } from 'vue'
+import { User } from '@element-plus/icons-vue'
 
 import { useStore } from '@/stores/store'
 
@@ -22,7 +23,7 @@ const props = defineProps({
   <div class="member-card" @click="emit('openEditMemberDialog')">
     <div class="member-avatar">
       <el-avatar :size="80" :src="member.photo" :alt="member.name">
-        <i class="el-icon-user" v-if="!member.photo"></i>
+        <el-icon v-if="!member.photo"><User /></el-icon>
       </el-avatar>
     </div>
     <div class="member-info">

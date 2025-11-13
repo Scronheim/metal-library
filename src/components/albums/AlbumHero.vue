@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { mdiCalendar, mdiMusic } from '@mdi/js'
+import { mdiCalendar, mdiMusic, mdiThumbUp } from '@mdi/js'
 import SvgIcon from '@jamescoyle/vue-icon'
 import { ElMessage } from 'element-plus'
 import { Headset, Timer, Star, StarFilled, Share, View, Edit, Plus, Close, Picture } from '@element-plus/icons-vue'
@@ -118,14 +118,10 @@ const openAlbumInfoEditDialog = async (): Promise<void> => {
         </h1>
 
         <div class="album-artist">
-          <el-avatar :size="40" :src="album.group.logo" :alt="album.group.name" shape="square" class="artist-logo">
-            <el-icon v-if="!album.group.logo">
-              <Headset />
-            </el-icon>
-          </el-avatar>
-          <span class="artist-name" @click="$router.push(`/group/${album.group._id}`)">
-            {{ album.group.name }}
-          </span>
+          <template v-for="(group, index) in album.groups">
+            <span class="artist-name" @click="$router.push(`/group/${group._id}`)">{{ group.name }}</span>
+            {{ index === album.groups.length - 1 ? '' : '/' }}
+          </template>
         </div>
 
         <div class="album-meta">
@@ -149,16 +145,15 @@ const openAlbumInfoEditDialog = async (): Promise<void> => {
             </el-icon>
             <span>{{ album.tracks.length }} треков</span>
           </div>
-        </div>
-
-        <div class="album-stats">
-          <div class="stat">
-            <span class="stat-number">{{ album.stats.views }}</span>
-            <span class="stat-label">просмотров</span>
+          <div class="meta-item">
+            <el-icon>
+              <View />
+            </el-icon>
+            <span>{{ album.stats.views }} просмотров</span>
           </div>
-          <div class="stat">
-            <span class="stat-number">{{ album.stats.likes.length }}</span>
-            <span class="stat-label">лайков</span>
+          <div class="meta-item">
+            <SvgIcon type="mdi" :path="mdiThumbUp" :size="18" />
+            <span>{{ album.stats.likes.length }} лайков</span>
           </div>
         </div>
 
@@ -201,20 +196,24 @@ const openAlbumInfoEditDialog = async (): Promise<void> => {
   <EditAlbumDialog
     v-model="showAlbumInfoEdit"
     :album="store.currentAlbum"
+    :groups="store.currentAlbum.groups"
     mode="edit"
-    :group="store.currentAlbum.group"
     @success="emit('updateAlbum')"
   />
 </template>
 
 <style lang="css" scoped>
+.album-info-section {
+  width: 100%;
+}
 .album-hero {
   background: linear-gradient(135deg, #1a1a1a 0%, #2a1a1a 100%);
   padding: 20px 0;
   margin-bottom: 20px;
 }
 .cover-image {
-  width: 350px;
+  width: 100%;
+  height: 100%;
 }
 .image-error {
   display: flex;
@@ -229,15 +228,15 @@ const openAlbumInfoEditDialog = async (): Promise<void> => {
 .hero-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
   display: flex;
-  gap: 40px;
+  gap: 20px;
   align-items: flex-start;
 }
 
 .album-cover {
   position: relative;
   overflow: hidden;
+  width: 450px;
 }
 
 .album-cover-section {
@@ -259,8 +258,8 @@ const openAlbumInfoEditDialog = async (): Promise<void> => {
 .album-artist {
   display: flex;
   align-items: center;
-  gap: 12px;
   margin-bottom: 24px;
+  gap: 10px;
 }
 
 .artist-logo {

@@ -24,7 +24,24 @@
             <el-input v-model="form.title" placeholder="Введите название альбома" maxlength="100" show-word-limit />
           </el-form-item>
           <el-form-item label="Группа" prop="group" class="form-item">
+            <div class="flex gap-2 mb-2">
+              <AddIconButton
+                :is-close-edit="addGroupInputVisible"
+                @click="addGroupInputVisible = !addGroupInputVisible"
+              />
+              <el-tag
+                class="gap-2"
+                v-for="(group, index) in form.groups"
+                :key="group._id"
+                type="primary"
+                closable
+                @close="removeGroup(index)"
+              >
+                {{ group.name }}
+              </el-tag>
+            </div>
             <el-autocomplete
+              v-if="addGroupInputVisible"
               v-model="searchQuery"
               :fetch-suggestions="searchGroup"
               clearable
@@ -97,16 +114,13 @@
         <el-collapse-item name="tracklist">
           <template #title>
             Треклист
-            <el-button @click.stop="parsePastedTracklist">
-              <SvgIcon type="mdi" :path="mdiClipboard" :size="18" />
-            </el-button>
+            <el-button @click.stop="parseTracklistFromDiscogs">Вставить из буфера обмена</el-button>
           </template>
           <el-button type="primary" :icon="Plus" @click="addTrack" size="small">Добавить трек</el-button>
           <div class="tracklist-editor">
             <TrackForm v-for="(track, index) in form.tracks" :key="index" :track="track" />
-
             <div class="empty-tracks" v-if="form.tracks.length === 0">
-              <i class="el-icon-headset"></i>
+              <el-icon><Headset /></el-icon>
               <p>Треки не добавлены</p>
             </div>
           </div>
@@ -135,7 +149,7 @@
           </div>
           <SocialLinkForm
             v-for="(link, index) in form.socialLinks"
-            :key="link.url"
+            :key="link.platform"
             :link="link"
             class="mb-2"
             @remove="removeSocialLink(index)"
@@ -158,9 +172,9 @@
 <script setup lang="ts">
 import { ref, reactive, watch, computed, nextTick, onMounted, type PropType } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Plus, ArrowDown } from '@element-plus/icons-vue'
+import { Plus, ArrowDown, Headset } from '@element-plus/icons-vue'
 import SvgIcon from '@jamescoyle/vue-icon'
-import { mdiAlbum, mdiClipboard } from '@mdi/js'
+import { mdiAlbum } from '@mdi/js'
 import dayjs from 'dayjs'
 import durationPlugin from 'dayjs/plugin/duration'
 
@@ -173,6 +187,8 @@ import TrackForm from '../forms/TrackForm.vue'
 import { getDefaultAlbum } from '@/consts'
 
 import type { Album, Group } from '@/types'
+import GroupSearch from '../inputs/GroupSearch.vue'
+import AddIconButton from '../buttons/AddIconButton.vue'
 
 dayjs.extend(durationPlugin)
 
@@ -191,8 +207,8 @@ const props = defineProps({
     type: Object as PropType<Album>,
     default: getDefaultAlbum()
   },
-  group: {
-    type: Object as PropType<Group>,
+  groups: {
+    type: Array as PropType<Group[]>,
     required: true
   }
 })
@@ -206,6 +222,7 @@ const authStore = useAuthStore()
 // Refs
 const formRef = ref(null)
 const loading = ref(false)
+const addGroupInputVisible = ref(false)
 const searchQuery = ref('')
 const foundedGroups = ref<Group[]>([])
 
@@ -218,7 +235,7 @@ const rules = reactive({
     { required: true, message: 'Введите название альбома', trigger: 'blur' },
     { min: 1, message: 'Название не может быть пустым', trigger: 'blur' }
   ],
-  group: [{ required: true, message: 'Выберите группу', trigger: 'change' }],
+  groups: [{ required: true, message: 'Выберите группу', trigger: 'change' }],
   type: [{ required: true, message: 'Выберите тип альбома', trigger: 'change' }],
   genres: [{ required: true, message: 'Выберите жанры', trigger: 'change' }],
   releaseDate: [{ required: true, message: 'Введите дату релиза', trigger: 'blur' }]
@@ -230,6 +247,9 @@ const visible = computed({
 })
 
 // Methods
+const removeGroup = (index: number): void => {
+  form.groups.splice(index, 1)
+}
 const handleCommand = (platform: string): void => {
   form.socialLinks.push({
     platform,
@@ -237,7 +257,8 @@ const handleCommand = (platform: string): void => {
   })
 }
 const handleSelectGroup = (group: Group): void => {
-  form.group = group
+  form.groups.push(group)
+  searchQuery.value = ''
 }
 const searchGroup = async (queryString: string, cb: any): Promise<void> => {
   if (!queryString) return cb([])
@@ -282,9 +303,8 @@ const resetForm = (): void => {
 }
 
 const loadAlbumData = async (): Promise<void> => {
-  searchQuery.value = props.group.name
   if (props.mode === 'edit' && props.album) Object.assign(form, props.album)
-  else if (props.mode === 'add') form.group = props.group
+  else if (props.mode === 'add') form.groups = props.groups
 }
 
 const submitForm = async (): Promise<void> => {
@@ -330,7 +350,7 @@ onMounted(() => {
   if (visible.value) loadAlbumData()
 })
 
-const parsePastedTracklist = async () => {
+const parseTracklistFromDiscogs = async () => {
   const clipboardContents = await navigator.clipboard.read()
   const blob = await clipboardContents[0].getType('text/plain')
   const blobText = await blob.text()
@@ -598,7 +618,10 @@ const parsePastedTracklist = async () => {
 }
 
 .empty-tracks {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: 40px 20px;
   color: #666;
   border: 2px dashed #333;

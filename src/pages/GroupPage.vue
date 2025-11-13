@@ -25,8 +25,8 @@
                   <el-icon>
                     <Location />
                   </el-icon>
-                  <span>{{ group.country.join(', ') }}</span>
-                  <span v-if="group.city">, {{ group.city }}</span>
+                  <span>{{ group.country.join(', ') }},</span>
+                  <span v-if="group.city">{{ group.city }}</span>
                 </div>
                 <div class="meta-item">
                   <el-icon>
@@ -101,11 +101,11 @@
                 </el-select>
                 <div class="discography-stats">
                   <span class="stat">
-                    <i class="el-icon-disc"></i>
+                    <SvgIcon type="mdi" :path="mdiAlbum" :size="18" />
                     Всего альбомов: {{ albums.length }}
                   </span>
                   <span class="stat">
-                    <i class="el-icon-time"></i>
+                    <el-icon><Clock /></el-icon>
                     Период: {{ getDiscographyPeriod }}
                   </span>
                 </div>
@@ -203,7 +203,7 @@
                         shape="square"
                         class="group-logo"
                       >
-                        <i class="el-icon-headset" v-if="!similarGroup.logo"></i>
+                        <el-icon v-if="!similarGroup.logo"><Headset /></el-icon>
                       </el-avatar>
                       <div class="similar-group-info">
                         <h4 class="group-name">{{ similarGroup.name }}</h4>
@@ -260,7 +260,7 @@
         <section class="sidebar-section">
           <div class="section-header">
             <h3 class="section-title">
-              <i class="el-icon-data-line"></i>
+              <el-icon><DataLine /></el-icon>
               Статистика
             </h3>
           </div>
@@ -327,7 +327,7 @@
         <section class="sidebar-section">
           <div class="section-header">
             <h3 class="section-title">
-              <i class="el-icon-trophy"></i>
+              <SvgIcon type="mdi" :path="mdiAlbum" :size="18" />
               Последние альбомы
             </h3>
           </div>
@@ -340,7 +340,7 @@
             >
               <div class="album-cover">
                 <el-avatar :size="50" :src="album.cover" :alt="album.title" shape="square">
-                  <i class="el-icon-disc" v-if="!album.cover"></i>
+                  <SvgIcon v-if="!album.cover" type="mdi" :path="mdiAlbum" :size="18" />
                 </el-avatar>
               </div>
               <div class="album-info">
@@ -538,7 +538,7 @@
     </template>
   </el-dialog>
 
-  <EditAlbumDialog v-model="showEditableAlbumDialog" mode="add" :group="group" @success="getGroupAlbums" />
+  <EditAlbumDialog v-model="showEditableAlbumDialog" mode="add" :groups="[group]" @success="getGroupAlbums" />
   <MemberFormDialog
     v-model="showMemberDialog"
     :mode="memberMode"
@@ -564,11 +564,11 @@ import {
   Clock,
   Edit,
   Search,
-  Close
+  Close,
+  DataLine
 } from '@element-plus/icons-vue'
 import SvgIcon from '@jamescoyle/vue-icon'
 import { mdiAlbum } from '@mdi/js'
-import { debounce } from 'lodash-es'
 
 import { useStore } from '@/stores/store'
 import { useAuthStore } from '@/stores/auth'
@@ -716,7 +716,7 @@ const openGroupInfoDialog = async (): Promise<void> => {
 }
 const saveGroupInfo = async (): Promise<void> => {
   await store.updateGroup(group.value, true)
-  showGroupInfoDialog.value = false
+  showGroupBioDialog.value = false
 }
 
 const toggleLike = async () => {

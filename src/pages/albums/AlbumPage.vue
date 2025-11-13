@@ -164,22 +164,6 @@
               @select="handleSelectGroup"
             />
           </div>
-          <div v-else class="group-info-card" @click="$router.push(`/group/${album.group._id}`)">
-            <el-avatar :size="60" :src="album.group.logo" :alt="album.group.name" shape="square" class="group-logo">
-              <el-icon v-if="!album.group.logo">
-                <Headset />
-              </el-icon>
-            </el-avatar>
-            <div class="group-info">
-              <h4 class="group-name">{{ album.group.name }}</h4>
-              <p class="group-country">{{ album.group.country.join(', ') }}</p>
-              <div class="group-genres">
-                <el-text v-for="genre in album.group.genres.slice(0, 2)" :key="genre._id" size="small" type="primary">
-                  {{ genre.name }}
-                </el-text>
-              </div>
-            </div>
-          </div>
         </section>
 
         <!-- Album Details -->
@@ -246,50 +230,11 @@
           </div>
         </section>
 
-        <!-- Other Albums by Group -->
-        <section class="sidebar-section" v-if="otherAlbums.length">
-          <div class="section-header">
-            <h3 class="section-title">
-              <SvgIcon type="mdi" :path="mdiAlbum" :size="18" />
-              Другие альбомы
-            </h3>
-            <el-button type="text" size="small" @click="$router.push(`/group/${album.group._id}`)">Все</el-button>
-          </div>
-          <div class="other-albums">
-            <div
-              v-for="otherAlbum in otherAlbums"
-              :key="otherAlbum._id"
-              class="other-album-item"
-              @click="$router.push(`/album/${otherAlbum._id}`)"
-            >
-              <div class="album-cover">
-                <el-avatar :size="50" :src="otherAlbum.cover" :alt="otherAlbum.title" shape="square">
-                  <SvgIcon v-if="!otherAlbum.cover" type="mdi" :path="mdiAlbum" :size="18" />
-                </el-avatar>
-              </div>
-              <div class="album-info">
-                <h5 class="album-title">{{ otherAlbum.title }}</h5>
-                <p class="album-year-type">
-                  {{ new Date(otherAlbum.releaseDate).getFullYear() }} • {{ store.albumTypesMap[otherAlbum.type] }}
-                </p>
-                <div class="album-stats">
-                  <span class="stat">
-                    <el-icon>
-                      <View />
-                    </el-icon>
-                    {{ otherAlbum.stats.views }}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
         <!-- Related News -->
         <section class="sidebar-section" v-if="relatedNews.length">
           <div class="section-header">
             <h3 class="section-title">
-              <i class="el-icon-news"></i>
+              <SvgIcon type="mdi" :path="mdiNewspaper" :size="18" />
               Связанные новости
             </h3>
           </div>
@@ -304,7 +249,9 @@
                 <el-image :src="news.featuredImage" :alt="news.title" fit="cover" class="image">
                   <template #error>
                     <div class="image-slot">
-                      <i class="el-icon-picture-outline"></i>
+                      <el-icon>
+                        <Picture />
+                      </el-icon>
                     </div>
                   </template>
                 </el-image>
@@ -342,9 +289,9 @@ import { useRoute } from 'vue-router'
 import dayjs from 'dayjs'
 import durationPlugin from 'dayjs/plugin/duration'
 import { ElMessage } from 'element-plus'
-import { Headset, View, InfoFilled, EditPen } from '@element-plus/icons-vue'
+import { Headset, InfoFilled, EditPen, Picture } from '@element-plus/icons-vue'
 import SvgIcon from '@jamescoyle/vue-icon'
-import { mdiAlbum, mdiPlay } from '@mdi/js'
+import { mdiPlay, mdiNewspaper } from '@mdi/js'
 import { debounce } from 'lodash-es'
 
 import { useStore } from '@/stores/store'
@@ -367,7 +314,6 @@ const route = useRoute()
 const store = useStore()
 const authStore = useAuthStore()
 // Refs
-const otherAlbums = ref<Album[]>([])
 const relatedNews = ref<News[]>([])
 const expandedTracks = ref(new Set())
 const showLyricsEdit = ref(false)
@@ -437,7 +383,7 @@ const showDetailsEdit = async (): Promise<void> => {
   isDetailsEdit.value = !isDetailsEdit.value
 }
 const handleSelectGroup = (group: Group): void => {
-  store.currentAlbum.group = group
+  store.currentAlbum.groups.push(group)
 }
 const searchGroup = async (queryString: string, cb: any): Promise<void> => {
   if (!queryString) return cb([])
@@ -507,14 +453,14 @@ const saveLyrics = async (): Promise<void> => {
 watch(route, async () => {
   await store.getAlbumById()
 })
-watch(
-  album,
-  debounce(async (_: Album, oldValue: Album) => {
-    if (!oldValue._id) return
-    await store.updateAlbum(album.value)
-  }, 500),
-  { deep: true }
-)
+// watch(
+//   album,
+//   debounce(async (_: Album, oldValue: Album) => {
+//     if (!oldValue._id) return
+//     await store.updateAlbum(album.value)
+//   }, 500),
+//   { deep: true }
+// )
 onMounted(async () => {
   await store.getAlbumById()
 })
