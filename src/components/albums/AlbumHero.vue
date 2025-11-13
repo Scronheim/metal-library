@@ -124,14 +124,16 @@ const openAlbumInfoEditDialog = async (): Promise<void> => {
           </template>
         </div>
 
+        <div class="album-genres">
+          <el-tag v-for="genre in album.genres" :key="genre._id" type="danger" effect="dark" class="genre-tag">
+            {{ genre.name }}
+          </el-tag>
+        </div>
+
         <div class="album-meta">
           <div class="meta-item">
             <SvgIcon type="mdi" :path="mdiCalendar" :size="18" />
             <span>{{ albumReleaseYear }}г.</span>
-          </div>
-          <div class="meta-item" v-if="album.genres.length">
-            <SvgIcon type="mdi" :path="mdiMusic" :size="18" />
-            <span>{{ albumGenres }}</span>
           </div>
           <div class="meta-item">
             <el-icon>
@@ -203,6 +205,20 @@ const openAlbumInfoEditDialog = async (): Promise<void> => {
 </template>
 
 <style lang="css" scoped>
+.album-genres {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.genre-tag {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.genre-tag:hover {
+  transform: translateY(-2px);
+}
 .album-info-section {
   width: 100%;
 }

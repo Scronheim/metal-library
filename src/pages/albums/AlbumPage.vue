@@ -164,6 +164,29 @@
               @select="handleSelectGroup"
             />
           </div>
+          <div v-else class="flex flex-col gap-2">
+            <div
+              v-for="group in album.groups"
+              :key="group._id"
+              class="group-info-card"
+              @click="$router.push(`/group/${group._id}`)"
+            >
+              <el-avatar :size="60" :src="group.logo" :alt="group.name" shape="square" class="group-logo">
+                <el-icon v-if="!group.logo">
+                  <Headset />
+                </el-icon>
+              </el-avatar>
+              <div class="group-info">
+                <h4 class="group-name">{{ group.name }}</h4>
+                <p class="group-country">{{ group.country.join(', ') }}</p>
+                <div class="group-genres">
+                  <el-text v-for="genre in group.genres.slice(0, 2)" :key="genre._id" size="small" type="primary">
+                    {{ genre.name }}
+                  </el-text>
+                </div>
+              </div>
+            </div>
+          </div>
         </section>
 
         <!-- Album Details -->
