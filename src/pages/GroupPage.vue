@@ -339,7 +339,7 @@
               @click="$router.push(`/album/${album._id}`)"
             >
               <div class="album-cover">
-                <el-avatar :size="50" :src="album.cover" :alt="album.title" shape="square">
+                <el-avatar :size="80" :src="album.cover" :alt="album.title" shape="square">
                   <SvgIcon v-if="!album.cover" type="mdi" :path="mdiAlbum" :size="18" />
                 </el-avatar>
               </div>

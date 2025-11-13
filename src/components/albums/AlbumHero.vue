@@ -201,6 +201,7 @@ const openAlbumInfoEditDialog = async (): Promise<void> => {
     :groups="store.currentAlbum.groups"
     mode="edit"
     @success="emit('updateAlbum')"
+    @close="showAlbumInfoEdit = false"
   />
 </template>
 
