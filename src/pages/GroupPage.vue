@@ -339,7 +339,7 @@
               @click="$router.push(`/album/${album._id}`)"
             >
               <div class="album-cover">
-                <el-avatar :size="80" :src="album.cover" :alt="album.title" shape="square">
+                <el-avatar :size="80" :src="album.cover" :alt="album.title" shape="square" class="group-logo">
                   <SvgIcon v-if="!album.cover" type="mdi" :path="mdiAlbum" :size="18" />
                 </el-avatar>
               </div>
@@ -815,7 +815,7 @@ onMounted(async () => {
 }
 
 .group-logo {
-  border: 4px solid #fff;
+  border: 1px solid #fff;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
 }
 
@@ -865,6 +865,7 @@ onMounted(async () => {
 .group-actions {
   display: flex;
   flex-wrap: wrap;
+  gap: 8px;
 }
 
 /* Main Content */

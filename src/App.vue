@@ -53,6 +53,7 @@ onMounted(async () => {
           </template>
         </el-dropdown>
         <el-button type="info" @click="store.getRandomGroup">Случайная группа</el-button>
+        <el-button tag="router-link" to="/release_calendar" type="info">Календарь релизов</el-button>
       </div>
       <div class="flex gap-2">
         <SearchBar />

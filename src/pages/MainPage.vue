@@ -107,11 +107,9 @@
               class="group-item"
               @click="$router.push(`/group/${group._id}`)"
             >
-              <div class="group-logo">
-                <el-avatar :size="50" :src="group.logo" :alt="group.name" shape="square">
-                  <el-icon v-if="!group.logo"><Headset /></el-icon>
-                </el-avatar>
-              </div>
+              <el-avatar class="group-logo" :size="50" :src="group.logo" :alt="group.name" shape="square">
+                <el-icon v-if="!group.logo"><Headset /></el-icon>
+              </el-avatar>
               <div class="group-info">
                 <h4 class="group-name">{{ group.name }}</h4>
                 <div class="group-meta">
@@ -523,6 +521,10 @@ onMounted(() => {
 .group-info {
   flex: 1;
 }
+.group-logo {
+  border: 1px solid #fff;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+}
 
 .group-name {
   font-size: 0.95rem;
@@ -636,6 +638,8 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
+  padding: 10px;
+  margin: 10px;
 }
 
 .stat-icon.groups {

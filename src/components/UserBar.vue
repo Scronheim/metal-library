@@ -25,8 +25,4 @@ const authStore = useAuthStore()
   </template>
 </template>
 
-<style lang="css" scoped>
-.el-button + .el-button {
-  margin-left: 0px;
-}
-</style>
+<style lang="css" scoped></style>

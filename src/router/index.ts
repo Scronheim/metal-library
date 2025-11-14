@@ -61,6 +61,11 @@ const routes: RouteRecordRaw[] = [
     ]
   },
   {
+    path: '/release_calendar',
+    name: 'releaseCalendar',
+    component: () => import('@/pages/ReleaseCalendarPage.vue')
+  },
+  {
     path: '/profile',
     name: 'profilePage',
     component: () => import('@/pages/ProfilePage.vue'),

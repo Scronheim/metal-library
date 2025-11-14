@@ -19,7 +19,7 @@ onMounted(async () => {
     <div v-if="authStore.userIsAdmin" class="flex justify-end">
       <router-link to="/news/add">Добавить новость</router-link>
     </div>
-    <div class="grid grid-cols-3 gap-2">
+    <div class="flex flex-col gap-2">
       <NewsForm v-for="item in store.news" :key="item._id" :news="item" />
     </div>
   </el-container>

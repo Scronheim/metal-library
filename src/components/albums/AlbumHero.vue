@@ -340,7 +340,7 @@ const openAlbumInfoEditDialog = async (): Promise<void> => {
 
 .album-actions {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 </style>
