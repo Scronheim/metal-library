@@ -504,8 +504,10 @@
     </el-form>
 
     <template #footer>
-      <el-button @click="showGroupInfoDialog = false">Отмена</el-button>
-      <el-button type="success" @click="saveGroupInfo">Сохранить</el-button>
+      <div class="flex justify-end gap-2">
+        <el-button @click="showGroupInfoDialog = false">Отмена</el-button>
+        <el-button type="success" @click="saveGroupInfo">Сохранить</el-button>
+      </div>
     </template>
   </el-dialog>
 
