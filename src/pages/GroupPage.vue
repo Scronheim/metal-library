@@ -538,7 +538,7 @@
       </el-card>
     </el-form>
     <template #footer>
-      <div class="dialog-footer">
+      <div class="flex justify-end gap-2">
         <el-button @click="showGroupBioDialog = false">Закрыть</el-button>
         <el-button type="success" @click="saveGroupInfo">Сохранить</el-button>
       </div>
@@ -729,7 +729,7 @@ const openGroupInfoDialog = async (): Promise<void> => {
 }
 const saveGroupInfo = async (): Promise<void> => {
   await store.updateGroup(group.value, true)
-  showGroupInfoDialog.value = false
+  showGroupBioDialog.value = false
 }
 
 const toggleLike = async () => {
