@@ -343,6 +343,14 @@ export const useStore = defineStore('store', () => {
   async function searchMember(searchQuery: string): Promise<{ data: Member[] }> {
     return await api.get(`/members/search/${searchQuery}`)
   }
+  async function deleteAlbum(albumId: string, showNotification: boolean = true): Promise<void> {
+    await api.delete(`/album/${albumId}`)
+    if (showNotification)
+      ElNotification({
+        type: 'success',
+        message: 'Альбом удалён'
+      })
+  }
   async function updateLyrics(album: Album, track: TrackInfo, showNotification: boolean = false): Promise<void> {
     await api.patch(`/album/${album._id}/tracks/${track.number}/lyrics`, { track })
     if (showNotification)
@@ -517,6 +525,7 @@ export const useStore = defineStore('store', () => {
     getAlbumReviews,
     getNewsById,
     getRandomGroup,
-    getReleaseCalendar
+    getReleaseCalendar,
+    deleteAlbum
   }
 })

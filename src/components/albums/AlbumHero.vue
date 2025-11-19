@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { mdiCalendar, mdiMusic, mdiThumbUp } from '@mdi/js'
+import { mdiCalendar, mdiThumbUp } from '@mdi/js'
 import SvgIcon from '@jamescoyle/vue-icon'
 import { ElMessage } from 'element-plus'
 import { Headset, Timer, Star, StarFilled, Share, View, Edit, Plus, Close, Picture } from '@element-plus/icons-vue'
@@ -31,7 +31,6 @@ const userLikedAlbum = computed(
   (): boolean => !store.currentAlbum.stats.likes.findIndex(u => u._id === authStore.user.id)
 )
 const albumReleaseYear = computed((): number => new Date(store.currentAlbum.releaseDate).getFullYear())
-const albumGenres = computed((): string => store.currentAlbum.genres.map(g => g.name).join(', '))
 const albumTotalDuration = computed((): string => {
   const totalSeconds = store.currentAlbum.tracks.reduce((total, track) => {
     const [hours, minutes, seconds] = track.duration.split(':').map(i => parseInt(i))
