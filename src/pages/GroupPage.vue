@@ -105,23 +105,52 @@
                     Всего альбомов: {{ albums.length }}
                   </span>
                   <span class="stat">
-                    <el-icon><Clock /></el-icon>
-                    Период: {{ getDiscographyPeriod }}
+                    <el-tooltip content="Переключить вид на табличный" placement="top">
+                      <SvgIcon type="mdi" :path="mdiTable" :size="18" @click="viewMode = 'table'" />
+                    </el-tooltip>
+                    <el-divider direction="vertical" />
+                    <el-tooltip content="Переключить на карточки" placement="top">
+                      <SvgIcon type="mdi" :path="mdiCardAccountDetails" :size="18" @click="viewMode = 'card'" />
+                    </el-tooltip>
                   </span>
                 </div>
               </div>
 
               <!-- Albums Grid -->
-              <div class="grid grid-cols-3 gap-2" v-if="sortedAlbums.length">
-                <AlbumCard
-                  v-for="album in sortedAlbums"
-                  :key="album._id"
-                  :album="album"
-                  @update-album-list="getGroupAlbums"
-                />
+              <el-table
+                v-if="viewMode === 'table'"
+                :data="sortedAlbums"
+                @row-click="goToAlbumPage"
+                row-class-name="cursor-pointer"
+              >
+                <el-table-column prop="cover" label="Обложка" width="180">
+                  <template #default="{ row }">
+                    <el-image :src="row.cover" />
+                  </template>
+                </el-table-column>
+                <el-table-column prop="title" label="Название" />
+                <el-table-column prop="type" label="Тип">
+                  <template #default="{ row }">
+                    <el-tag :type="store.albumTypeColorMap[row.type]">{{ store.albumTypesMap[row.type] }}</el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="releaseDate" label="Дата релиза">
+                  <template #default="{ row }">
+                    {{ formatDate(row.releaseDate) }}
+                  </template>
+                </el-table-column>
+              </el-table>
+              <div class="grid grid-cols-3 gap-2" v-if="viewMode === 'card'">
+                <template v-if="sortedAlbums.length">
+                  <AlbumCard
+                    v-for="album in sortedAlbums"
+                    :key="album._id"
+                    :album="album"
+                    @update-album-list="getGroupAlbums"
+                  />
+                </template>
+                <el-empty v-else description="Альбомы не добавлены" class="empty-albums" />
               </div>
-
-              <el-empty v-else description="Альбомы не добавлены" class="empty-albums" />
             </el-card>
           </el-tab-pane>
 
@@ -563,7 +592,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, type FormRules } from 'element-plus'
 import {
   Star,
@@ -581,13 +610,13 @@ import {
   DataLine
 } from '@element-plus/icons-vue'
 import SvgIcon from '@jamescoyle/vue-icon'
-import { mdiAlbum } from '@mdi/js'
+import { mdiAlbum, mdiTable, mdiCard, mdiCardAccountDetails } from '@mdi/js'
 
 import { useStore } from '@/stores/store'
 import { useAuthStore } from '@/stores/auth'
 
 import { getDefaultMember } from '@/consts'
-import { formatDescription } from '@/utils'
+import { formatDate, formatDescription } from '@/utils'
 
 import EditIconButton from '@/components/buttons/EditIconButton.vue'
 import AddIconButton from '@/components/buttons/AddIconButton.vue'
@@ -602,6 +631,7 @@ import AlbumCard from '@/components/albums/AlbumCard.vue'
 import type { Album, Group, Member, News } from '@/types'
 
 const route = useRoute()
+const router = useRouter()
 const store = useStore()
 const authStore = useAuthStore()
 
@@ -630,6 +660,7 @@ const groupInfoRules = ref<FormRules<Group>>({
 const groupRef = ref()
 const editableMember = ref<Member>(getDefaultMember())
 const lineClampedForGroupDescription = ref<number | string>(5)
+const viewMode = ref<string>('card')
 // Computed
 const group = computed(() => store.currentGroup)
 const totalMembers = computed((): number => {
@@ -659,6 +690,9 @@ const getDiscographyPeriod = computed((): string => {
 })
 
 // Methods
+const goToAlbumPage = (album: Album): void => {
+  router.push(`/album/${album._id}`)
+}
 const toggleGroupDescription = () => {
   lineClampedForGroupDescription.value === 'none'
     ? (lineClampedForGroupDescription.value = 5)
@@ -729,7 +763,7 @@ const openGroupInfoDialog = async (): Promise<void> => {
 }
 const saveGroupInfo = async (): Promise<void> => {
   await store.updateGroup(group.value, true)
-  showGroupBioDialog.value = false
+  showGroupInfoDialog.value = false
 }
 
 const toggleLike = async () => {

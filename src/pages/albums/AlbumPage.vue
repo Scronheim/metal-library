@@ -23,7 +23,7 @@
           </template>
           <div class="tracklist">
             <div v-for="(disc, i) in tracksSortedByDiscNumber" :key="i">
-              <el-tag type="warning">CD {{ i }}</el-tag>
+              <el-tag v-if="i > 1" type="warning">CD {{ i }}</el-tag>
               <div
                 v-for="(track, index) in disc"
                 :key="track.number"
