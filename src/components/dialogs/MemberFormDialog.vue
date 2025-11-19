@@ -34,10 +34,7 @@ const visible = computed({
   get: () => props.modelValue,
   set: value => emit('update:modelValue', value)
 })
-// Refs
-const rules = ref({
-  name: [{ required: true, message: 'Введите имя', trigger: 'blur' }]
-})
+
 // Methods
 const saveMember = () => {
   if (props.mode === 'add') emit('add')
@@ -48,7 +45,7 @@ const saveMember = () => {
 
 <template>
   <el-dialog v-model="visible" :title="mode === 'add' ? 'Добавить участника' : 'Редактировать участника'" width="800px">
-    <el-form ref="formRef" :model="member" :rules="rules" label-position="top">
+    <el-form ref="formRef" :model="member" label-position="top">
       <el-card header="Основная информация" class="mb-2">
         <div class="grid grid-cols-3 gap-2">
           <el-form-item label="Сценическое имя" prop="name">
@@ -105,8 +102,10 @@ const saveMember = () => {
       </el-card>
     </el-form>
     <template #footer>
-      <el-button @click="visible = false">Отмена</el-button>
-      <el-button type="success" @click="saveMember">Сохранить</el-button>
+      <div class="flex justify-end gap-2">
+        <el-button @click="visible = false">Отмена</el-button>
+        <el-button type="success" @click="saveMember">Сохранить</el-button>
+      </div>
     </template>
   </el-dialog>
 </template>

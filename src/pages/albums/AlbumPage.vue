@@ -300,8 +300,10 @@
     <TrackForm :track="editingTrack" />
 
     <template #footer>
-      <el-button @click="handleEditClose">Отмена</el-button>
-      <el-button type="success" @click="saveLyrics">Сохранить</el-button>
+      <div class="flex justify-end gap-2">
+        <el-button @click="handleEditClose">Отмена</el-button>
+        <el-button type="success" @click="saveLyrics">Сохранить</el-button>
+      </div>
     </template>
   </el-dialog>
 </template>
