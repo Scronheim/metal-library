@@ -113,7 +113,12 @@
 
               <!-- Albums Grid -->
               <div class="grid grid-cols-3 gap-2" v-if="sortedAlbums.length">
-                <AlbumCard v-for="album in sortedAlbums" :key="album._id" :album="album" />
+                <AlbumCard
+                  v-for="album in sortedAlbums"
+                  :key="album._id"
+                  :album="album"
+                  @update-album-list="getGroupAlbums"
+                />
               </div>
 
               <el-empty v-else description="Альбомы не добавлены" class="empty-albums" />

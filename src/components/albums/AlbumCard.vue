@@ -1,11 +1,16 @@
 <script setup lang="ts">
-import { type PropType } from 'vue'
-import { Picture } from '@element-plus/icons-vue'
+import { ref, type PropType } from 'vue'
+import { Edit, Picture, Delete } from '@element-plus/icons-vue'
 
+import { useAuthStore } from '@/stores/auth'
 import { useStore } from '@/stores/store'
 
+import EditAlbumDialog from '@/components/dialogs/EditAlbumDialog.vue'
+
+import type { DropdownInstance } from 'element-plus'
 import type { Album } from '@/types'
 
+const emit = defineEmits(['updateAlbumList'])
 const props = defineProps({
   album: {
     type: Object as PropType<Album>,
@@ -13,11 +18,50 @@ const props = defineProps({
   }
 })
 
+const authStore = useAuthStore()
 const store = useStore()
+
+//Refs
+const showAlbumInfoEdit = ref<boolean>(false)
+const dropdownRef = ref<DropdownInstance>()
+const position = ref({
+  top: 0,
+  left: 0,
+  bottom: 0,
+  right: 0
+} as DOMRect)
+
+// Methods
+const deleteAlbum = async (): Promise<void> => {
+  await store.deleteAlbum(props.album._id as string)
+  emit('updateAlbumList')
+}
+const openAlbumInfoEditDialog = async (): Promise<void> => {
+  await store.getGenres()
+  showAlbumInfoEdit.value = true
+}
+const triggerRef = ref({
+  getBoundingClientRect: () => position.value
+})
+
+const handleContextmenu = (event: MouseEvent) => {
+  const { clientX, clientY } = event
+  position.value = DOMRect.fromRect({
+    x: clientX,
+    y: clientY
+  })
+  event.preventDefault()
+  dropdownRef.value?.handleOpen()
+}
 </script>
 
 <template>
-  <el-card class="album-card" shadow="hover" @click="$router.push(`/album/${props.album._id}`)">
+  <el-card
+    class="album-card"
+    shadow="hover"
+    @click="$router.push(`/album/${props.album._id}`)"
+    @contextmenu="handleContextmenu"
+  >
     <div class="album-cover">
       <el-image :src="props.album.cover" :alt="props.album.title" fit="cover" class="cover-image">
         <template #error>
@@ -35,7 +79,34 @@ const store = useStore()
       <p class="album-year">{{ new Date(props.album.releaseDate).getFullYear() }}</p>
       <p class="album-label" v-if="props.album.label">{{ props.album.label }}</p>
     </div>
+    <el-dropdown
+      v-if="authStore.userIsAdmin"
+      ref="dropdownRef"
+      :virtual-ref="triggerRef"
+      :popper-options="{
+        modifiers: [{ name: 'offset', options: { offset: [0, 0] } }]
+      }"
+      virtual-triggering
+      trigger="contextmenu"
+      placement="bottom-start"
+    >
+      <template #dropdown>
+        <el-dropdown-menu>
+          <el-dropdown-item :icon="Edit" @click="openAlbumInfoEditDialog">Редактировать</el-dropdown-item>
+          <el-dropdown-item :icon="Delete" @click="deleteAlbum">Удалить</el-dropdown-item>
+        </el-dropdown-menu>
+      </template>
+    </el-dropdown>
   </el-card>
+
+  <EditAlbumDialog
+    v-model="showAlbumInfoEdit"
+    :album="props.album"
+    :groups="store.currentAlbum.groups"
+    mode="edit"
+    @success="emit('updateAlbumList')"
+    @close="showAlbumInfoEdit = false"
+  />
 </template>
 
 <style lang="css" scoped>
