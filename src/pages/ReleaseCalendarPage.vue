@@ -10,6 +10,7 @@ import type { Album } from '@/types'
 const store = useStore()
 
 // Refs
+const calendar = ref()
 const calendarOptions = ref({
   firstDay: 1,
   height: 800,
@@ -36,6 +37,8 @@ ${release.title}
 }
 
 onMounted(async () => {
+  console.log(calendar.value)
+
   calendarOptions.value.events = (await store.getReleaseCalendar()).map(r => {
     return {
       url: `/#/album/${r._id}`,
@@ -49,7 +52,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <FullCalendar :options="calendarOptions" style="background-color: #1e1e1e">
+  <FullCalendar ref="calendar" :options="calendarOptions" style="background-color: #1e1e1e">
     <template v-slot:eventContent="{ event }">
       <el-tooltip effect="dark" :content="getTooltipContent(event)" raw-content>
         <b class="whitespace-normal">{{ event.title }}</b>

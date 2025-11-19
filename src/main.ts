@@ -5,7 +5,7 @@ import axios from 'axios'
 import router from './router'
 
 import '@/styles/index.scss'
-import '@/styles/style.css'
+import '@/styles/tailwind.css'
 
 import App from './App.vue'
 

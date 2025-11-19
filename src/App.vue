@@ -68,4 +68,8 @@ onMounted(async () => {
   </el-config-provider>
 </template>
 
-<style scoped></style>
+<style lang="css">
+.el-button + .el-button {
+  margin-left: 0;
+}
+</style>

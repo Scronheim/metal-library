@@ -177,10 +177,6 @@ const handleOAuth = provider => {
   padding: 12px;
 }
 
-.el-button + .el-button {
-  margin-left: 0;
-}
-
 .oauth-icon {
   width: 20px;
   height: 20px;

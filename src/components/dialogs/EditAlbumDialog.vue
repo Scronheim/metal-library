@@ -653,7 +653,7 @@ const parseTracklistFromDiscogs = async () => {
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
+  gap: 8px;
 }
 
 /* Responsive Design */
