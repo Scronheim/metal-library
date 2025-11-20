@@ -137,21 +137,19 @@
           </div>
         </el-collapse-item>
         <el-collapse-item title="Соц.сети" name="socialLinks">
-          <div class="add-link-section">
-            <el-dropdown v-if="authStore.userIsAdmin" @command="handleCommand">
-              <el-button type="info" class="mb-2">
-                Добавить ссылку
-                <el-icon><ArrowDown /></el-icon>
-              </el-button>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item v-for="(value, key) in store.socialPlatformNamesMap" :key="key" :command="key">
-                    {{ value }}
-                  </el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
-          </div>
+          <el-dropdown v-if="authStore.userIsAdmin" @command="handleCommand">
+            <el-button type="info" class="mb-2">
+              Добавить ссылку
+              <el-icon><ArrowDown /></el-icon>
+            </el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item v-for="(value, key) in store.socialPlatformNamesMap" :key="key" :command="key">
+                  {{ value }}
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
           <SocialLinkForm
             v-for="(link, index) in form.socialLinks"
             :key="link.platform"

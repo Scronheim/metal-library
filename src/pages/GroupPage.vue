@@ -609,7 +609,8 @@ import {
   Edit,
   Search,
   Close,
-  DataLine
+  DataLine,
+  ArrowDown
 } from '@element-plus/icons-vue'
 import SvgIcon from '@jamescoyle/vue-icon'
 import { mdiAlbum, mdiTable, mdiCardAccountDetails } from '@mdi/js'
@@ -622,7 +623,6 @@ import { formatDate, formatDescription } from '@/utils'
 
 import EditIconButton from '@/components/buttons/EditIconButton.vue'
 import AddIconButton from '@/components/buttons/AddIconButton.vue'
-import DeleteIconButton from '@/components/buttons/DeleteIconButton.vue'
 import EditAlbumDialog from '@/components/dialogs/EditAlbumDialog.vue'
 import MemberFormDialog from '@/components/dialogs/MemberFormDialog.vue'
 import NewMemberAddForm from '@/components/forms/NewMemberAddForm.vue'
@@ -741,12 +741,6 @@ const openAlbumAddDialog = async (): Promise<void> => {
   await store.getGenres()
   showEditableAlbumDialog.value = true
 }
-const addSocialLink = (): void => {
-  group.value.socialLinks.push({
-    platform: 'website',
-    url: ''
-  })
-}
 const removeSocialLink = (index: number): void => {
   group.value.socialLinks.splice(index, 1)
 }
@@ -762,7 +756,7 @@ const openGroupInfoDialog = async (): Promise<void> => {
 }
 const saveGroupInfo = async (): Promise<void> => {
   await store.updateGroup(group.value, true)
-  showGroupInfoDialog.value = false
+  showGroupBioDialog.value = false
 }
 
 const toggleLike = async () => {

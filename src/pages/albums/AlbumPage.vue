@@ -23,7 +23,7 @@
           </template>
           <div class="tracklist">
             <div v-for="(disc, i) in tracksSortedByDiscNumber" :key="i">
-              <el-tag v-if="i > 1" type="warning">CD {{ i }}</el-tag>
+              <el-tag v-if="Object.keys(tracksSortedByDiscNumber).length > 1" type="warning">CD {{ i }}</el-tag>
               <div
                 v-for="(track, index) in disc"
                 :key="track.number"
@@ -88,7 +88,6 @@
             <el-collapse-item v-if="yandexMusicEmbedAlbumUrl" title="Yandex" name="yandex">
               <iframe
                 frameborder="0"
-                sandbox="allow-same-origin allow-scripts"
                 allow="clipboard-write"
                 style="border: none; width: 100%; height: 352px"
                 :src="yandexMusicEmbedAlbumUrl"
@@ -330,7 +329,7 @@ import DeleteIconButton from '@/components/buttons/DeleteIconButton.vue'
 import TrackForm from '@/components/forms/TrackForm.vue'
 import AlbumHero from '@/components/albums/AlbumHero.vue'
 
-import type { Album, Group, News, TrackInfo } from '@/types'
+import type { Group, News, TrackInfo } from '@/types'
 import SocialLinkForm from '@/components/forms/SocialLinkForm.vue'
 
 dayjs.extend(durationPlugin)

@@ -35,11 +35,11 @@ export const useStore = defineStore('store', () => {
     unknown: 'Неизвестно'
   }
   const albumTypeColorMap = {
-    'full-length': 'danger',
+    'full-length': 'success',
     ep: 'warning',
     single: 'success',
     demo: 'info',
-    live: 'primary',
+    live: 'danger',
     compilation: 'primary',
     split: 'warning'
   }
