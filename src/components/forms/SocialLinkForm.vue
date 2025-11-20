@@ -5,10 +5,11 @@ import { Remove } from '@element-plus/icons-vue'
 import { useStore } from '@/stores/store'
 
 import type { SocialNetwork } from '@/types'
+import DeleteIconButton from '../buttons/DeleteIconButton.vue'
 
 const store = useStore()
 
-const emit = defineEmits(['remove'])
+const emit = defineEmits(['removeLink'])
 const props = defineProps({
   link: {
     type: Object as PropType<SocialNetwork>,
@@ -25,8 +26,7 @@ const props = defineProps({
       </el-select>
 
       <el-input v-model="link.url" placeholder="URL ссылка" style="flex: 1; margin: 0 12px" />
-
-      <el-button type="danger" :icon="Remove" circle @click="emit('remove')" />
+      <DeleteIconButton @confirm="emit('removeLink')" />
     </div>
   </div>
 </template>

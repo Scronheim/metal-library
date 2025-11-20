@@ -118,7 +118,12 @@
           </template>
           <el-button type="primary" :icon="Plus" @click="addTrack" size="small">Добавить трек</el-button>
           <div class="tracklist-editor">
-            <TrackForm v-for="(track, index) in form.tracks" :key="index" :track="track" />
+            <TrackForm
+              v-for="(track, index) in form.tracks"
+              :key="index"
+              :track="track"
+              @delete-track="removeTrack(index)"
+            />
             <div class="empty-tracks" v-if="form.tracks.length === 0">
               <el-icon><Headset /></el-icon>
               <p>Треки не добавлены</p>
@@ -134,7 +139,7 @@
         <el-collapse-item title="Соц.сети" name="socialLinks">
           <div class="add-link-section">
             <el-dropdown v-if="authStore.userIsAdmin" @command="handleCommand">
-              <el-button type="info">
+              <el-button type="info" class="mb-2">
                 Добавить ссылку
                 <el-icon><ArrowDown /></el-icon>
               </el-button>
@@ -183,12 +188,11 @@ import { useAuthStore } from '@/stores/auth'
 
 import SocialLinkForm from '../forms/SocialLinkForm.vue'
 import TrackForm from '../forms/TrackForm.vue'
+import AddIconButton from '../buttons/AddIconButton.vue'
 
 import { getDefaultAlbum } from '@/consts'
 
 import type { Album, Group } from '@/types'
-import GroupSearch from '../inputs/GroupSearch.vue'
-import AddIconButton from '../buttons/AddIconButton.vue'
 
 dayjs.extend(durationPlugin)
 
@@ -281,6 +285,10 @@ const addTrack = (): void => {
     discNumber: lastTrack ? lastTrack.discNumber : 1,
     isInstrumental: false
   })
+}
+
+const removeTrack = (index: number): void => {
+  form.tracks.splice(index, 1)
 }
 
 const removeSocialLink = (index: number): void => {

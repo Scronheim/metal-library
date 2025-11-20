@@ -515,25 +515,27 @@
           </el-form-item>
         </div>
       </el-card>
-      <el-card>
-        <template #header>
-          Соц. сети
-          <AddIconButton @click="addSocialLink" />
-        </template>
-        <el-form-item prop="socialLinks">
-          <div v-for="(link, index) in group.socialLinks" :key="link.url" class="flex items-center gap-3 mb-2">
-            <el-select v-model="link.platform" placeholder="Платформа" style="width: 250px">
-              <el-option
-                v-for="(value, key) in store.socialPlatformNamesMap"
-                :key="value"
-                :label="value"
-                :value="key"
-              />
-            </el-select>
-            <el-input v-model="link.url" placeholder="Введите URL" />
-            <DeleteIconButton @confirm="removeSocialLink(index)" />
-          </div>
-        </el-form-item>
+      <el-card header="Соц. сети">
+        <el-dropdown v-if="authStore.userIsAdmin" @command="handleCommand">
+          <el-button type="info" class="mb-2">
+            Добавить ссылку
+            <el-icon><ArrowDown /></el-icon>
+          </el-button>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item v-for="(value, key) in store.socialPlatformNamesMap" :key="key" :command="key">
+                {{ value }}
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+        <SocialLinkForm
+          v-for="(link, index) in group.socialLinks"
+          :key="link.platform"
+          :link="link"
+          class="mb-2"
+          @remove-link="removeSocialLink(index)"
+        />
       </el-card>
     </el-form>
 
@@ -610,7 +612,7 @@ import {
   DataLine
 } from '@element-plus/icons-vue'
 import SvgIcon from '@jamescoyle/vue-icon'
-import { mdiAlbum, mdiTable, mdiCard, mdiCardAccountDetails } from '@mdi/js'
+import { mdiAlbum, mdiTable, mdiCardAccountDetails } from '@mdi/js'
 
 import { useStore } from '@/stores/store'
 import { useAuthStore } from '@/stores/auth'
@@ -629,6 +631,7 @@ import NewsForm from '@/components/forms/NewsForm.vue'
 import AlbumCard from '@/components/albums/AlbumCard.vue'
 
 import type { Album, Group, Member, News } from '@/types'
+import SocialLinkForm from '@/components/forms/SocialLinkForm.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -679,17 +682,13 @@ const sortedAlbums = computed((): Album[] =>
 
 const latestAlbums = computed((): Album[] => sortedAlbums.value.slice(0, 6))
 
-const getDiscographyPeriod = computed((): string => {
-  if (albums.value.length === 0) return 'Нет данных'
-
-  const years = albums.value.map(album => new Date(album.releaseDate).getFullYear())
-  const minYear = Math.min(...years)
-  const maxYear = Math.max(...years)
-
-  return minYear === maxYear ? `${minYear}` : `${minYear} - ${maxYear}`
-})
-
 // Methods
+const handleCommand = (platform: string): void => {
+  group.value.socialLinks.push({
+    platform,
+    url: ''
+  })
+}
 const goToAlbumPage = (album: Album): void => {
   router.push(`/album/${album._id}`)
 }

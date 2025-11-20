@@ -3,7 +3,9 @@ import { type PropType, ref } from 'vue'
 
 import type { FormRules } from 'element-plus'
 import type { TrackInfo } from '@/types'
+import DeleteIconButton from '../buttons/DeleteIconButton.vue'
 
+const emit = defineEmits(['deleteTrack'])
 const props = defineProps({
   track: {
     type: Object as PropType<TrackInfo>,
@@ -33,6 +35,7 @@ const lyricsRules = ref<FormRules<TrackInfo>>({
             <el-input-number v-model.number="track.discNumber" :min="1" />
           </span>
         </div>
+        <DeleteIconButton @confirm="emit('deleteTrack')" />
       </div>
 
       <div class="track-fields">
