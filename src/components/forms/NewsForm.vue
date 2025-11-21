@@ -33,7 +33,7 @@ const props = defineProps({
     </template>
     <div class="flex justify-start gap-2">
       <div>
-        <el-image style="min-width: 400px" :src="news.featuredImage" />
+        <el-image style="max-width: 400px" :src="news.featuredImage" />
       </div>
       <p>
         {{ textEllipsis(news.content, props.maxLength) }}

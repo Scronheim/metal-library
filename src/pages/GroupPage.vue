@@ -757,6 +757,7 @@ const openGroupInfoDialog = async (): Promise<void> => {
 const saveGroupInfo = async (): Promise<void> => {
   await store.updateGroup(group.value, true)
   showGroupBioDialog.value = false
+  showGroupInfoDialog.value = false
 }
 
 const toggleLike = async () => {
