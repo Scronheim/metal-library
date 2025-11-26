@@ -311,8 +311,8 @@ export const useStore = defineStore('store', () => {
     return !!authStore.user.profile.favoriteAlbums.find(a => a._id === currentAlbum.value._id)
   })
   // Methods
-  async function getReleaseCalendar(): Promise<Album[]> {
-    const { data } = await api.get('/release_calendar')
+  async function getReleaseCalendar(startDate: string, endDate: string): Promise<Album[]> {
+    const { data } = await api.get(`/release_calendar?start=${startDate}&end=${endDate}`)
     return data
   }
   async function getRandomGroup(): Promise<void> {

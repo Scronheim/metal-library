@@ -82,7 +82,7 @@
             </h3>
           </div>
           <div v-if="isSocialLinkEdit">
-            <SocialLinkForm v-for="link in album.socialLinks" :key="link.url" :link="link" />
+            <SocialLinkForm v-for="link in album.socialLinks" :key="link.url" :link="link" class="mb-2" />
           </div>
           <el-collapse v-else>
             <el-collapse-item v-if="yandexMusicEmbedAlbumUrl" title="Yandex" name="yandex">
@@ -140,55 +140,8 @@
             </el-link>
           </div>
         </section>
-        <section class="sidebar-section">
-          <div class="section-header">
-            <h3 class="section-title">
-              <el-icon>
-                <Headset />
-              </el-icon>
-              Группа
-              <EditIconButton
-                v-if="authStore.userIsAdmin"
-                @click="isGroupEdit = !isGroupEdit"
-                :is-close-edit="isGroupEdit"
-              />
-            </h3>
-          </div>
-          <div v-if="isGroupEdit">
-            <el-autocomplete
-              v-model="searchQuery"
-              :fetch-suggestions="searchGroup"
-              clearable
-              value-key="name"
-              @select="handleSelectGroup"
-            />
-          </div>
-          <div v-else class="flex flex-col gap-2">
-            <div
-              v-for="group in album.groups"
-              :key="group._id"
-              class="group-info-card"
-              @click="$router.push(`/group/${group._id}`)"
-            >
-              <el-avatar :size="60" :src="group.logo" :alt="group.name" shape="square" class="group-logo">
-                <el-icon v-if="!group.logo">
-                  <Headset />
-                </el-icon>
-              </el-avatar>
-              <div class="group-info">
-                <h4 class="group-name">{{ group.name }}</h4>
-                <p class="group-country">{{ group.country.join(', ') }}</p>
-                <div class="group-genres">
-                  <el-text v-for="genre in group.genres.slice(0, 2)" :key="genre._id" size="small" type="primary">
-                    {{ genre.name }}
-                  </el-text>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
 
-        <!-- Album Details -->
+        <!-- Discography -->
         <section class="sidebar-section">
           <div class="section-header">
             <h3 class="section-title">
@@ -313,9 +266,9 @@ import { useRoute } from 'vue-router'
 import dayjs from 'dayjs'
 import durationPlugin from 'dayjs/plugin/duration'
 import { ElMessage } from 'element-plus'
-import { Headset, InfoFilled, EditPen, Picture } from '@element-plus/icons-vue'
+import { InfoFilled, EditPen, Picture } from '@element-plus/icons-vue'
 import SvgIcon from '@jamescoyle/vue-icon'
-import { mdiPlay, mdiNewspaper } from '@mdi/js'
+import { mdiPlay, mdiNewspaper, mdiAlbum } from '@mdi/js'
 import { debounce } from 'lodash-es'
 
 import { useStore } from '@/stores/store'

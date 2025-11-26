@@ -1,4 +1,7 @@
 import dayjs from 'dayjs'
+import ru from 'dayjs/locale/ru'
+
+dayjs.locale(ru)
 
 export const formatDate = (date: string, format: string = 'DD.MM.YYYY'): string => {
   return dayjs(date).format(format)

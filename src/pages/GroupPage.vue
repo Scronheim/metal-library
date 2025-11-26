@@ -356,37 +356,6 @@
             </el-card>
           </div>
         </section>
-
-        <!-- Latest Albums -->
-        <section class="sidebar-section">
-          <div class="section-header">
-            <h3 class="section-title">
-              <SvgIcon type="mdi" :path="mdiAlbum" :size="18" />
-              Последние альбомы
-            </h3>
-          </div>
-          <div class="latest-albums grid grid-cols-1">
-            <div
-              v-for="album in latestAlbums"
-              :key="album._id"
-              class="album-item"
-              @click="$router.push(`/album/${album._id}`)"
-            >
-              <div class="album-cover">
-                <el-avatar :size="80" :src="album.cover" :alt="album.title" shape="square" class="group-logo">
-                  <SvgIcon v-if="!album.cover" type="mdi" :path="mdiAlbum" :size="18" />
-                </el-avatar>
-              </div>
-              <div class="album-info">
-                <h5 class="album-title">{{ album.title }}</h5>
-                <p class="album-year-type">
-                  {{ new Date(album.releaseDate).getFullYear() }}
-                </p>
-                <el-tag :type="store.albumTypeColorMap[album.type]">{{ store.albumTypesMap[album.type] }}</el-tag>
-              </div>
-            </div>
-          </div>
-        </section>
       </el-col>
     </el-container>
   </div>
@@ -654,7 +623,6 @@ const memberMode = ref<string>('add')
 const selectedAlbumType = ref<string>('all')
 const groupInfoRules = ref<FormRules<Group>>({
   country: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }],
-  formedYear: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }],
   status: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }],
   genres: [{ min: 1, type: 'array', message: 'Выберите хотя бы 1 жанр', trigger: 'blur' }],
   logo: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }],

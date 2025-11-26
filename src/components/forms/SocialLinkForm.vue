@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { type PropType } from 'vue'
-import { Remove } from '@element-plus/icons-vue'
 
 import { useStore } from '@/stores/store'
 

@@ -14,6 +14,7 @@ import { useAuthStore } from '@/stores/auth'
 import EditAlbumDialog from '@/components/dialogs/EditAlbumDialog.vue'
 
 import { ElNotification } from 'element-plus'
+import { formatDate } from '@/utils'
 
 const router = useRouter()
 
@@ -132,7 +133,9 @@ const openAlbumInfoEditDialog = async (): Promise<void> => {
         <div class="album-meta">
           <div class="meta-item">
             <SvgIcon type="mdi" :path="mdiCalendar" :size="18" />
-            <span>{{ albumReleaseYear }}г.</span>
+            <el-tooltip :content="formatDate(album.releaseDate, 'DD MMMM YYYY')">
+              <span>{{ albumReleaseYear }}г.</span>
+            </el-tooltip>
           </div>
           <div class="meta-item">
             <el-icon>

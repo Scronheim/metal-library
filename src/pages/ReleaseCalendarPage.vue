@@ -24,7 +24,18 @@ const calendarOptions = ref({
     prev: 'Предыдущий месяц',
     next: 'Следующий месяц'
   },
-  events: []
+  events: [],
+  datesSet: async dateInfo => {
+    calendarOptions.value.events = (await store.getReleaseCalendar(dateInfo.startStr, dateInfo.endStr)).map(r => {
+      return {
+        url: `/#/album/${r._id}`,
+        title: `${r.title} (${r.groups.map(g => g.name).join('/')})`,
+        cover: r.cover,
+        start: new Date(r.releaseDate),
+        end: new Date(r.releaseDate)
+      }
+    })
+  }
 })
 
 // Methods
@@ -36,19 +47,7 @@ ${release.title}
 </div>`
 }
 
-onMounted(async () => {
-  console.log(calendar.value)
-
-  calendarOptions.value.events = (await store.getReleaseCalendar()).map(r => {
-    return {
-      url: `/#/album/${r._id}`,
-      title: `${r.title} (${r.groups.map(g => g.name).join('/')})`,
-      cover: r.cover,
-      start: new Date(r.releaseDate),
-      end: new Date(r.releaseDate)
-    }
-  })
-})
+onMounted(async () => {})
 </script>
 
 <template>
