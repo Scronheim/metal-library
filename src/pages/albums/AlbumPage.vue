@@ -47,6 +47,7 @@
                   </div>
 
                   <div v-if="authStore.userIsAdmin" class="track-actions">
+                    <YoutubeIconButton v-if="track.videoLink" @click="openLinkInNewTab(track.videoLink)" />
                     <EditIconButton @click="editLyrics(track)" />
                     <DeleteIconButton @confirm="removeTrack(index)" />
                   </div>
@@ -268,13 +269,13 @@ import durationPlugin from 'dayjs/plugin/duration'
 import { ElMessage } from 'element-plus'
 import { InfoFilled, EditPen, Picture } from '@element-plus/icons-vue'
 import SvgIcon from '@jamescoyle/vue-icon'
-import { mdiPlay, mdiNewspaper, mdiAlbum } from '@mdi/js'
+import { mdiPlay, mdiNewspaper, mdiYoutube } from '@mdi/js'
 import { debounce } from 'lodash-es'
 
 import { useStore } from '@/stores/store'
 import { useAuthStore } from '@/stores/auth'
 
-import { formatDescription } from '@/utils'
+import { formatDescription, openLinkInNewTab } from '@/utils'
 
 import EditIconButton from '@/components/buttons/EditIconButton.vue'
 import AddIconButton from '@/components/buttons/AddIconButton.vue'
@@ -284,6 +285,7 @@ import AlbumHero from '@/components/albums/AlbumHero.vue'
 
 import type { Group, News, TrackInfo } from '@/types'
 import SocialLinkForm from '@/components/forms/SocialLinkForm.vue'
+import YoutubeIconButton from '@/components/buttons/YoutubeIconButton.vue'
 
 dayjs.extend(durationPlugin)
 
@@ -297,9 +299,7 @@ const showLyricsEdit = ref(false)
 const editingTrack = ref<TrackInfo>({})
 const isSocialLinkEdit = ref(false)
 const isDescriptionEdit = ref(false)
-const isGroupEdit = ref(false)
 const isDetailsEdit = ref(false)
-const searchQuery = ref('')
 const foundedGroups = ref<Group[]>([])
 const lineClampedForAlbumDescription = ref<number | string>(5)
 

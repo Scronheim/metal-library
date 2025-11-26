@@ -44,9 +44,6 @@
                 </el-tag>
               </div>
               <div class="group-actions">
-                <el-button type="danger" :icon="Star" @click="toggleLike">
-                  {{ group.stats.likes.length }}
-                </el-button>
                 <el-button type="primary" :icon="Share" @click="shareGroup">Поделиться</el-button>
                 <el-button
                   v-if="authStore.userIsAuth"
@@ -149,8 +146,8 @@
                     @update-album-list="getGroupAlbums"
                   />
                 </template>
-                <el-empty v-else description="Альбомы не добавлены" class="empty-albums" />
               </div>
+              <el-empty v-if="sortedAlbums.length === 0" description="Альбомы не добавлены" class="empty-albums" />
             </el-card>
           </el-tab-pane>
 
@@ -288,6 +285,25 @@
                   {{ theme }}
                 </el-tag>
               </div>
+            </div>
+          </div>
+        </section>
+        <section v-if="groupVideos.length" class="sidebar-section">
+          <div class="section-header">
+            <h3 class="section-title">
+              <el-icon><VideoCamera /></el-icon>
+              Видео
+            </h3>
+          </div>
+          <div class="stats-cards">
+            <div
+              v-for="video in groupVideos"
+              :key="video.videoLink"
+              class="album-card flex flex-col"
+              @click="openVideoDialog(video)"
+            >
+              <el-text>{{ video.title }}</el-text>
+              <el-image :src="getYoutubeThumbnail(video.videoLink)" />
             </div>
           </div>
         </section>
@@ -559,6 +575,19 @@
     @add="addMemberToGroup"
     @update="updateMember"
   />
+
+  <el-dialog v-model="videoDialog" width="600" @close="closeVideoDialog">
+    <iframe
+      width="560"
+      height="315"
+      :src="embedVideoUrl"
+      :title="selectedVideo?.title"
+      frameborder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      referrerpolicy="strict-origin-when-cross-origin"
+      allowfullscreen
+    ></iframe>
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
@@ -579,7 +608,8 @@ import {
   Search,
   Close,
   DataLine,
-  ArrowDown
+  ArrowDown,
+  VideoCamera
 } from '@element-plus/icons-vue'
 import SvgIcon from '@jamescoyle/vue-icon'
 import { mdiAlbum, mdiTable, mdiCardAccountDetails } from '@mdi/js'
@@ -598,9 +628,9 @@ import NewMemberAddForm from '@/components/forms/NewMemberAddForm.vue'
 import MemberCard from '@/components/forms/MemberCard.vue'
 import NewsForm from '@/components/forms/NewsForm.vue'
 import AlbumCard from '@/components/albums/AlbumCard.vue'
-
-import type { Album, Group, Member, News } from '@/types'
 import SocialLinkForm from '@/components/forms/SocialLinkForm.vue'
+
+import type { Album, Group, Member, News, Video } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -611,11 +641,14 @@ const authStore = useAuthStore()
 const albums = ref<Album[]>([])
 const similarGroups = ref<Group[]>([])
 const relatedNews = ref<News[]>([])
+const groupVideos = ref<Video[]>([])
+const selectedVideo = ref<Video>()
 const activeTab = ref<string>('discography')
 const showGroupInfoDialog = ref<boolean>(false)
 const showGroupBioDialog = ref<boolean>(false)
 const showEditableAlbumDialog = ref<boolean>(false)
 const showMemberDialog = ref<boolean>(false)
+const videoDialog = ref<boolean>(false)
 const showNewMemberInput = ref<boolean>(false)
 const showPastMemberInput = ref<boolean>(false)
 const isCurrentMember = ref<boolean>(false)
@@ -638,7 +671,6 @@ const totalMembers = computed((): number => {
   if (!group.value) return 0
   return (group.value.currentMembers?.length || 0) + (group.value.pastMembers?.length || 0)
 })
-
 const sortedAlbums = computed((): Album[] =>
   albums.value
     .filter(a => {
@@ -647,10 +679,21 @@ const sortedAlbums = computed((): Album[] =>
     })
     .sort((a, b) => b.releaseDate - a.releaseDate)
 )
-
-const latestAlbums = computed((): Album[] => sortedAlbums.value.slice(0, 6))
+const embedVideoUrl = computed(() => {
+  return selectedVideo.value?.videoLink.replace('watch?v=', 'embed/')
+})
 
 // Methods
+const closeVideoDialog = () => {
+  selectedVideo.value = { title: '', videoLink: '' }
+}
+const openVideoDialog = (video: Video): void => {
+  selectedVideo.value = video
+  videoDialog.value = true
+}
+const getYoutubeThumbnail = (link: string): string => {
+  return `https://img.youtube.com/vi/${link.split('=')[1]}/mqdefault.jpg`
+}
 const handleCommand = (platform: string): void => {
   group.value.socialLinks.push({
     platform,
@@ -728,15 +771,6 @@ const saveGroupInfo = async (): Promise<void> => {
   showGroupInfoDialog.value = false
 }
 
-const toggleLike = async () => {
-  try {
-    // API call to like/unlike
-    ElMessage.success('Лайк обновлен')
-  } catch (error) {
-    ElMessage.error('Ошибка при обновлении лайка')
-  }
-}
-
 const shareGroup = async () => {
   try {
     await navigator.clipboard.writeText(window.location.href)
@@ -763,6 +797,7 @@ const collectGroupInfo = async (): Promise<void> => {
   await getGroupAlbums()
   similarGroups.value = await store.getSimilarGroups()
   relatedNews.value = await store.getGroupNews()
+  groupVideos.value = await store.getGroupVideos()
 }
 
 watch(route, async () => {
@@ -1086,7 +1121,9 @@ onMounted(async () => {
 }
 
 .empty-albums {
-  padding: 60px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .members-section {
@@ -1247,7 +1284,7 @@ onMounted(async () => {
 .stats-cards {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 6px;
 }
 
 .stat-card {

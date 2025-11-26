@@ -67,6 +67,9 @@ const lyricsRules = ref<FormRules<TrackInfo>>({
           show-word-limit
         />
       </el-form-item>
+      <el-form-item label="Ссылка на клип" prop="videoLink" class="lyrics-field">
+        <el-input v-model="track.videoLink" />
+      </el-form-item>
     </div>
   </el-form>
 </template>

@@ -70,5 +70,6 @@ declare module 'vue' {
     TextEditor: typeof import('./src/components/TextEditor.vue')['default']
     TrackForm: typeof import('./src/components/forms/TrackForm.vue')['default']
     UserBar: typeof import('./src/components/UserBar.vue')['default']
+    YoutubeIconButton: typeof import('./src/components/buttons/YoutubeIconButton.vue')['default']
   }
 }

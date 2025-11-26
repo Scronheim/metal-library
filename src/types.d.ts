@@ -68,6 +68,7 @@ export interface TrackInfo {
   duration: string
   lyrics: string
   isInstrumental: boolean
+  videoLink: string
 }
 
 export interface Group {
@@ -166,4 +167,9 @@ export interface Review {
   verifiedUser: User | null
   views: number
   isEdit?: boolean // нужен только на фронте
+}
+
+export interface Video {
+  title: string
+  videoLink: string
 }

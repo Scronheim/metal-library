@@ -24,3 +24,7 @@ export const formatDescription = (text: string): string => {
   if (!text) return ''
   return text.replace(/\n/g, '<br>')
 }
+
+export const openLinkInNewTab = (link: string): void => {
+  window.open(link, '_blank')
+}
