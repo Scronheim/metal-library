@@ -168,6 +168,7 @@
                 <NewMemberAddForm
                   v-if="showNewMemberInput"
                   :member="editableMember"
+                  :is-current-member="true"
                   @open-add-member-dialog="openAddMemberDialog"
                   @add-member-to-group="addMemberToGroup"
                 />
@@ -195,6 +196,7 @@
                 <NewMemberAddForm
                   v-if="showPastMemberInput"
                   :member="editableMember"
+                  :is-current-member="false"
                   @open-add-member-dialog="openAddMemberDialog"
                   @add-member-to-group="addMemberToGroup"
                 />

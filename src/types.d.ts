@@ -96,7 +96,7 @@ export interface Group {
   pastMembers: {
     member: Member
     roles: string[]
-    years: string[]
+    years: string
   }[]
   stats: {
     views: number

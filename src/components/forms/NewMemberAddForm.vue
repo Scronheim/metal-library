@@ -13,6 +13,10 @@ const props = defineProps({
   member: {
     type: Object as PropType<Member>,
     required: true
+  },
+  isCurrentMember: {
+    type: Boolean,
+    default: true
   }
 })
 
@@ -22,7 +26,8 @@ const queryMember = ref('')
 const foundedMembers = ref<Member[]>([])
 
 const handleNewMember = (member: Member): void => {
-  props.member = member
+  if (props.isCurrentMember) store.currentGroup.currentMembers.push({ member, roles: [] })
+  else store.currentGroup.pastMembers.push({ member, roles: [], years: '' })
 }
 const searchMember = async (queryString: string, cb: any): Promise<void> => {
   if (!queryString) return cb([])
@@ -44,16 +49,11 @@ const searchMember = async (queryString: string, cb: any): Promise<void> => {
       style="width: 250px"
       @select="handleNewMember"
     >
-      <template #default="{ item }">{{ item.name }} ({{ item.birthName }})</template>
+      <template #default="{ item }">
+        {{ item.birthName }}
+        <template v-if="item.name">({{ item.name }})</template>
+      </template>
     </el-autocomplete>
-    <!-- <el-select v-model="editableMember.roles" multiple placeholder="Выберите роль">
-                      <el-option
-                        v-for="instrument in store.instruments"
-                        :key="instrument"
-                        :label="instrument"
-                        :value="instrument"
-                      />
-                    </el-select> -->
     <el-button type="success" @click="emit('addMemberToGroup')">Добавить</el-button>
   </div>
 </template>
