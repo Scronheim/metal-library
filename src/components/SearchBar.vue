@@ -91,7 +91,7 @@ const getItemSubtitle = item => {
   if (item.type === 'group') {
     return `${item.country} • ${item.formedYear}`
   } else {
-    return item.group?.name || 'Неизвестный исполнитель'
+    return item.groups.map(g => g.name).join(', ')
   }
 }
 

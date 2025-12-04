@@ -155,7 +155,7 @@
             :key="link.platform"
             :link="link"
             class="mb-2"
-            @remove="removeSocialLink(index)"
+            @remove-link="removeSocialLink(index)"
           />
         </el-collapse-item>
       </el-collapse>
