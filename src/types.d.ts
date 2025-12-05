@@ -173,3 +173,11 @@ export interface Video {
   title: string
   videoLink: string
 }
+
+export interface AlbumNeighbors {
+  [key: string]: {
+    // Название группы
+    next: Album
+    previous: Album
+  }
+}

@@ -10,7 +10,7 @@ import { useAuthStore } from '@/stores/auth'
 
 import { getDefaultAlbum, getDefaultGroup } from '@/consts'
 
-import type { Group, Album, Genre, TrackInfo, Country, Member, Review, News, Video } from '@/types'
+import type { Group, Album, Genre, TrackInfo, Country, Member, Review, News, Video, AlbumNeighbors } from '@/types'
 
 export const useStore = defineStore('store', () => {
   // Refs
@@ -467,6 +467,10 @@ export const useStore = defineStore('store', () => {
     const { data } = await api.get(`/album/${route.params.id}/reviews`)
     return data
   }
+  async function getAlbumNeighbors(): Promise<AlbumNeighbors> {
+    const { data } = await api.get(`/album/${route.params.id}/neighbors`)
+    return data
+  }
   async function getGenres(): Promise<void> {
     const { data } = await api.get('/genre')
     availableGenres.value = data
@@ -528,6 +532,7 @@ export const useStore = defineStore('store', () => {
     getSimilarGroups,
     getGroupNews,
     getAlbumReviews,
+    getAlbumNeighbors,
     getNewsById,
     getRandomGroup,
     getReleaseCalendar,

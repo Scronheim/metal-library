@@ -110,39 +110,62 @@
           </el-collapse>
         </section>
 
-        <!-- Group Info -->
+        <!-- Discography -->
         <section class="sidebar-section">
           <div class="section-header">
             <h3 class="section-title">
-              <el-icon>
-                <EditPen />
-              </el-icon>
-              Об альбоме
-              <EditIconButton
-                v-if="authStore.userIsAdmin"
-                @click="isDescriptionEdit = !isDescriptionEdit"
-                :is-close-edit="isDescriptionEdit"
-              />
+              <SvgIcon type="mdi" :path="mdiAlbum" :size="18" />
+              Дискография
             </h3>
           </div>
-          <div v-if="isDescriptionEdit">
-            <el-input
-              type="textarea"
-              :rows="20"
-              v-model="album.description"
-              placeholder="Введите информацию об альбоме"
-            />
-          </div>
-          <div v-else class="description-text">
-            <el-text :line-clamp="lineClampedForAlbumDescription" v-html="formatDescription(album.description)" />
-            <br />
-            <el-link v-if="album.description" @click="toggleAlbumDescription">
-              {{ lineClampedForAlbumDescription === 'none' ? 'Свернуть' : 'Развернуть' }}
-            </el-link>
+          <div class="description-text">
+            <div v-for="(value, groupName) in foundedNeighbors" class="flex flex-col">
+              <p class="flex justify-center font-bold">{{ groupName }}</p>
+              <div class="flex justify-between">
+                <div class="flex items-center">
+                  <el-button
+                    v-if="value.previous"
+                    :icon="ArrowLeft"
+                    size="small"
+                    circle
+                    @click="router.push(`/album/${value.previous._id}`)"
+                  />
+                  <div
+                    v-if="value.previous"
+                    class="flex flex-col items-center cursor-pointer"
+                    @click="router.push(`/album/${value.previous._id}`)"
+                  >
+                    <el-avatar :size="80" :src="value.previous.cover" :alt="value.previous.title" shape="square">
+                      <i class="el-icon-disc" v-if="!value.previous.cover"></i>
+                    </el-avatar>
+                    <el-text>{{ value.previous.title }} ({{ formatDate(value.previous.releaseDate, 'YYYY') }})</el-text>
+                  </div>
+                </div>
+                <div class="flex items-center">
+                  <div
+                    v-if="value.next"
+                    class="flex flex-col items-center cursor-pointer"
+                    @click="router.push(`/album/${value.next._id}`)"
+                  >
+                    <el-avatar :size="80" :src="value.next.cover" :alt="value.next.title" shape="square">
+                      <i class="el-icon-disc" v-if="!value.next.cover"></i>
+                    </el-avatar>
+                    <el-text>{{ value.next.title }} ({{ formatDate(value.next.releaseDate, 'YYYY') }})</el-text>
+                  </div>
+                  <el-button
+                    v-if="value.next"
+                    :icon="ArrowRight"
+                    size="small"
+                    circle
+                    @click="router.push(`/album/${value.next._id}`)"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
-        <!-- Discography -->
+        <!-- Album details -->
         <section class="sidebar-section">
           <div class="section-header">
             <h3 class="section-title">
@@ -187,7 +210,7 @@
                 <template v-if="isDetailsEdit">
                   <el-date-picker v-model="album.releaseDate" type="date" placeholder="Выберите день" />
                 </template>
-                <template v-else>{{ formatDate(album.releaseDate) }}</template>
+                <template v-else>{{ formatLocaleDate(album.releaseDate) }}</template>
               </span>
             </div>
             <div class="detail-item">
@@ -201,7 +224,7 @@
             </div>
             <div class="detail-item">
               <span class="detail-label">Добавлен:</span>
-              <span class="detail-value">{{ formatDate(album.createdAt) }}</span>
+              <span class="detail-value">{{ formatLocaleDate(album.createdAt) }}</span>
             </div>
           </div>
         </section>
@@ -234,7 +257,7 @@
               </div>
               <div class="news-content">
                 <h5 class="news-title">{{ news.title }}</h5>
-                <p class="news-date">{{ formatDate(news.publishedAt) }}</p>
+                <p class="news-date">{{ formatLocaleDate(news.publishedAt) }}</p>
               </div>
             </div>
           </div>
@@ -263,19 +286,18 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import dayjs from 'dayjs'
 import durationPlugin from 'dayjs/plugin/duration'
 import { ElMessage } from 'element-plus'
-import { InfoFilled, EditPen, Picture } from '@element-plus/icons-vue'
+import { InfoFilled, Picture, ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 import SvgIcon from '@jamescoyle/vue-icon'
-import { mdiPlay, mdiNewspaper, mdiYoutube } from '@mdi/js'
-import { debounce } from 'lodash-es'
+import { mdiPlay, mdiNewspaper, mdiAlbum } from '@mdi/js'
 
 import { useStore } from '@/stores/store'
 import { useAuthStore } from '@/stores/auth'
 
-import { formatDescription, openLinkInNewTab } from '@/utils'
+import { openLinkInNewTab, formatDate } from '@/utils'
 
 import EditIconButton from '@/components/buttons/EditIconButton.vue'
 import AddIconButton from '@/components/buttons/AddIconButton.vue'
@@ -283,13 +305,14 @@ import DeleteIconButton from '@/components/buttons/DeleteIconButton.vue'
 import TrackForm from '@/components/forms/TrackForm.vue'
 import AlbumHero from '@/components/albums/AlbumHero.vue'
 
-import type { Group, News, TrackInfo } from '@/types'
+import type { News, TrackInfo, AlbumNeighbors } from '@/types'
 import SocialLinkForm from '@/components/forms/SocialLinkForm.vue'
 import YoutubeIconButton from '@/components/buttons/YoutubeIconButton.vue'
 
 dayjs.extend(durationPlugin)
 
 const route = useRoute()
+const router = useRouter()
 const store = useStore()
 const authStore = useAuthStore()
 // Refs
@@ -298,10 +321,8 @@ const expandedTracks = ref(new Set())
 const showLyricsEdit = ref(false)
 const editingTrack = ref<TrackInfo>({})
 const isSocialLinkEdit = ref(false)
-const isDescriptionEdit = ref(false)
 const isDetailsEdit = ref(false)
-const foundedGroups = ref<Group[]>([])
-const lineClampedForAlbumDescription = ref<number | string>(5)
+const foundedNeighbors = ref<AlbumNeighbors>({})
 
 // Computed
 const album = computed(() => store.currentAlbum)
@@ -346,11 +367,6 @@ const yandexMusicEmbedAlbumUrl = computed(() => {
 })
 
 // Methods
-const toggleAlbumDescription = () => {
-  lineClampedForAlbumDescription.value === 'none'
-    ? (lineClampedForAlbumDescription.value = 5)
-    : (lineClampedForAlbumDescription.value = 'none')
-}
 
 const removeTrack = (index: number): void => {
   store.currentAlbum.tracks.splice(index, 1)
@@ -359,21 +375,12 @@ const showDetailsEdit = async (): Promise<void> => {
   await store.getGenres()
   isDetailsEdit.value = !isDetailsEdit.value
 }
-const handleSelectGroup = (group: Group): void => {
-  store.currentAlbum.groups.push(group)
-}
-const searchGroup = async (queryString: string, cb: any): Promise<void> => {
-  if (!queryString) return cb([])
-  const { data } = await store.searchGroup(queryString)
-  foundedGroups.value = data.groups
-  cb(data.groups)
-}
 
 const formatTrackDuration = (duration: number): string => {
   return dayjs.duration(duration, 'seconds').format('HH:mm:ss')
 }
 
-const formatDate = (dateString: string): string => {
+const formatLocaleDate = (dateString: string): string => {
   if (!dateString) return ''
   const date = new Date(dateString)
   return date.toLocaleDateString('ru-RU', {
@@ -429,6 +436,7 @@ const saveLyrics = async (): Promise<void> => {
 }
 watch(route, async () => {
   await store.getAlbumById()
+  foundedNeighbors.value = await store.getAlbumNeighbors()
 })
 // watch(
 //   album,
@@ -440,6 +448,7 @@ watch(route, async () => {
 // )
 onMounted(async () => {
   await store.getAlbumById()
+  foundedNeighbors.value = await store.getAlbumNeighbors()
 })
 </script>
 
