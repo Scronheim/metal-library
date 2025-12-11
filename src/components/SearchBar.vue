@@ -6,26 +6,22 @@
       </template>
 
       <div class="search-popover">
-        <el-input
+        <el-autocomplete
           v-model="searchQuery"
-          placeholder="Поиск групп или альбомов..."
-          :prefix-icon="Search"
+          :fetch-suggestions="performQuickSearch"
+          placeholder="Введите название группы или альбома"
           clearable
-          @input="handleSearchInput"
-          @keyup.enter="performSearch"
-          ref="searchInputRef"
-        />
-
-        <!-- Quick Results -->
-        <div class="quick-results" v-if="quickResults.length > 0 && searchQuery">
-          <div class="results-section">
-            <div v-for="item in quickResults" :key="item._id" class="result-item" @click="navigateToItem(item)">
+          value-key="name"
+          @select="navigateToItem"
+        >
+          <template #default="{ item }">
+            <div class="flex items-center gap-2">
               <div class="item-avatar">
                 <el-avatar :size="32" :src="getItemImage(item)">
                   <i :class="getItemIcon(item)"></i>
                 </el-avatar>
               </div>
-              <div class="item-info">
+              <div class="flex flex-col item-info">
                 <div class="item-title">{{ getItemTitle(item) }}</div>
                 <div class="item-subtitle">{{ getItemSubtitle(item) }}</div>
               </div>
@@ -35,17 +31,8 @@
                 </el-tag>
               </div>
             </div>
-          </div>
-        </div>
-
-        <!-- Empty State -->
-        <div class="empty-state" v-else-if="searchQuery && !isLoading">
-          <el-icon>
-            <Search />
-          </el-icon>
-          <p>Ничего не найдено</p>
-        </div>
-
+          </template>
+        </el-autocomplete>
         <!-- Loading State -->
         <div class="loading-state" v-if="isLoading">
           <el-skeleton :rows="3" animated />
@@ -72,7 +59,6 @@ const popoverVisible = ref(false)
 const quickResults = ref<Group[] | Album[]>([])
 const isLoading = ref(false)
 const searchInputRef = ref(null)
-const searchTimeout = ref(null)
 
 // Methods
 const getItemImage = item => {
@@ -95,27 +81,10 @@ const getItemSubtitle = item => {
   }
 }
 
-const handleSearchInput = () => {
-  if (searchTimeout.value) {
-    clearTimeout(searchTimeout.value)
-  }
-
-  if (!searchQuery.value.trim()) {
-    quickResults.value = []
-    return
-  }
-
-  isLoading.value = true
-  searchTimeout.value = setTimeout(async () => {
-    await performQuickSearch()
-    isLoading.value = false
-  }, 300)
-}
-
-const performQuickSearch = async () => {
+const performQuickSearch = async (query: string, cb: any) => {
   try {
-    const query = searchQuery.value.trim()
-    if (!query) return
+    isLoading.value = true
+    if (!query) return cb([])
 
     // Search groups and albums simultaneously
     const [groupsResponse, albumsResponse] = await Promise.all([
@@ -129,30 +98,12 @@ const performQuickSearch = async () => {
     // Combine and limit results
     const groups = groupsData.groups.map(group => ({ ...group, type: 'group' }))
     const albums = albumsData.albums.map(album => ({ ...album, type: 'album' }))
-
-    quickResults.value = [...groups, ...albums].slice(0, 5)
+    isLoading.value = false
+    cb([...groups, ...albums].slice(0, 5))
   } catch (error) {
     console.error('Search error:', error)
     ElMessage.error('Ошибка при поиске')
   }
-}
-
-const performSearch = () => {
-  if (!searchQuery.value.trim()) return
-
-  showAllResults()
-}
-
-const showAllResults = () => {
-  if (!searchQuery.value.trim()) return
-
-  popoverVisible.value = false
-  router.push({
-    path: '/search',
-    query: { q: searchQuery.value.trim() }
-  })
-  searchQuery.value = ''
-  quickResults.value = []
 }
 
 const navigateToItem = item => {
@@ -252,7 +203,6 @@ onMounted(() => {
   font-size: 0.9rem;
   font-weight: 500;
   color: #f5f5f5;
-  margin-bottom: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
