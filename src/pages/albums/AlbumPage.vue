@@ -22,46 +22,44 @@
             </div>
           </template>
           <div class="tracklist">
-            <div v-for="(disc, i) in tracksSortedByDiscNumber" :key="i">
-              <el-tag v-if="Object.keys(tracksSortedByDiscNumber).length > 1" type="warning">CD {{ i }}</el-tag>
-              <div
-                v-for="(track, index) in disc"
-                :key="track.number"
-                class="track-item"
-                :class="{ 'has-lyrics': track.lyrics }"
-              >
-                <div class="track-main" @click="toggleTrackLyrics(track)">
-                  <div class="track-number">
-                    {{ track.number }}
-                  </div>
+            <div
+              v-for="(track, index) in store.currentAlbum.tracks"
+              :key="track.number"
+              class="track-item"
+              :class="{ 'has-lyrics': track.lyrics }"
+            >
+              <div class="track-main" @click="toggleTrackLyrics(track)">
+                <div class="track-number">
+                  <div v-if="albumHasMoreThanOneDisc">{{ track.number }} - {{ track.discNumber }}</div>
+                  <div else>{{ track.number }}</div>
+                </div>
 
-                  <div class="track-info">
-                    <h4 class="track-title">{{ track.title }}</h4>
-                    <div class="track-meta">
-                      <span class="track-duration">{{ track.duration }}</span>
-                      <el-tag v-if="track.lyrics" size="small" type="info" class="lyrics-tag">есть текст</el-tag>
-                      <el-tag v-if="track.isInstrumental" size="small" type="info" class="lyrics-tag">
-                        инструментальный
-                      </el-tag>
-                    </div>
-                  </div>
-
-                  <div v-if="authStore.userIsAdmin" class="track-actions">
-                    <YoutubeIconButton v-if="track.videoLink" @click="openLinkInNewTab(track.videoLink)" />
-                    <EditIconButton @click="editLyrics(track)" />
-                    <DeleteIconButton @confirm="removeTrack(index)" />
+                <div class="track-info">
+                  <h4 class="track-title">{{ track.title }}</h4>
+                  <div class="track-meta">
+                    <span class="track-duration">{{ track.duration }}</span>
+                    <el-tag v-if="track.lyrics" size="small" type="info" class="lyrics-tag">есть текст</el-tag>
+                    <el-tag v-if="track.isInstrumental" size="small" type="info" class="lyrics-tag">
+                      инструментальный
+                    </el-tag>
                   </div>
                 </div>
 
-                <!-- Lyrics Section -->
-                <el-collapse-transition>
-                  <div v-show="isTrackExpanded(track.number)" class="track-lyrics">
-                    <div class="lyrics-content">
-                      <pre class="lyrics-text">{{ track.lyrics }}</pre>
-                    </div>
-                  </div>
-                </el-collapse-transition>
+                <div v-if="authStore.userIsAdmin" class="track-actions">
+                  <YoutubeIconButton v-if="track.videoLink" @click="openLinkInNewTab(track.videoLink)" />
+                  <EditIconButton @click="editLyrics(track)" />
+                  <DeleteIconButton @confirm="removeTrack(index)" />
+                </div>
               </div>
+
+              <!-- Lyrics Section -->
+              <el-collapse-transition>
+                <div v-show="isTrackExpanded(track.number)" class="track-lyrics">
+                  <div class="lyrics-content">
+                    <pre class="lyrics-text">{{ track.lyrics }}</pre>
+                  </div>
+                </div>
+              </el-collapse-transition>
             </div>
           </div>
         </el-card>
@@ -335,28 +333,6 @@ const albumTotalDuration = computed((): string => {
 
   return formatTrackDuration(totalSeconds)
 })
-const tracksSortedByDiscNumber = computed((): { [discNumber: number]: TrackInfo[] } => {
-  const grouped: { [discNumber: number]: TrackInfo[] } = {}
-
-  store.currentAlbum.tracks.forEach(track => {
-    const disc = track.discNumber
-    if (!grouped[disc]) {
-      grouped[disc] = []
-    }
-    grouped[disc].push(track)
-  })
-
-  // Сортируем ключи объекта
-  const sorted: { [discNumber: number]: TrackInfo[] } = {}
-  Object.keys(grouped)
-    .map(Number)
-    .sort((a, b) => a - b)
-    .forEach(disc => {
-      sorted[disc] = grouped[disc]
-    })
-
-  return sorted
-})
 const spotifyEmbedAlbumUrl = computed(() => {
   const link = store.currentAlbum.socialLinks.find(l => l.platform === 'spotify')
   return link?.url.replace('/album', '/embed/album')
@@ -365,9 +341,10 @@ const yandexMusicEmbedAlbumUrl = computed(() => {
   const link = store.currentAlbum.socialLinks.find(l => l.platform === 'yandex')
   return link?.url.replace('/album', '/iframe/album') || ''
 })
-
+const albumHasMoreThanOneDisc = computed(() => {
+  return store.currentAlbum.tracks.some(t => t.discNumber > 1)
+})
 // Methods
-
 const removeTrack = (index: number): void => {
   store.currentAlbum.tracks.splice(index, 1)
 }
@@ -423,11 +400,6 @@ const saveLyrics = async (): Promise<void> => {
   try {
     await store.updateLyrics(store.currentAlbum, editingTrack.value, true)
     showLyricsEdit.value = false
-    // Update local data
-    const trackIndex = store.currentAlbum.tracks.findIndex(t => t.number === editingTrack.value.number)
-    if (trackIndex !== -1) {
-      store.currentAlbum.tracks[trackIndex].lyrics = editingTrack.value.lyrics
-    }
   } catch (error) {
     ElMessage.error('Ошибка при сохранении текста')
   } finally {
@@ -532,7 +504,7 @@ onMounted(async () => {
 }
 
 .track-number {
-  width: 30px;
+  width: 40px;
   text-align: center;
   color: #9e2a2a;
   font-weight: bold;

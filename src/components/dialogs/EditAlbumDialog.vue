@@ -190,7 +190,7 @@ import AddIconButton from '../buttons/AddIconButton.vue'
 
 import { getDefaultAlbum } from '@/consts'
 
-import type { Album, Group } from '@/types'
+import type { Album, Group, TrackInfo } from '@/types'
 
 dayjs.extend(durationPlugin)
 
@@ -274,14 +274,15 @@ const removeCover = (): void => {
 }
 
 const addTrack = (): void => {
-  const lastTrack = form.tracks.at(-1)
+  const lastTrack = form.tracks.at(-1) as TrackInfo
   form.tracks.push({
-    number: form.tracks.length + 1,
+    number: lastTrack?.number + 1 || 1,
     title: '',
     duration: '00:00:01',
     lyrics: '',
     discNumber: lastTrack ? lastTrack.discNumber : 1,
-    isInstrumental: false
+    isInstrumental: false,
+    videoLink: ''
   })
 }
 
