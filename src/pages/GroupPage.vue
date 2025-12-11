@@ -102,12 +102,12 @@
                     Всего альбомов: {{ albums.length }}
                   </span>
                   <span class="stat">
-                    <el-tooltip content="Переключить вид на табличный" placement="top">
-                      <SvgIcon type="mdi" :path="mdiTable" :size="18" @click="viewMode = 'table'" />
-                    </el-tooltip>
-                    <el-divider direction="vertical" />
                     <el-tooltip content="Переключить на карточки" placement="top">
                       <SvgIcon type="mdi" :path="mdiCardAccountDetails" :size="18" @click="viewMode = 'card'" />
+                    </el-tooltip>
+                    <el-divider direction="vertical" />
+                    <el-tooltip content="Переключить вид на табличный" placement="top">
+                      <SvgIcon type="mdi" :path="mdiTable" :size="22" @click="viewMode = 'table'" />
                     </el-tooltip>
                   </span>
                 </div>
