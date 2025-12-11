@@ -31,7 +31,7 @@
               <div class="track-main" @click="toggleTrackLyrics(track)">
                 <div class="track-number">
                   <div v-if="albumHasMoreThanOneDisc">{{ track.number }} - {{ track.discNumber }}</div>
-                  <div else>{{ track.number }}</div>
+                  <div v-else>{{ track.number }}</div>
                 </div>
 
                 <div class="track-info">
