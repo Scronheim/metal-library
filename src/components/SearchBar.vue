@@ -12,7 +12,7 @@
           placeholder="Введите название группы или альбома"
           clearable
           value-key="name"
-          autofocus
+          ref="searchInputRef"
           @select="navigateToItem"
         >
           <template #default="{ item }">
@@ -63,15 +63,9 @@ const searchInputRef = ref(null)
 const getItemImage = item => {
   return item.type === 'group' ? item.logo : item.cover
 }
-
-const getItemIcon = item => {
-  return item.type === 'group' ? Headset : CircleCheck
-}
-
 const getItemTitle = item => {
   return item.type === 'group' ? item.name : item.title
 }
-
 const getItemSubtitle = item => {
   if (item.type === 'group') {
     return `${item.country} • ${item.formedYear}`
@@ -79,7 +73,6 @@ const getItemSubtitle = item => {
     return item.groups.map(g => g.name).join(', ')
   }
 }
-
 const performQuickSearch = async (query: string, cb: any) => {
   try {
     if (!query) return cb([])
@@ -106,7 +99,6 @@ const performQuickSearch = async (query: string, cb: any) => {
     isLoading.value = false
   }
 }
-
 const navigateToItem = item => {
   popoverVisible.value = false
   if (item.type === 'group') {
