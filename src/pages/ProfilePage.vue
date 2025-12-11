@@ -53,7 +53,7 @@ onMounted(async () => {})
         <el-collapse>
           <el-collapse-item title="Любимые группы" name="favoriteGroups">
             <GroupSearch class="mb-2" @select="addFavoriteGroup" />
-            <div class="flex gap-2">
+            <div class="grid grid-cols-6 gap-2">
               <el-card
                 v-for="(group, index) in user.profile.favoriteGroups"
                 :key="group._id"
@@ -76,7 +76,7 @@ onMounted(async () => {})
           </el-collapse-item>
           <el-collapse-item title="Любимые альбомы" name="favoriteAlbums">
             <AlbumSearch class="mb-2" @select="addFavoriteAlbum" />
-            <div class="flex gap-2">
+            <div class="grid grid-cols-6 gap-2">
               <el-card
                 v-for="(album, index) in user.profile.favoriteAlbums"
                 :key="album._id"

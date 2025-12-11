@@ -44,7 +44,7 @@
 <script setup lang="ts">
 import { ref, watch, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Search, Headset, CircleCheck } from '@element-plus/icons-vue'
+import { Search } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { onKeyStroke } from '@vueuse/core'
 

@@ -127,13 +127,7 @@
                   </span>
                 </div>
                 <div class="group-genres">
-                  <el-tag
-                    v-for="genre in group.genres.slice(0, 2)"
-                    :key="genre._id"
-                    size="small"
-                    effect="plain"
-                    style="padding: 0"
-                  >
+                  <el-tag v-for="genre in group.genres.slice(0, 2)" :key="genre._id" size="small" style="padding: 0">
                     {{ genre.name }}
                   </el-tag>
                 </div>
