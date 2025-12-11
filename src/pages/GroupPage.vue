@@ -304,7 +304,7 @@
               class="album-card flex flex-col"
               @click="openVideoDialog(video)"
             >
-              <el-text>{{ video.title }}</el-text>
+              <el-text>{{ video.trackTitle }}</el-text>
               <el-image :src="getYoutubeThumbnail(video.videoLink)" />
             </div>
           </div>
@@ -578,12 +578,12 @@
     @update="updateMember"
   />
 
-  <el-dialog v-model="videoDialog" width="600" @close="closeVideoDialog">
+  <el-dialog v-model="videoDialog" width="600" :title="selectedVideoTitle" @close="closeVideoDialog">
     <iframe
       width="560"
       height="315"
       :src="embedVideoUrl"
-      :title="selectedVideo?.title"
+      :title="selectedVideo?.trackTitle"
       frameborder="0"
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
       referrerpolicy="strict-origin-when-cross-origin"
@@ -663,7 +663,6 @@ const groupInfoRules = ref<FormRules<Group>>({
   logo: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }],
   banner: [{ required: true, message: 'Поле обязательно для заполнения', trigger: 'blur' }]
 })
-const groupRef = ref()
 const editableMember = ref<Member>(getDefaultMember())
 const lineClampedForGroupDescription = ref<number | string>(5)
 const viewMode = ref<string>('card')
@@ -684,10 +683,13 @@ const sortedAlbums = computed((): Album[] =>
 const embedVideoUrl = computed(() => {
   return selectedVideo.value?.videoLink.replace('watch?v=', 'embed/')
 })
+const selectedVideoTitle = computed((): string => {
+  return `${selectedVideo.value?.trackTitle} (альбом ${selectedVideo.value?.albumTitle})`
+})
 
 // Methods
 const closeVideoDialog = () => {
-  selectedVideo.value = { title: '', videoLink: '' }
+  selectedVideo.value = { albumTitle: '', trackTitle: '', videoLink: '' }
 }
 const openVideoDialog = (video: Video): void => {
   selectedVideo.value = video

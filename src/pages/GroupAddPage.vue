@@ -101,7 +101,11 @@
             <!-- Logo Upload -->
             <div class="image-upload-section">
               <h3>Логотип группы</h3>
-              <el-input v-model="form.logo" placeholder="Введите ссылку на картинку" class="mb-3" />
+              <el-input v-model="form.logo" placeholder="Введите ссылку на картинку" class="mb-3">
+                <template #append>
+                  <el-button :icon="Search" @click="openYandexSearch" />
+                </template>
+              </el-input>
               <div class="upload-area" :class="{ 'has-image': form.logo }">
                 <el-image v-if="form.logo" :src="form.logo" fit="cover" class="preview-image" />
                 <div v-else class="upload-placeholder">
@@ -118,7 +122,11 @@
             <!-- Banner Upload -->
             <div class="image-upload-section">
               <h3>Баннер группы</h3>
-              <el-input v-model="form.banner" placeholder="Введите ссылку на картинку" class="mb-3" />
+              <el-input v-model="form.banner" placeholder="Введите ссылку на картинку" class="mb-3">
+                <template #append>
+                  <el-button :icon="Search" @click="openYandexSearch(false)" />
+                </template>
+              </el-input>
               <div class="upload-area" :class="{ 'has-image': form.banner }">
                 <el-image v-if="form.banner" :src="form.banner" fit="cover" class="preview-image" />
                 <div v-else class="upload-placeholder">
@@ -214,7 +222,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Picture } from '@element-plus/icons-vue'
+import { Plus, Picture, Search } from '@element-plus/icons-vue'
 
 import { useStore } from '@/stores/store'
 
@@ -246,6 +254,9 @@ const rules = reactive({
 })
 
 // Methods
+const openYandexSearch = (isLogo: boolean = true) => {
+  window.open(`https://yandex.ru/images/search?text=${form.value.name} ${isLogo ? 'логотип' : 'фото группы'}`, '_blank')
+}
 const removeLogo = (): void => {
   form.value.logo = ''
 }

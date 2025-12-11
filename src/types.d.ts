@@ -170,7 +170,8 @@ export interface Review {
 }
 
 export interface Video {
-  title: string
+  albumTitle: string
+  trackTitle: string
   videoLink: string
 }
 
