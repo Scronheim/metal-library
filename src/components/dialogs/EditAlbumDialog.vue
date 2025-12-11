@@ -94,8 +94,10 @@
       <div class="form-section">
         <h3 class="section-title">Обложка альбома</h3>
 
-        <div class="cover-upload-section">
-          <el-input v-model="form.cover" placeholder="Введите ссылку на обложку" />
+        <div class="flex gap-2">
+          <div class="grow">
+            <el-input v-model="form.cover" placeholder="Введите ссылку на обложку" />
+          </div>
           <el-image style="max-width: 300px; max-height: 300px" :src="form.cover">
             <template #error>
               <div class="cover-placeholder">
@@ -103,9 +105,6 @@
               </div>
             </template>
           </el-image>
-          <div class="cover-actions" v-if="form.cover">
-            <el-button type="danger" text @click="removeCover">Удалить обложку</el-button>
-          </div>
         </div>
       </div>
 
@@ -510,27 +509,6 @@ const parseTracklistFromDiscogs = async () => {
 /* Cover Upload Styles */
 .cover-upload-section {
   text-align: center;
-}
-
-.cover-upload-area {
-  border: 2px dashed #444;
-  border-radius: 8px;
-  padding: 30px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  background: #252525;
-  max-width: 300px;
-  margin: 0 auto;
-}
-
-.cover-upload-area:hover {
-  border-color: #9e2a2a;
-}
-
-.cover-upload-area.has-image {
-  border-style: solid;
-  padding: 0;
-  overflow: hidden;
 }
 
 .cover-preview {

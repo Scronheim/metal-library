@@ -38,7 +38,7 @@ onMounted(async () => {
     <div class="flex items-center justify-between p-2 font-bold bg-black-100">
       <div class="flex items-center gap-2">
         <RouterLink to="/">
-          <el-image style="width: 30px; height: 30px" src="/logo.png" />
+          <el-image style="width: 30px; height: 30px" src="/logo-small.png" />
         </RouterLink>
         <el-dropdown v-if="authStore.userIsAdmin" @command="handleCommand">
           <el-button type="info">

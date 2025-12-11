@@ -12,14 +12,13 @@
           placeholder="Введите название группы или альбома"
           clearable
           value-key="name"
+          autofocus
           @select="navigateToItem"
         >
           <template #default="{ item }">
             <div class="flex items-center gap-2">
               <div class="item-avatar">
-                <el-avatar :size="32" :src="getItemImage(item)">
-                  <i :class="getItemIcon(item)"></i>
-                </el-avatar>
+                <el-avatar :size="32" :src="getItemImage(item)" />
               </div>
               <div class="flex flex-col item-info">
                 <div class="item-title">{{ getItemTitle(item) }}</div>
@@ -45,7 +44,7 @@
 <script setup lang="ts">
 import { ref, watch, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Search, Headset } from '@element-plus/icons-vue'
+import { Search, Headset, CircleCheck } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { onKeyStroke } from '@vueuse/core'
 
@@ -66,7 +65,7 @@ const getItemImage = item => {
 }
 
 const getItemIcon = item => {
-  return item.type === 'group' ? Headset : 'el-icon-disc'
+  return item.type === 'group' ? Headset : CircleCheck
 }
 
 const getItemTitle = item => {
@@ -83,8 +82,9 @@ const getItemSubtitle = item => {
 
 const performQuickSearch = async (query: string, cb: any) => {
   try {
-    isLoading.value = true
     if (!query) return cb([])
+
+    isLoading.value = true
 
     // Search groups and albums simultaneously
     const [groupsResponse, albumsResponse] = await Promise.all([
@@ -98,11 +98,12 @@ const performQuickSearch = async (query: string, cb: any) => {
     // Combine and limit results
     const groups = groupsData.groups.map(group => ({ ...group, type: 'group' }))
     const albums = albumsData.albums.map(album => ({ ...album, type: 'album' }))
-    isLoading.value = false
     cb([...groups, ...albums].slice(0, 5))
   } catch (error) {
     console.error('Search error:', error)
     ElMessage.error('Ошибка при поиске')
+  } finally {
+    isLoading.value = false
   }
 }
 
